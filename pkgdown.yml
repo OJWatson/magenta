@@ -1,0 +1,11 @@
+pandoc: 2.7.3
+pkgdown: 1.6.1.9000
+pkgdown_sha: 1ec304b0002d0483f386e5a9b66cc0cde24b335f
+articles:
+  Introduction: Introduction.html
+  Resistance: Resistance.html
+last_built: 2021-03-18T18:11Z
+urls:
+  reference: https://ojwatson.github.io/magenta/reference
+  article: https://ojwatson.github.io/magenta/articles
+
