@@ -18,15 +18,15 @@ knitr::opts_chunk$set(
 
 `magenta` is an individual-based simulation model of malaria epidemiology and parasite genetics, which was designed to extends the Imperial malaria model by tracking the infection history of individuals. With this addition, genetic characteristics of the parasite can be assessed for looking at both neutral genetic variation as well as loci under selection. 
 
-The model is written in C++/Rcpp and interfaced with R, incorporating both the deterministic version of the Imperial College Transmission model developed by Joel Hellewell and Hannah Slater, which helps initialise the model near equilbrium. In addition it is used to quickly the mosquito feeding behaviour, which is passed to `magenta` in order to increase its speed.    
+The model is written in C++/Rcpp and interfaced with R, incorporating both the deterministic version of the Imperial College Transmission model developed by Joel Hellewell and Hannah Slater, which helps initialise the model near equilibrium. In addition it is used to quickly the mosquito feeding behaviour, which is passed to `magenta` in order to increase its speed.    
 
 ## Installation
 
-You can also install `rdhs` from github with:
+You can also install `magenta` from github with:
 
 ```{r gh_installation, message=FALSE, eval = FALSE}
 #install.packages("devtools")
-devtools::install_github("OJWatson/rdhs")
+devtools::install_github("OJWatson/magenta")
 ```
 
 Note that on Windows, a toolkit (Rtools) needs to be installed separately for devtools to work. 
@@ -47,7 +47,7 @@ Documentation
 This includes the following vignettes:
 
 - **`Introduction`**: general introduction to the design of `magenta` and how to use it
-- **`Loggers`**: brief overview of the logging information returned by `magenta`
+- **`Loggers`**: brief overview of the logging information returned by `magenta` (TO DO)
 - **`Resistance`**: (under development) description of how to simulate resistance
 
 Contributors
