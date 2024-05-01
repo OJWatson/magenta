@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resistance • magenta</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">magenta</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.3</span>
       </span>
     </div>
 
@@ -41,7 +41,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa-home"></span>
+    <span class="fa fa-home"></span>
      
   </a>
 </li>
@@ -52,7 +52,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -62,7 +62,8 @@
       <a href="../articles/Introduction.html">Introduction to magenta (Overview)</a>
     </li>
     <li class="divider">
-    <li>
+    </li>
+<li>
       <a href="../articles/Resistance.html">Resistance</a>
     </li>
   </ul>
@@ -74,7 +75,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/ojwatson/magenta" class="external-link">
-    <span class="fas fa-github"></span>
+    <span class="fa fa-github"></span>
      
   </a>
 </li>
@@ -88,7 +89,7 @@
 
       
 
-      </header><script src="Resistance_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Resistance</h1>
@@ -96,160 +97,214 @@
             
             <h4 data-toc-skip class="date">2021-02-23</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/OJWatson/magenta/blob/master/vignettes/Resistance.Rmd" class="external-link"><code>vignettes/Resistance.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/OJWatson/magenta/blob/HEAD/vignettes/Resistance.Rmd" class="external-link"><code>vignettes/Resistance.Rmd</code></a></small>
       <div class="hidden name"><code>Resistance.Rmd</code></div>
 
     </div>
 
     
     
-<div id="overview" class="section level2">
-<h2 class="hasAnchor">
-<a href="#overview" class="anchor"></a>Overview</h2>
-<p><code>**magenta**</code> is an individual-based simulation model of malaria epidemiology and parasite genetics. It is thus well suited for simulating resistance.</p>
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
+<p><code>**magenta**</code> is an individual-based simulation model of
+malaria epidemiology and parasite genetics. It is thus well suited for
+simulating resistance.</p>
 <hr>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Load the package</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ojwatson.github.io/magenta/">magenta</a></span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Load the package</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ojwatson.github.io/magenta/">magenta</a></span><span class="op">)</span></span></code></pre></div>
 </div>
-<div id="demonstration" class="section level2">
-<h2 class="hasAnchor">
-<a href="#demonstration" class="anchor"></a>Demonstration</h2>
-<div id="base-model" class="section level3">
-<h3 class="hasAnchor">
-<a href="#base-model" class="anchor"></a>Base Model</h3>
-<p>The <code>magenta</code> simulation model is run using the <code>pipeline</code> function, which handles creating needed parameter objects, starting the simulation, summarising the simulation model state at desired intervals and handling how to save the final model output and state. See Introduction vignette for more detail.</p>
-<p>For example to run the model for 10 years with 1000 people and 40% treatment coverage:</p>
+<div class="section level2">
+<h2 id="demonstration">Demonstration<a class="anchor" aria-label="anchor" href="#demonstration"></a>
+</h2>
+<div class="section level3">
+<h3 id="base-model">Base Model<a class="anchor" aria-label="anchor" href="#base-model"></a>
+</h3>
+<p>The <code>magenta</code> simulation model is run using the
+<code>pipeline</code> function, which handles creating needed parameter
+objects, starting the simulation, summarising the simulation model state
+at desired intervals and handling how to save the final model output and
+state. See Introduction vignette for more detail.</p>
+<p>For example to run the model for 10 years with 1000 people and 40%
+treatment coverage:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>years <span class="op">=</span> <span class="fl">10</span>, N <span class="op">=</span> <span class="fl">1000</span>, EIR <span class="op">=</span> <span class="fl">1</span>, ft <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span>
-<span class="co">## Seed set to 233992617</span>
-<span class="co">## magenta v1.3.0</span></code></pre></div>
-<p>In our return object by default, it returns just the Loggers. In this, there is a list called “Treatments” which gives us some information on treatments given out:</p>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>years <span class="op">=</span> <span class="fl">10</span>, N <span class="op">=</span> <span class="fl">1000</span>, EIR <span class="op">=</span> <span class="fl">1</span>, ft <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span></span>
+<span><span class="co">## Seed set to 233992617</span></span>
+<span><span class="co">## magenta v1.3.0</span></span></code></pre></div>
+<p>In our return object by default, it returns just the Loggers. In
+this, there is a list called “Treatments” which gives us some
+information on treatments given out:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">Loggers</span><span class="op">$</span><span class="va">Treatments</span><span class="op">)</span>
-<span class="co">## List of 5</span>
-<span class="co">##  $ Successful_Treatments         : num 573</span>
-<span class="co">##  $ Unsuccesful_Treatments_LPF    : num 0</span>
-<span class="co">##  $ Not_Treated                   : num 844</span>
-<span class="co">##  $ daily_bite_counters           : int 1073094</span>
-<span class="co">##  $ daily_infectious_bite_counters: int 5515</span></code></pre></div>
-<p>(See <a href="https://ojwatson.github.io/magenta/articles/loggers.html">Loggers vignette</a> for more info about what is returned in Loggers).</p>
-<p>The <code>Unsuccessful_Treatments_LPF</code> is the total number of failed treatments, defined as a 28-day late parasitological treatment failure (LPF). By default, <code>magenta</code> assumes a perfect drug with no treatment failure regardless of resistance. To start simulating resistance we need to understand a little bit more about how loci in <code>magenta</code> work.</p>
-<p>In a simulation, we can set the number of genetic parasite loci we track. These loci can also be used to encode information about the resistance phenotype of the parasite. For example, let’s now run a simulation assuming DHA-PPQ is being used as the first line therapy.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">Loggers</span><span class="op">$</span><span class="va">Treatments</span><span class="op">)</span></span>
+<span><span class="co">## List of 5</span></span>
+<span><span class="co">##  $ Successful_Treatments         : num 573</span></span>
+<span><span class="co">##  $ Unsuccesful_Treatments_LPF    : num 0</span></span>
+<span><span class="co">##  $ Not_Treated                   : num 844</span></span>
+<span><span class="co">##  $ daily_bite_counters           : int 1073094</span></span>
+<span><span class="co">##  $ daily_infectious_bite_counters: int 5515</span></span></code></pre></div>
+<p>(See <a href="https://ojwatson.github.io/magenta/articles/loggers.html">Loggers
+vignette</a> for more info about what is returned in Loggers).</p>
+<p>The <code>Unsuccessful_Treatments_LPF</code> is the total number of
+failed treatments, defined as a 28-day late parasitological treatment
+failure (LPF). By default, <code>magenta</code> assumes a perfect drug
+with no treatment failure regardless of resistance. To start simulating
+resistance we need to understand a little bit more about how loci in
+<code>magenta</code> work.</p>
+<p>In a simulation, we can set the number of genetic parasite loci we
+track. These loci can also be used to encode information about the
+resistance phenotype of the parasite. For example, let’s now run a
+simulation assuming DHA-PPQ is being used as the first line therapy.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>EIR <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">1000</span>, years <span class="op">=</span> <span class="fl">10</span>, ft <span class="op">=</span> <span class="fl">0.4</span>, 
-                human_only_full_save <span class="op">=</span> <span class="cn">FALSE</span>, full_save <span class="op">=</span> <span class="cn">TRUE</span>,
-                drug_list <span class="op">=</span> <span class="fu"><a href="../reference/drug_list_create.html">drug_list_create</a></span><span class="op">(</span>drugs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">magenta</span><span class="fu">:::</span><span class="fu"><a href="../reference/drug_create_dhappq.html">drug_create_dhappq</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-                <span class="op">)</span>
-<span class="co">## Seed set to 580843526</span>
-<span class="co">## magenta v1.3.0</span></code></pre></div>
-<p>We have used the <code>full_save</code> option above so we can have a look at all the model output. If we look at the parameter list in the model return we can see what drug is being used in terms of the properties that the model uses:</p>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>EIR <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">1000</span>, years <span class="op">=</span> <span class="fl">10</span>, ft <span class="op">=</span> <span class="fl">0.4</span>, </span>
+<span>                human_only_full_save <span class="op">=</span> <span class="cn">FALSE</span>, full_save <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                drug_list <span class="op">=</span> <span class="fu"><a href="../reference/drug_list_create.html">drug_list_create</a></span><span class="op">(</span>drugs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">magenta</span><span class="fu">:::</span><span class="fu"><a href="../reference/drug_create_dhappq.html">drug_create_dhappq</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>                <span class="op">)</span></span>
+<span><span class="co">## Seed set to 580843526</span></span>
+<span><span class="co">## magenta v1.3.0</span></span></code></pre></div>
+<p>We have used the <code>full_save</code> option above so we can have a
+look at all the model output. If we look at the parameter list in the
+model return we can see what drug is being used in terms of the
+properties that the model uses:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>EIR <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">1000</span>, years <span class="op">=</span> <span class="fl">10</span>, ft <span class="op">=</span> <span class="fl">0.4</span>, 
-                human_only_full_save <span class="op">=</span> <span class="cn">FALSE</span>, full_save <span class="op">=</span> <span class="cn">TRUE</span>,
-                update_save <span class="op">=</span> <span class="cn">TRUE</span>, summary_saves_only <span class="op">=</span> <span class="cn">FALSE</span>,
-                drug_list <span class="op">=</span> <span class="fu"><a href="../reference/drug_list_create.html">drug_list_create</a></span><span class="op">(</span>drugs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">magenta</span><span class="fu">:::</span><span class="fu"><a href="../reference/drug_create_dhappq.html">drug_create_dhappq</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-                <span class="op">)</span>
-<span class="co">## Seed set to 7718812</span>
-<span class="co">## magenta v1.3.0</span>
-<span class="co">## Starting Stochastic Simulation for 10 years</span>
-<span class="co">## Running: [==========================================================================================================================================] 100% eta: </span></code></pre></div>
-<p>It is a list of lists (here just being a list of one list). Each of the lists is a drug being used. Since we only specified for one drug to be used (DHA-PPQ) we only have one drug here. The information above shows the properties we encode for a drug in <code>magenta</code>, which is created using <code><a href="../reference/drug_create.html">drug_create()</a></code> (see documentation for more info). The main information is which postions in the parasite genetic barcode are related to drug resistance. Here, we can see that the first 6 positions (0:5) are related to drug properties, with the locus at barcode positon 5 relating to prophylaxis, i.e. the partner drug. Because there are 6 loci related to drug resistance, the vector that determines the propbability of LPF (<code>m_lpf</code>) is 64 long (2^6), and represents the probability of LPF for each genotype, i.e. for each combination of the first 6 loci. When an individual is treated, the probability that they fail treatment is equal to the probability of LPF for the parasite that triggered the symptomatic infection (if there is more than one parasite then the lowest probability across all triggering parasites).</p>
-<p>For 6 loci modelled in magenta for drug resistance are crt76, mdr1 86 and 184, mdr1 copy number, kelch13 580 and plasmepsion-2,3 copy number in that order. Each loci is binary in nature, i.e. wild type (0) or resistant (1). So for DHA-PPQ, the loci that relate to resistance are 4 and 5 (the last 2). (For full table of drugs etc see <code><a href="../reference/drug_table.html">magenta::drug_table</a></code>) As a result we may expect under DHA-PPQ, these loci to increase over time:</p>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>EIR <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">1000</span>, years <span class="op">=</span> <span class="fl">10</span>, ft <span class="op">=</span> <span class="fl">0.4</span>, </span>
+<span>                human_only_full_save <span class="op">=</span> <span class="cn">FALSE</span>, full_save <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                update_save <span class="op">=</span> <span class="cn">TRUE</span>, summary_saves_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                drug_list <span class="op">=</span> <span class="fu"><a href="../reference/drug_list_create.html">drug_list_create</a></span><span class="op">(</span>drugs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">magenta</span><span class="fu">:::</span><span class="fu"><a href="../reference/drug_create_dhappq.html">drug_create_dhappq</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>                <span class="op">)</span></span>
+<span><span class="co">## Seed set to 7718812</span></span>
+<span><span class="co">## magenta v1.3.0</span></span>
+<span><span class="co">## Starting Stochastic Simulation for 10 years</span></span>
+<span><span class="co">## Running: [==========================================================================================================================================] 100% eta: </span></span></code></pre></div>
+<p>It is a list of lists (here just being a list of one list). Each of
+the lists is a drug being used. Since we only specified for one drug to
+be used (DHA-PPQ) we only have one drug here. The information above
+shows the properties we encode for a drug in <code>magenta</code>, which
+is created using <code><a href="../reference/drug_create.html">drug_create()</a></code> (see documentation for more
+info). The main information is which postions in the parasite genetic
+barcode are related to drug resistance. Here, we can see that the first
+6 positions (0:5) are related to drug properties, with the locus at
+barcode positon 5 relating to prophylaxis, i.e. the partner drug.
+Because there are 6 loci related to drug resistance, the vector that
+determines the propbability of LPF (<code>m_lpf</code>) is 64 long
+(2^6), and represents the probability of LPF for each genotype, i.e. for
+each combination of the first 6 loci. When an individual is treated, the
+probability that they fail treatment is equal to the probability of LPF
+for the parasite that triggered the symptomatic infection (if there is
+more than one parasite then the lowest probability across all triggering
+parasites).</p>
+<p>For 6 loci modelled in magenta for drug resistance are crt76, mdr1 86
+and 184, mdr1 copy number, kelch13 580 and plasmepsion-2,3 copy number
+in that order. Each loci is binary in nature, i.e. wild type (0) or
+resistant (1). So for DHA-PPQ, the loci that relate to resistance are 4
+and 5 (the last 2). (For full table of drugs etc see
+<code><a href="../reference/drug_table.html">magenta::drug_table</a></code>) As a result we may expect under
+DHA-PPQ, these loci to increase over time:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>EIR <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">1000</span>, years <span class="op">=</span> <span class="fl">10</span>, ft <span class="op">=</span> <span class="fl">0.4</span>, 
-                update_length <span class="op">=</span> <span class="fl">30</span>,
-                update_save <span class="op">=</span> <span class="cn">TRUE</span>, 
-                human_update_save <span class="op">=</span> <span class="cn">TRUE</span>,
-                summary_saves_only <span class="op">=</span> <span class="cn">TRUE</span>,
-                genetics_df_without_summarising <span class="op">=</span> <span class="cn">TRUE</span>,
-                full_update_save <span class="op">=</span> <span class="cn">TRUE</span>,
-                num_loci <span class="op">=</span> <span class="fl">6</span>,
-                drug_list <span class="op">=</span> <span class="fu"><a href="../reference/drug_list_create.html">drug_list_create</a></span><span class="op">(</span>drugs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">magenta</span><span class="fu">:::</span><span class="fu"><a href="../reference/drug_create_dhappq.html">drug_create_dhappq</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-<span class="op">)</span>
-<span class="co">## Seed set to 29293988</span>
-<span class="co">## magenta v1.3.0</span>
-<span class="co">## Starting Stochastic Simulation for 10 years</span>
-<span class="co">## Running: [==========================================================================================================================================] 100% eta: 0s</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>EIR <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">1000</span>, years <span class="op">=</span> <span class="fl">10</span>, ft <span class="op">=</span> <span class="fl">0.4</span>, </span>
+<span>                update_length <span class="op">=</span> <span class="fl">30</span>,</span>
+<span>                update_save <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>                human_update_save <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                summary_saves_only <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                genetics_df_without_summarising <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                full_update_save <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                num_loci <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                drug_list <span class="op">=</span> <span class="fu"><a href="../reference/drug_list_create.html">drug_list_create</a></span><span class="op">(</span>drugs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">magenta</span><span class="fu">:::</span><span class="fu"><a href="../reference/drug_create_dhappq.html">drug_create_dhappq</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">## Seed set to 29293988</span></span>
+<span><span class="co">## magenta v1.3.0</span></span>
+<span><span class="co">## Starting Stochastic Simulation for 10 years</span></span>
+<span><span class="co">## Running: [==========================================================================================================================================] 100% eta: 0s</span></span></code></pre></div>
 <p>So let’s have a look at the allele frequency (af) over time</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">out</span>, <span class="st">"[["</span>, <span class="st">"af"</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">6</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="Resistance_files/figure-html/unnamed-chunk-5-1.png"><!-- --> Huh, it doesn’t. Why? Because we have a lot of control over when resistance is allowed to be modelled. We do this by using the <code>drug_list</code> more that we supply to <code>pipeline</code>:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">out</span>, <span class="st">"[["</span>, <span class="st">"af"</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">6</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Resistance_files/figure-html/unnamed-chunk-5-1.png"><!-- --> Huh,
+it doesn’t. Why? Because we have a lot of control over when resistance
+is allowed to be modelled. We do this by using the
+<code>drug_list</code> more that we supply to <code>pipeline</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># let's create a drug</span>
-<span class="va">drug_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drug_list_create.html">drug_list_create</a></span><span class="op">(</span>
-      resistance_flag <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span>, <span class="co"># 5 years not modelling it followed by 10 modelling it</span>
-      mft_flag <span class="op">=</span> <span class="cn">FALSE</span>,
-      artemisinin_loci <span class="op">=</span> <span class="fl">5</span>,
-      absolute_fitness_cost_flag <span class="op">=</span> <span class="cn">FALSE</span>,
-      partner_drug_ratios <span class="op">=</span> <span class="fl">1</span>,
-      drugs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">magenta</span><span class="fu">:::</span><span class="fu"><a href="../reference/drug_create_dhappq.html">drug_create_dhappq</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,
-      cost_of_resistance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">6</span><span class="op">)</span>,
-      sequential_cycling <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>,
-      number_of_drugs <span class="op">=</span> <span class="fl">1</span>,
-      sequential_update <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>,
-      number_of_resistance_loci <span class="op">=</span> <span class="fl">6</span>
-    <span class="op">)</span>
-
-<span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>EIR <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">10000</span>, years <span class="op">=</span> <span class="fl">15</span>, ft <span class="op">=</span> <span class="fl">0.4</span>, 
-                update_length <span class="op">=</span> <span class="fl">30</span>,
-                update_save <span class="op">=</span> <span class="cn">TRUE</span>, 
-                human_update_save <span class="op">=</span> <span class="cn">TRUE</span>,
-                summary_saves_only <span class="op">=</span> <span class="cn">TRUE</span>,
-                genetics_df_without_summarising <span class="op">=</span> <span class="cn">TRUE</span>,
-                full_update_save <span class="op">=</span> <span class="cn">TRUE</span>,
-                num_loci <span class="op">=</span> <span class="fl">6</span>,
-                drug_list <span class="op">=</span> <span class="va">drug_list</span><span class="op">)</span>
-<span class="co">## Seed set to 481191969</span>
-<span class="co">## magenta v1.3.0</span>
-<span class="co">## Starting Stochastic Simulation for 15 years</span>
-<span class="co">## Running: [==========================================================================================================================================] 100% eta: 0s</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># let's create a drug</span></span>
+<span><span class="va">drug_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drug_list_create.html">drug_list_create</a></span><span class="op">(</span></span>
+<span>      resistance_flag <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span>, <span class="co"># 5 years not modelling it followed by 10 modelling it</span></span>
+<span>      mft_flag <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>      artemisinin_loci <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>      absolute_fitness_cost_flag <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>      partner_drug_ratios <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>      drugs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">magenta</span><span class="fu">:::</span><span class="fu"><a href="../reference/drug_create_dhappq.html">drug_create_dhappq</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>      cost_of_resistance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">6</span><span class="op">)</span>,</span>
+<span>      sequential_cycling <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>,</span>
+<span>      number_of_drugs <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>      sequential_update <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>,</span>
+<span>      number_of_resistance_loci <span class="op">=</span> <span class="fl">6</span></span>
+<span>    <span class="op">)</span></span>
+<span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>EIR <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">10000</span>, years <span class="op">=</span> <span class="fl">15</span>, ft <span class="op">=</span> <span class="fl">0.4</span>, </span>
+<span>                update_length <span class="op">=</span> <span class="fl">30</span>,</span>
+<span>                update_save <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>                human_update_save <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                summary_saves_only <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                genetics_df_without_summarising <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                full_update_save <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                num_loci <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                drug_list <span class="op">=</span> <span class="va">drug_list</span><span class="op">)</span></span>
+<span><span class="co">## Seed set to 481191969</span></span>
+<span><span class="co">## magenta v1.3.0</span></span>
+<span><span class="co">## Starting Stochastic Simulation for 15 years</span></span>
+<span><span class="co">## Running: [==========================================================================================================================================] 100% eta: 0s</span></span></code></pre></div>
 <p>And plot it:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">out</span>, <span class="st">"[["</span>, <span class="st">"af"</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">6</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="fl">60</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">out</span>, <span class="st">"[["</span>, <span class="st">"af"</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">6</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="fl">60</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Resistance_files/figure-html/unnamed-chunk-7-1.png"><!-- --></p>
-<p>By having resistance be switched on, we are thus able to allow a population to reach equilibrium without the effects and then have it come on when ready. So for example, imagine we wanted to simulate artemisinin resistance being neutral in the population and existing at 10% population level allel frequency (plaf) along with PPQ resistance and then initiate DHA-PPQ being used. We can do this as follows:</p>
+<p>By having resistance be switched on, we are thus able to allow a
+population to reach equilibrium without the effects and then have it
+come on when ready. So for example, imagine we wanted to simulate
+artemisinin resistance being neutral in the population and existing at
+10% population level allel frequency (plaf) along with PPQ resistance
+and then initiate DHA-PPQ being used. We can do this as follows:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>EIR <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">10000</span>, years <span class="op">=</span> <span class="fl">15</span>, ft <span class="op">=</span> <span class="fl">0.4</span>, 
-                update_length <span class="op">=</span> <span class="fl">30</span>,
-                update_save <span class="op">=</span> <span class="cn">TRUE</span>, 
-                human_update_save <span class="op">=</span> <span class="cn">TRUE</span>,
-                summary_saves_only <span class="op">=</span> <span class="cn">TRUE</span>,
-                genetics_df_without_summarising <span class="op">=</span> <span class="cn">TRUE</span>,
-                full_update_save <span class="op">=</span> <span class="cn">TRUE</span>,
-                num_loci <span class="op">=</span> <span class="fl">6</span>,
-                drug_list <span class="op">=</span> <span class="va">drug_list</span>,
-                <span class="co"># use the spatial importation here to have 100% of new infection to be imported</span>
-                <span class="co"># for first 5 yeaers. This means they are drawn from the plaf</span>
-                spatial_incidence_matrix <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span>,
-                spatial_mosquitoFOI_matrix <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span>,
-                spatial_type <span class="op">=</span> <span class="st">"island"</span>,
-                <span class="co"># set up the plaf to be used for the first 5 years to be 1% kelch &amp; plasmepsin</span>
-                plaf<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0.1</span>,<span class="fl">0.1</span><span class="op">)</span>,<span class="fl">5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">6</span><span class="op">*</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span>,ncol<span class="op">=</span><span class="fl">6</span>,byrow<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>
-<span class="co">## Seed set to 430911093</span>
-<span class="co">## magenta v1.3.0</span>
-<span class="co">## Starting Stochastic Simulation for 15 years</span>
-<span class="co">## Running: [==========================================================================================================================================] 100% eta: 0s</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pipeline.html">pipeline</a></span><span class="op">(</span>EIR <span class="op">=</span> <span class="fl">1</span>, N <span class="op">=</span> <span class="fl">10000</span>, years <span class="op">=</span> <span class="fl">15</span>, ft <span class="op">=</span> <span class="fl">0.4</span>, </span>
+<span>                update_length <span class="op">=</span> <span class="fl">30</span>,</span>
+<span>                update_save <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>                human_update_save <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                summary_saves_only <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                genetics_df_without_summarising <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                full_update_save <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                num_loci <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                drug_list <span class="op">=</span> <span class="va">drug_list</span>,</span>
+<span>                <span class="co"># use the spatial importation here to have 100% of new infection to be imported</span></span>
+<span>                <span class="co"># for first 5 yeaers. This means they are drawn from the plaf</span></span>
+<span>                spatial_incidence_matrix <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                spatial_mosquitoFOI_matrix <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                spatial_type <span class="op">=</span> <span class="st">"island"</span>,</span>
+<span>                <span class="co"># set up the plaf to be used for the first 5 years to be 1% kelch &amp; plasmepsin</span></span>
+<span>                plaf<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0.1</span>,<span class="fl">0.1</span><span class="op">)</span>,<span class="fl">5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">6</span><span class="op">*</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span>,ncol<span class="op">=</span><span class="fl">6</span>,byrow<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">## Seed set to 430911093</span></span>
+<span><span class="co">## magenta v1.3.0</span></span>
+<span><span class="co">## Starting Stochastic Simulation for 15 years</span></span>
+<span><span class="co">## Running: [==========================================================================================================================================] 100% eta: 0s</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">out</span>, <span class="st">"[["</span>, <span class="st">"af"</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">6</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="fl">60</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">out</span>, <span class="st">"[["</span>, <span class="st">"af"</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">6</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="fl">60</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Resistance_files/figure-html/unnamed-chunk-9-1.png"><!-- --></p>
 </div>
 </div>
-<div id="summary" class="section level2">
-<h2 class="hasAnchor">
-<a href="#summary" class="anchor"></a>Summary</h2>
-<p>That is all I have had time to write so far. But there are sufficient options so far to look at the following:</p>
+<div class="section level2">
+<h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
+</h2>
+<p>That is all I have had time to write so far. But there are sufficient
+options so far to look at the following:</p>
 <ul>
 <li>DHA-PPQ, AL, ASAQ</li>
 <li>Resistance arising through mutation</li>
 <li>Resistance arising through importation</li>
 <li>Multiple First Line Therapies vs Sequential Therapies</li>
 <li>Setting your own drug properties</li>
-<li>Deciding how much of each drug to use in MFT and which drugs to cycle</li>
+<li>Deciding how much of each drug to use in MFT and which drugs to
+cycle</li>
 <li>Deciding the thresholds for which cycling occurs at</li>
-<li>Lots of other features I have not had time/forgotten about to explain</li>
+<li>Lots of other features I have not had time/forgotten about to
+explain</li>
 </ul>
 </div>
   </div>
@@ -271,7 +326,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link external-link">pkgdown</a> 1.6.1.9000.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
 </div>
 
       </footer>

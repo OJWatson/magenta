@@ -1,7 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ojwatson.github.io/magenta/404.html</loc>
+  </url>
+  <url>
+    <loc>https://ojwatson.github.io/magenta/CONDUCT.html</loc>
+  </url>
+  <url>
+    <loc>https://ojwatson.github.io/magenta/LICENSE-text.html</loc>
+  </url>
+  <url>
+    <loc>https://ojwatson.github.io/magenta/articles/Introduction.html</loc>
+  </url>
+  <url>
+    <loc>https://ojwatson.github.io/magenta/articles/Resistance.html</loc>
+  </url>
+  <url>
+    <loc>https://ojwatson.github.io/magenta/articles/index.html</loc>
+  </url>
+  <url>
+    <loc>https://ojwatson.github.io/magenta/authors.html</loc>
+  </url>
+  <url>
     <loc>https://ojwatson.github.io/magenta/index.html</loc>
+  </url>
+  <url>
+    <loc>https://ojwatson.github.io/magenta/news/index.html</loc>
   </url>
   <url>
     <loc>https://ojwatson.github.io/magenta/reference/COI_df_create.html</loc>
@@ -86,6 +110,9 @@
   </url>
   <url>
     <loc>https://ojwatson.github.io/magenta/reference/importations.html</loc>
+  </url>
+  <url>
+    <loc>https://ojwatson.github.io/magenta/reference/index.html</loc>
   </url>
   <url>
     <loc>https://ojwatson.github.io/magenta/reference/intervention_grab.html</loc>
@@ -176,11 +203,5 @@
   </url>
   <url>
     <loc>https://ojwatson.github.io/magenta/reference/vector_adaptation_list_create.html</loc>
-  </url>
-  <url>
-    <loc>https://ojwatson.github.io/magenta/articles/Introduction.html</loc>
-  </url>
-  <url>
-    <loc>https://ojwatson.github.io/magenta/articles/Resistance.html</loc>
   </url>
 </urlset>
