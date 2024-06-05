@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">magenta</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.5</span>
       </span>
     </div>
 
@@ -573,10 +573,10 @@ for a given region. E.g. to simulate for Kinsasha from 1980:2015</p>
 <span><span class="co"># load the Malaria Atlas Project Prevalence data</span></span>
 <span><span class="va">MAP_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/MAP_PfPR_population_weighted.csv"</span>, </span>
 <span>                        package <span class="op">=</span> <span class="st">"magenta"</span><span class="op">)</span></span>
-<span><span class="va">MAP</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu">fread</span><span class="op">(</span><span class="va">MAP_file</span><span class="op">)</span></span>
+<span><span class="va">MAP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">MAP_file</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># work out the EIR for the prevalence in year 2000 (i.e. pre interventions)</span></span>
-<span><span class="va">pfpr_micro</span> <span class="op">&lt;-</span> <span class="va">MAP</span><span class="op">$</span><span class="va">`2000`</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">MAP</span><span class="op">$</span><span class="va">Name</span><span class="op">==</span><span class="va">admin</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">pfpr_micro</span> <span class="op">&lt;-</span> <span class="va">MAP</span><span class="op">$</span><span class="va">X2000</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">MAP</span><span class="op">$</span><span class="va">Name</span><span class="op">==</span><span class="va">admin</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">EIR</span> <span class="op">&lt;-</span> <span class="fu">magenta</span><span class="fu">:::</span><span class="fu"><a href="../reference/pfpr_to_eir_heuristic.html">pfpr_to_eir_heuristic</a></span><span class="op">(</span>ft <span class="op">=</span> <span class="fl">0</span>, PfPR_micro <span class="op">=</span> <span class="va">pfpr_micro</span><span class="op">)</span></span>
 <span><span class="co">## 0.00152858753907675</span></span>
 <span><span class="co"># run the simulation</span></span>
