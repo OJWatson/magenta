@@ -2,8 +2,8 @@
 % Please edit documentation in R/magenta.R
 \docType{package}
 \name{magenta}
-\alias{magenta}
 \alias{magenta-package}
+\alias{magenta}
 \title{magenta: Individual-based simulation model of malaria epidemiology and genomics.}
 \description{
 magenta is an individual-based simulation model of malaria epidemiology and genomics. 

@@ -184,13 +184,16 @@ public:
     // is the infecting strain resistant at prophylactic positions
     bool resistant = resistance_to_drug(x);
     
+    int proph_dur = day_of_change - day_treated;
+    
     // what is their drug concentration
     double drug_conc = R::dexp(current_time - day_treated, 
                                1.0/(day_of_change - day_treated), 
                                false);
     
     // normalise so that drug conc is 1 at t = 0
-    drug_conc = drug_conc / R::dexp(0.0, 1.0/(day_of_change - day_treated), false);
+    drug_conc = (drug_conc - R::dexp(proph_dur, 1.0/proph_dur, false)) / 
+      (R::dexp(0.0, 1.0/proph_dur, false) - R::dexp(0.0, 1.0/proph_dur, false));
     
     // if it was resistant then check for early reinfection using resistant hill parameters
     if (resistant) {
