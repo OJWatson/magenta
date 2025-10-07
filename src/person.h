@@ -194,12 +194,21 @@ public:
   
   // Get person's treatment outcome
   TreatmentOutcome get_m_treatment_outcome() { return(m_treatment_outcome); }
-  
+
   // Get person's recrudescence outcome
   RecrudescenceOutcome get_m_recrudescence_outcome() { return(m_recrudescence_outcome); }
-  
+
+  // Get whether the person is currently experiencing slow parasite clearance
+  bool get_m_slow_parasite_clearance_bool() { return(m_slow_parasite_clearance_bool); }
+
   // Get person's drug choice
   int get_m_drug_choice() { return(m_drug_choice); }
+
+  // Get person's next non-malarial fever event day
+  int get_m_day_of_nmf() { return(m_day_of_nmf); }
+
+  // Get person's current non-malarial fever age band index
+  unsigned int get_m_nmf_age_band() { return(m_nmf_age_band); }
   
   // Get person's age-dependent immunity
   double get_m_age_dependent_biting_rate() { return(m_age_dependent_biting_rate); }
@@ -341,12 +350,21 @@ public:
   
   // Set person's treatment outcome
   void set_m_treatment_outcome(TreatmentOutcome x) { m_treatment_outcome = x; }
-  
+
   // Set person's recrudescence outcome
   void set_m_recrudescence_outcome(RecrudescenceOutcome x) { m_recrudescence_outcome = x; }
-  
+
+  // Set whether the person is currently experiencing slow parasite clearance
+  void set_m_slow_parasite_clearance_bool(bool x) { m_slow_parasite_clearance_bool = x; }
+
   // Get person's drug choice
   void set_m_drug_choice(int x) { m_drug_choice = x; }
+
+  // Set person's next non-malarial fever event day directly
+  void set_m_day_of_nmf_from_saved(int x) { m_day_of_nmf = x; }
+
+  // Set person's non-malarial fever age band index directly
+  void set_m_nmf_age_band(unsigned int x) { m_nmf_age_band = x; }
   
   // Set person's individual biting rate
   void set_m_individual_biting_rate(double x) { m_individual_biting_rate = x; };

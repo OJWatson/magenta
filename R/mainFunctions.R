@@ -211,11 +211,13 @@ param_list_simulation_saved_init_create <- function(savedState) {
   if(class(savedState)!="list") {
     stop("savedState is not of class list")
   }
-  if(!identical(names(savedState),
-                c("population_List",
-                  "populations_event_and_strains_List",
-                  "scourge_List",
-                  "parameters_List"))) {
+  required <- c("population_List",
+                "populations_event_and_strains_List",
+                "scourge_List",
+                "parameters_List",
+                "parameter_housekeeping_List")
+
+  if (!all(required %in% names(savedState))) {
     stop("Incorrect variable names within savedState")
   }
   

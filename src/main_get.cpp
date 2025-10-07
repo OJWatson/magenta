@@ -89,6 +89,12 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
   std::vector<double> ICM(universe_ptr->parameters.g_N);
   std::vector<double> cA(universe_ptr->parameters.g_N);
   std::vector<double> ID(universe_ptr->parameters.g_N);
+  std::vector<int> Treatment_Outcomes(universe_ptr->parameters.g_N);
+  std::vector<int> Recrudescence_Outcomes(universe_ptr->parameters.g_N);
+  std::vector<int> Drug_choices(universe_ptr->parameters.g_N);
+  std::vector<int> Slow_parasite_clearance(universe_ptr->parameters.g_N);
+  std::vector<int> Day_of_nmf(universe_ptr->parameters.g_N);
+  std::vector<unsigned int> NMF_age_band(universe_ptr->parameters.g_N);
   std::vector<double> IB_last_boost_time(universe_ptr->parameters.g_N);
   std::vector<double> ICA_last_boost_time(universe_ptr->parameters.g_N);
   std::vector<double> ID_last_boost_time(universe_ptr->parameters.g_N);
@@ -150,6 +156,12 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     ICM[element] = universe_ptr->population[element].get_m_ICM();
     ID[element] = universe_ptr->population[element].get_m_ID();
     cA[element] = universe_ptr->population[element].get_m_cA();
+    Treatment_Outcomes[element] = static_cast<int>(universe_ptr->population[element].get_m_treatment_outcome());
+    Recrudescence_Outcomes[element] = static_cast<int>(universe_ptr->population[element].get_m_recrudescence_outcome());
+    Drug_choices[element] = universe_ptr->population[element].get_m_drug_choice();
+    Slow_parasite_clearance[element] = static_cast<int>(universe_ptr->population[element].get_m_slow_parasite_clearance_bool());
+    Day_of_nmf[element] = universe_ptr->population[element].get_m_day_of_nmf();
+    NMF_age_band[element] = universe_ptr->population[element].get_m_nmf_age_band();
     // Boost times
     IB_last_boost_time[element] = universe_ptr->population[element].get_m_IB_last_boost_time();
     ICA_last_boost_time[element] = universe_ptr->population[element].get_m_ICA_last_boost_time();
@@ -357,6 +369,12 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     Rcpp::Named("ICM")=ICM,
     Rcpp::Named("ID")=ID,
     Rcpp::Named("cA")=cA,
+    Rcpp::Named("Treatment_Outcomes")=Treatment_Outcomes,
+    Rcpp::Named("Recrudescence_Outcomes")=Recrudescence_Outcomes,
+    Rcpp::Named("Drug_choices")=Drug_choices,
+    Rcpp::Named("Slow_parasite_clearance")=Slow_parasite_clearance,
+    Rcpp::Named("Day_of_nmf")=Day_of_nmf,
+    Rcpp::Named("NMF_age_band")=NMF_age_band,
     Rcpp::Named("IB_last_boost_time")=IB_last_boost_time,
     Rcpp::Named("ICA_last_boost_time")=ICA_last_boost_time,
     Rcpp::Named("ID_last_boost_time")=ID_last_boost_time,
@@ -402,36 +420,177 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
   );
   
   // Create Rcpp Parameters list
-  
+
   // drugs list
   std::vector<Rcpp::List> drugs;
   drugs.reserve(universe_ptr->parameters.g_number_of_drugs);
   for (auto d : universe_ptr->parameters.g_drugs) {
-   drugs.emplace_back(d.drug_to_rcpp_list()); 
+    drugs.emplace_back(d.drug_to_rcpp_list());
   }
-  
+
+  auto bitset_matrix = [&](const std::vector<boost::dynamic_bitset<> > &bitsets) {
+    std::vector<std::vector<int> > res(bitsets.size(), std::vector<int>(Parameters::g_barcode_length));
+    for (size_t i = 0; i < bitsets.size(); ++i) {
+      for (unsigned int j = 0; j < Parameters::g_barcode_length; ++j) {
+        res[i][j] = static_cast<int>(bitsets[i][j]);
+      }
+    }
+    return res;
+  };
+
+  std::vector<std::vector<int> > spatial_exported_barcodes;
+  if (!universe_ptr->parameters.g_spatial_exported_barcodes.empty()) {
+    spatial_exported_barcodes = bitset_matrix(universe_ptr->parameters.g_spatial_exported_barcodes);
+  }
+
+  std::vector<std::vector<int> > spatial_imported_barcodes;
+  if (!universe_ptr->parameters.g_spatial_imported_barcodes.empty()) {
+    spatial_imported_barcodes = bitset_matrix(universe_ptr->parameters.g_spatial_imported_barcodes);
+  }
+
+  std::vector<std::vector<int> > spatial_exported_oocysts;
+  if (!universe_ptr->parameters.g_spatial_exported_oocysts.empty()) {
+    spatial_exported_oocysts = bitset_matrix(universe_ptr->parameters.g_spatial_exported_oocysts);
+  }
+
+  std::vector<std::vector<int> > spatial_imported_oocysts;
+  if (!universe_ptr->parameters.g_spatial_imported_oocysts.empty()) {
+    spatial_imported_oocysts = bitset_matrix(universe_ptr->parameters.g_spatial_imported_oocysts);
+  }
+
   Rcpp::List parameters_List = Rcpp::List::create(
     Rcpp::Named("g_current_time")=universe_ptr->parameters.g_current_time,
     Rcpp::Named("g_calendar_day")=universe_ptr->parameters.g_calendar_day,
     Rcpp::Named("g_theta")=universe_ptr->parameters.g_theta,
+    Rcpp::Named("g_years")=universe_ptr->parameters.g_years,
     Rcpp::Named("g_mean_maternal_immunity")=universe_ptr->parameters.g_mean_maternal_immunity,
     Rcpp::Named("g_sum_maternal_immunity")=universe_ptr->parameters.g_sum_maternal_immunity,
     Rcpp::Named("g_total_mums")=universe_ptr->parameters.g_total_mums,
     Rcpp::Named("g_N")=universe_ptr->parameters.g_N,
+    Rcpp::Named("g_max_age")=universe_ptr->parameters.g_max_age,
+    Rcpp::Named("g_average_age")=universe_ptr->parameters.g_average_age,
+    Rcpp::Named("g_EIR")=universe_ptr->parameters.g_EIR,
+    Rcpp::Named("g_a0")=universe_ptr->parameters.g_a0,
+    Rcpp::Named("g_rho")=universe_ptr->parameters.g_rho,
+    Rcpp::Named("g_zeta_meanlog")=universe_ptr->parameters.g_zeta_meanlog,
+    Rcpp::Named("g_zeta_sdlog")=universe_ptr->parameters.g_zeta_sdlog,
+    Rcpp::Named("g_ft")=universe_ptr->parameters.g_ft,
+    Rcpp::Named("g_mu0")=universe_ptr->parameters.g_mu0,
+    Rcpp::Named("g_mean_mosquito_age")=universe_ptr->parameters.g_mean_mosquito_age,
+    Rcpp::Named("g_beta_gradient")=universe_ptr->parameters.g_beta_gradient,
+    Rcpp::Named("g_beta_intercept")=universe_ptr->parameters.g_beta_intercept,
+    Rcpp::Named("g_ak")=universe_ptr->parameters.g_ak,
+    Rcpp::Named("g_Q0")=universe_ptr->parameters.g_Q0,
     Rcpp::Named("g_mosquito_deficit")=universe_ptr->parameters.g_mosquito_deficit,
     Rcpp::Named("g_scourge_today")=universe_ptr->parameters.g_scourge_today,
     Rcpp::Named("g_mean_mv")=universe_ptr->parameters.g_mean_mv,
+    Rcpp::Named("g_mosquito_next_biting_day_vector")=universe_ptr->parameters.g_mosquito_next_biting_day_vector,
+    Rcpp::Named("g_mosquito_biting_counter")=universe_ptr->parameters.g_mosquito_biting_counter,
+    Rcpp::Named("g_max_mosquito_biting_counter")=universe_ptr->parameters.g_max_mosquito_biting_counter,
+    Rcpp::Named("g_delay_mos")=universe_ptr->parameters.g_delay_mos,
+    Rcpp::Named("g_delay_gam")=universe_ptr->parameters.g_delay_gam,
+    Rcpp::Named("g_dur_E")=universe_ptr->parameters.g_dur_E,
+    Rcpp::Named("g_dur_T")=universe_ptr->parameters.g_dur_T,
+    Rcpp::Named("g_dur_D")=universe_ptr->parameters.g_dur_D,
+    Rcpp::Named("g_dur_U")=universe_ptr->parameters.g_dur_U,
+    Rcpp::Named("g_dur_P")=universe_ptr->parameters.g_dur_P,
+    Rcpp::Named("g_dur_A")=universe_ptr->parameters.g_dur_A,
+    Rcpp::Named("g_dur_AU")=universe_ptr->parameters.g_dur_AU,
+    Rcpp::Named("g_d1")=universe_ptr->parameters.g_d1,
+    Rcpp::Named("g_dID")=universe_ptr->parameters.g_dID,
+    Rcpp::Named("g_ID0")=universe_ptr->parameters.g_ID0,
+    Rcpp::Named("g_kD")=universe_ptr->parameters.g_kD,
+    Rcpp::Named("g_uD")=universe_ptr->parameters.g_uD,
+    Rcpp::Named("g_aD")=universe_ptr->parameters.g_aD,
+    Rcpp::Named("g_fD0")=universe_ptr->parameters.g_fD0,
+    Rcpp::Named("g_gD")=universe_ptr->parameters.g_gD,
+    Rcpp::Named("g_alphaU")=universe_ptr->parameters.g_alphaU,
+    Rcpp::Named("g_b0")=universe_ptr->parameters.g_b0,
+    Rcpp::Named("g_b1")=universe_ptr->parameters.g_b1,
+    Rcpp::Named("g_dB")=universe_ptr->parameters.g_dB,
+    Rcpp::Named("g_IB0")=universe_ptr->parameters.g_IB0,
+    Rcpp::Named("g_kB")=universe_ptr->parameters.g_kB,
+    Rcpp::Named("g_uB")=universe_ptr->parameters.g_uB,
+    Rcpp::Named("g_phi0")=universe_ptr->parameters.g_phi0,
+    Rcpp::Named("g_phi1")=universe_ptr->parameters.g_phi1,
+    Rcpp::Named("g_dCA")=universe_ptr->parameters.g_dCA,
+    Rcpp::Named("g_IC0")=universe_ptr->parameters.g_IC0,
+    Rcpp::Named("g_kC")=universe_ptr->parameters.g_kC,
+    Rcpp::Named("g_uCA")=universe_ptr->parameters.g_uCA,
+    Rcpp::Named("g_PM")=universe_ptr->parameters.g_PM,
+    Rcpp::Named("g_dCM")=universe_ptr->parameters.g_dCM,
+    Rcpp::Named("g_gamma1")=universe_ptr->parameters.g_gamma1,
+    Rcpp::Named("g_cD")=universe_ptr->parameters.g_cD,
+    Rcpp::Named("g_cT")=universe_ptr->parameters.g_cT,
+    Rcpp::Named("g_cU")=universe_ptr->parameters.g_cU,
+    Rcpp::Named("g_total_human_infections")=universe_ptr->parameters.g_total_human_infections,
+    Rcpp::Named("g_total_mosquito_infections")=universe_ptr->parameters.g_total_mosquito_infections,
+    Rcpp::Named("g_percentage_imported_human_infections")=universe_ptr->parameters.g_percentage_imported_human_infections,
+    Rcpp::Named("g_percentage_imported_mosquito_infections")=universe_ptr->parameters.g_percentage_imported_mosquito_infections,
+    Rcpp::Named("g_cotransmission_frequencies")=universe_ptr->parameters.g_cotransmission_frequencies,
+    Rcpp::Named("g_cotransmission_frequencies_counter")=universe_ptr->parameters.g_cotransmission_frequencies_counter,
+    Rcpp::Named("g_cotransmission_frequencies_size")=universe_ptr->parameters.g_cotransmission_frequencies_size,
+    Rcpp::Named("g_oocyst_frequencies")=universe_ptr->parameters.g_oocyst_frequencies,
+    Rcpp::Named("g_oocyst_frequencies_counter")=universe_ptr->parameters.g_oocyst_frequencies_counter,
+    Rcpp::Named("g_oocyst_frequencies_size")=universe_ptr->parameters.g_oocyst_frequencies_size,
     // genetics
-    Rcpp::Named("g_identity_id")=universe_ptr->parameters.g_identity_id,
-    Rcpp::Named("g_num_loci")=universe_ptr->parameters.g_num_loci,
-    Rcpp::Named("g_ibd_length")=universe_ptr->parameters.g_ibd_length,
-    Rcpp::Named("g_barcode_length")=universe_ptr->parameters.g_barcode_length,
-    Rcpp::Named("g_plaf")=universe_ptr->parameters.g_plaf,
-    Rcpp::Named("g_prob_crossover")=universe_ptr->parameters.g_prob_crossover,
-    Rcpp::Named("g_barcode_type")=static_cast<unsigned int>(universe_ptr->parameters.g_barcode_type),
+    Rcpp::Named("g_identity_id")=Parameters::g_identity_id,
+    Rcpp::Named("g_num_loci")=Parameters::g_num_loci,
+    Rcpp::Named("g_ibd_length")=Parameters::g_ibd_length,
+    Rcpp::Named("g_barcode_length")=Parameters::g_barcode_length,
+    Rcpp::Named("g_plaf")=Parameters::g_plaf,
+    Rcpp::Named("g_prob_crossover")=Parameters::g_prob_crossover,
+    Rcpp::Named("g_barcode_type")=static_cast<unsigned int>(Parameters::g_barcode_type),
+    Rcpp::Named("g_island_imports_plaf_linked_flag")=Parameters::g_island_imports_plaf_linked_flag,
+    // spatial
     Rcpp::Named("g_spatial_type")=static_cast<unsigned int>(universe_ptr->parameters.g_spatial_type),
-    // Drugs
-    Rcpp::Named("g_drugs")=drugs
+    Rcpp::Named("g_spatial_imported_cotransmission_frequencies")=universe_ptr->parameters.g_spatial_imported_cotransmission_frequencies,
+    Rcpp::Named("g_spatial_imported_oocyst_frequencies")=universe_ptr->parameters.g_spatial_imported_oocyst_frequencies,
+    Rcpp::Named("g_spatial_exported_cotransmission_frequencies")=universe_ptr->parameters.g_spatial_exported_cotransmission_frequencies,
+    Rcpp::Named("g_spatial_exported_oocyst_frequencies")=universe_ptr->parameters.g_spatial_exported_oocyst_frequencies,
+    Rcpp::Named("g_spatial_total_exported_barcodes")=universe_ptr->parameters.g_spatial_total_exported_barcodes,
+    Rcpp::Named("g_spatial_total_exported_oocysts")=universe_ptr->parameters.g_spatial_total_exported_oocysts,
+    Rcpp::Named("g_spatial_total_imported_human_infections")=universe_ptr->parameters.g_spatial_total_imported_human_infections,
+    Rcpp::Named("g_spatial_total_imported_mosquito_infections")=universe_ptr->parameters.g_spatial_total_imported_mosquito_infections,
+    Rcpp::Named("g_spatial_imported_human_infection_counter")=universe_ptr->parameters.g_spatial_imported_human_infection_counter,
+    Rcpp::Named("g_spatial_imported_mosquito_infection_counter")=universe_ptr->parameters.g_spatial_imported_mosquito_infection_counter,
+    Rcpp::Named("g_spatial_exported_barcode_counter")=universe_ptr->parameters.g_spatial_exported_barcode_counter,
+    Rcpp::Named("g_spatial_exported_oocyst_counter")=universe_ptr->parameters.g_spatial_exported_oocyst_counter,
+    Rcpp::Named("g_spatial_exported_barcodes")=spatial_exported_barcodes,
+    Rcpp::Named("g_spatial_imported_barcodes")=spatial_imported_barcodes,
+    Rcpp::Named("g_spatial_exported_oocysts")=spatial_exported_oocysts,
+    Rcpp::Named("g_spatial_imported_oocysts")=spatial_imported_oocysts,
+    // Drugs and resistance
+    Rcpp::Named("g_resistance_flag")=universe_ptr->parameters.g_resistance_flag,
+    Rcpp::Named("g_absolute_fitness_cost_flag")=universe_ptr->parameters.g_absolute_fitness_cost_flag,
+    Rcpp::Named("g_number_of_resistance_loci")=universe_ptr->parameters.g_number_of_resistance_loci,
+    Rcpp::Named("g_resistance_loci")=universe_ptr->parameters.g_resistance_loci,
+    Rcpp::Named("g_artemisinin_loci")=universe_ptr->parameters.g_artemisinin_loci,
+    Rcpp::Named("g_cost_of_resistance")=universe_ptr->parameters.g_cost_of_resistance,
+    Rcpp::Named("g_drugs")=drugs,
+    Rcpp::Named("g_mft_flag")=universe_ptr->parameters.g_mft_flag,
+    Rcpp::Named("g_partner_drug_ratios")=universe_ptr->parameters.g_partner_drug_ratios,
+    Rcpp::Named("g_drug_choice")=universe_ptr->parameters.g_drug_choice,
+    Rcpp::Named("g_number_of_drugs")=universe_ptr->parameters.g_number_of_drugs,
+    Rcpp::Named("g_dur_SPC")=universe_ptr->parameters.g_dur_SPC,
+    // mutation
+    Rcpp::Named("g_mutation_flag")=universe_ptr->parameters.g_mutation_flag,
+    Rcpp::Named("g_mutation_rate")=universe_ptr->parameters.g_mutation_rate,
+    Rcpp::Named("g_mutation_treated_modifier")=universe_ptr->parameters.g_mutation_treated_modifier,
+    Rcpp::Named("g_mutations_today")=universe_ptr->parameters.g_mutations_today,
+    Rcpp::Named("g_mutation_pos_allocator")=universe_ptr->parameters.g_mutation_pos_allocator,
+    // vector adaptation
+    Rcpp::Named("g_vector_adaptation_flag")=universe_ptr->parameters.g_vector_adaptation_flag,
+    Rcpp::Named("g_vector_adaptation_loci")=universe_ptr->parameters.g_vector_adaptation_loci,
+    Rcpp::Named("g_local_oocyst_advantage")=universe_ptr->parameters.g_local_oocyst_advantage,
+    Rcpp::Named("g_gametocyte_sterilisation_flag")=universe_ptr->parameters.g_gametocyte_sterilisation_flag,
+    Rcpp::Named("g_gametocyte_sterilisation")=universe_ptr->parameters.g_gametocyte_sterilisation,
+    Rcpp::Named("g_oocyst_reduction_by_artemisinin")=universe_ptr->parameters.g_oocyst_reduction_by_artemisinin,
+    // nmf
+    Rcpp::Named("g_nmf_flag")=universe_ptr->parameters.g_nmf_flag,
+    Rcpp::Named("g_mean_nmf_frequency")=universe_ptr->parameters.g_mean_nmf_frequency,
+    Rcpp::Named("g_nmf_age_brackets")=universe_ptr->parameters.g_nmf_age_brackets,
+    Rcpp::Named("g_prob_of_testing_nmf")=universe_ptr->parameters.g_prob_of_testing_nmf
   );
   
   Rcpp::List parameter_housekeeping_List = Rcpp::List::create(

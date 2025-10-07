@@ -307,9 +307,21 @@ pipeline <- function(EIR = 120,
       mpl = mpl
     )
   } else {
-    
+
     # If we have provided the saved state then load this and then delete as can be large
     saved_state <- readRDS(saved_state_path)
+    saved_inputs <- saved_state$saved_inputs
+    if (is.null(saved_inputs)) {
+      stop("Saved state missing saved_inputs; please re-run the simulation with full_save = TRUE")
+    }
+    barcode_list <- saved_inputs$barcode_list
+    spatial_list <- saved_inputs$spatial_list
+    housekeeping_list <- saved_inputs$housekeeping_list
+    drug_list <- saved_inputs$drug_list
+    vector_adaptation_list <- saved_inputs$vector_adaptation_list
+    nmf_list <- saved_inputs$nmf_list
+    mpl <- saved_inputs$core_parameter_list
+    saved_state$saved_inputs <- NULL
     pl <- param_list_simulation_saved_init_create(savedState = saved_state)
     rm(saved_state)
     gc()
@@ -325,6 +337,15 @@ pipeline <- function(EIR = 120,
     # Now let's save the simulation in full
     pl2 <- param_list_simulation_get_create(statePtr = sim.out$Ptr)
     sim_save <- simulation_R(pl2, seed = seed)
+    sim_save$saved_inputs <- list(
+      barcode_list = barcode_list,
+      spatial_list = spatial_list,
+      housekeeping_list = housekeeping_list,
+      drug_list = drug_list,
+      vector_adaptation_list = vector_adaptation_list,
+      nmf_list = nmf_list,
+      core_parameter_list = mpl
+    )
     
     if (housekeeping_list$clear_up) {
       pl5 <- param_list_simulation_finalizer_create(sim.out$Ptr)
@@ -611,6 +632,15 @@ pipeline <- function(EIR = 120,
       # Now let's save the simulation in full
       pl2 <- param_list_simulation_get_create(statePtr = sim.out$Ptr)
       sim_save <- simulation_R(pl2, seed = seed)
+      sim_save$saved_inputs <- list(
+        barcode_list = barcode_list,
+        spatial_list = spatial_list,
+        housekeeping_list = housekeeping_list,
+        drug_list = drug_list,
+        vector_adaptation_list = vector_adaptation_list,
+        nmf_list = nmf_list,
+        core_parameter_list = mpl
+      )
       
       # If we want just the humans then get the keybits and save that instead
       if (human_only_full_save) {
@@ -645,16 +675,25 @@ pipeline <- function(EIR = 120,
     
     # If we have specified a full save or human save then we grab that
     # and save it or just the human bits of interest
-    if (full_save || human_only_full_save) {
+      if (full_save || human_only_full_save) {
 
-      # Now let's save the simulation in full
-      pl2 <- param_list_simulation_get_create(statePtr = sim.out$Ptr)
-      sim_save <- simulation_R(pl2, seed = seed)
-      
-      # If we want just the humans then get the keybits and save that instead
-      if (human_only_full_save & !full_save) {
-        human_vars <- c("Infection_States", "Zetas", "Ages")
-        Strains <- sim_save$populations_event_and_strains_List[strain_vars]
+        # Now let's save the simulation in full
+        pl2 <- param_list_simulation_get_create(statePtr = sim.out$Ptr)
+        sim_save <- simulation_R(pl2, seed = seed)
+        sim_save$saved_inputs <- list(
+          barcode_list = barcode_list,
+          spatial_list = spatial_list,
+          housekeeping_list = housekeeping_list,
+          drug_list = drug_list,
+          vector_adaptation_list = vector_adaptation_list,
+          nmf_list = nmf_list,
+          core_parameter_list = mpl
+        )
+
+        # If we want just the humans then get the keybits and save that instead
+        if (human_only_full_save & !full_save) {
+          human_vars <- c("Infection_States", "Zetas", "Ages")
+          Strains <- sim_save$populations_event_and_strains_List[strain_vars]
         Humans <- c(sim_save$population_List[human_vars], Strains)
         res <- Humans
       }
