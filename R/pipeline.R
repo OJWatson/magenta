@@ -321,7 +321,89 @@ pipeline <- function(EIR = 120,
     vector_adaptation_list <- saved_inputs$vector_adaptation_list
     nmf_list <- saved_inputs$nmf_list
     mpl <- saved_inputs$core_parameter_list
+    
+    # Create geometric age brackets
+    age_vector <- age_brackets(100, 40, TRUE)
+    
+    # check to change the ft for the initial and odin to reflect 28 day failure rates
+    lpfs <- unlist(lapply(drug_list$drugs, function(x) {x$lpf[1]}))
+    ft_odin <- ft * weighted.mean(lpfs, drug_list$partner_drug_ratios)
+    
+    # Create a near equilibirum initial condition
+    eqInit <- equilibrium_init_create(
+      age_vector = age_vector,
+      het_brackets = 5,
+      ft = ft_odin[1],
+      EIR = EIR,
+      country = country,
+      admin = admin,
+      model_param_list = mpl
+    )
+    
+    # reset seed here as there is some randomness in equlibirum (Need?)
+    set.seed(seed)
+    
+    # Next create the starting state
+    eqSS <- equilibrium_ss_create(eqInit = eqInit)
+    
+    # and the barcode parms list
+    plaf_matrix <- plaf_matrix_check(plaf, years)
+    barcode_list <- barcode_list_create(
+      num_loci = num_loci,
+      ibd_length = ibd_length,
+      plaf = plaf_matrix[1, ],
+      prob_crossover = prob_crossover,
+      starting_ibd = starting_ibd,
+      mutation_flag = mutation_flag,
+      mutation_rate = mutation_rate,
+      mutation_treated_modifier = mutation_treated_modifier
+    )
+    
+    # handle mutations parms
+    if (length(mutation_flag) == 1) {
+      mutation_flag <- rep(mutation_flag, ceiling(years))
+    }
+    
+    # spatial checks and formatting
+    if (!is.null(spatial_type)) {
+      if (spatial_type == "metapop") {
+        # spatial_type <- 2
+        # if (is.null(spatial_uuid)) {
+        #   stop("Spatial_uuid is required if running spatial simulations")
+        # }
+        # redis_id <- paste0("magenta_", spatial_uuid)
+      } else if (spatial_type == "island") {
+        spatial_type <- 1
+      }
+    } else {
+      spatial_type <- 0
+    }
+    
+    # make spatial list
+    spatial_incidence_matrix <- spl_matrix_check(spatial_incidence_matrix, years)
+    spatial_mosquitoFOI_matrix <- spl_matrix_check(spatial_mosquitoFOI_matrix, years)
+    spatial_list <- spl_create(
+      spatial_type = spatial_type,
+      human_importation_rate_vector = spatial_incidence_matrix[1, ],
+      mosquito_imporation_rate_vector = spatial_mosquitoFOI_matrix[1, ],
+      cotransmission_freq_vector = ztrgeomintp(10000, 10, survival_percentage),
+      oocyst_freq_vector = ztrnbinom(10000, mean = oocyst_mean, size = oocyst_shape),
+      plaf = plaf_matrix[1, ],
+      island_imports_plaf_linked_flag = island_imports_plaf_linked_flag
+    )
+    
+    
+    # handle drug parms
+    resistance_flags <- drug_list$resistance_flag
+    if (length(resistance_flags) == 1) {
+      resistance_flags <- rep(resistance_flags, ceiling(years))
+    }
+    drug_list$resistance_flag <- resistance_flags[1]
+
+    # clear the saved state
     saved_state$saved_inputs <- NULL
+    
+    # set up
     pl <- param_list_simulation_saved_init_create(savedState = saved_state)
     rm(saved_state)
     gc()

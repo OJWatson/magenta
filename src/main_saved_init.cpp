@@ -497,15 +497,16 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   std::vector<double> ICA_v = Rcpp::as<vector<double> >(population_List["ICA"]);
   std::vector<double> ICM_v = Rcpp::as<vector<double> >(population_List["ICM"]);
   std::vector<double> ID_v = Rcpp::as<vector<double> >(population_List["ID"]);
+  std::vector<double> cA_v = Rcpp::as<vector<double> >(population_List["cA"]);
   std::vector<int> Treatment_Outcomes = Rcpp::as<vector<int> >(population_List["Treatment_Outcomes"]);
   std::vector<int> Recrudescence_Outcomes = Rcpp::as<vector<int> >(population_List["Recrudescence_Outcomes"]);
   std::vector<int> Drug_choices = Rcpp::as<vector<int> >(population_List["Drug_choices"]);
   std::vector<int> Slow_parasite_clearance = Rcpp::as<vector<int> >(population_List["Slow_parasite_clearance"]);
   std::vector<int> Day_of_nmf = Rcpp::as<vector<int> >(population_List["Day_of_nmf"]);
   std::vector<unsigned int> NMF_age_band = Rcpp::as<vector<unsigned int> >(population_List["NMF_age_band"]);
-  std::vector<int> IB_last_boost_time = Rcpp::as<vector<int> >(population_List["IB_last_boost_time"]);
-  std::vector<int> ICA_last_boost_time = Rcpp::as<vector<int> >(population_List["ICA_last_boost_time"]);
-  std::vector<int> ID_last_boost_time = Rcpp::as<vector<int> >(population_List["ID_last_boost_time"]);
+  std::vector<double> IB_last_boost_time = Rcpp::as<vector<double> >(population_List["IB_last_boost_time"]);
+  std::vector<double> ICA_last_boost_time = Rcpp::as<vector<double> >(population_List["ICA_last_boost_time"]);
+  std::vector<double> ID_last_boost_time = Rcpp::as<vector<double> >(population_List["ID_last_boost_time"]);
   std::vector<int> IB_last_calculated_time = Rcpp::as<vector<int> >(population_List["IB_last_calculated_time"]);
   std::vector<int> I_C_D_CM_last_calculated_time = Rcpp::as<vector<int> >(population_List["I_C_D_CM_last_calculated_time"]);
   std::vector<double> Immunity_boost_float = Rcpp::as<vector<double> >(population_List["Immunity_boost_float"]);
@@ -590,6 +591,7 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     population[n].set_m_ICA(ICA_v[n]);
     population[n].set_m_ICM(ICM_v[n]);
     population[n].set_m_ID(ID_v[n]);
+    population[n].set_m_cA(cA_v[n]);
 
     population[n].set_m_treatment_outcome(static_cast<Person::TreatmentOutcome>(Treatment_Outcomes[n]));
     population[n].set_m_recrudescence_outcome(static_cast<Person::RecrudescenceOutcome>(Recrudescence_Outcomes[n]));
@@ -778,7 +780,9 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     // Something like passing in a function name within the param_list which is the 
     // name for a logger written else where which then returns the Loggers obeject below
     Infection_States[element] = static_cast<int>(population[element].get_m_infection_state());
-    population[element].update_immunities_to_today(parameters);
+    
+    // don't update immunities to todat to check reload is working correctly
+    //population[element].update_immunities_to_today(parameters);
     Ages[element] = population[element].get_m_person_age();
     IB[element] = population[element].get_m_IB();
     ICA[element] = population[element].get_m_ICA();

@@ -416,6 +416,9 @@ public:
   // Set person's ICA
   void set_m_ICA(double x) { m_ICA = x; }
   
+  // Set person's cA
+  void set_m_cA(double x) { m_cA = x; }
+  
   // Set person's ICM
   void set_m_ICM(double x) { m_ICM = x; }
   
