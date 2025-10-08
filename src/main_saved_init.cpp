@@ -54,7 +54,21 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   
   // Initialise parameters
   Parameters parameters;
-  
+
+  auto int_matrix_to_bitsets = [](const std::vector<std::vector<int> > &matrix) {
+    std::vector<boost::dynamic_bitset<> > res;
+    res.reserve(matrix.size());
+    for (const auto &row : matrix) {
+      boost::dynamic_bitset<> bitset(Parameters::g_barcode_length);
+      unsigned int limit = std::min<unsigned int>(row.size(), Parameters::g_barcode_length);
+      for (unsigned int j = 0; j < limit; ++j) {
+        bitset[j] = static_cast<bool>(row[j]);
+      }
+      res.emplace_back(bitset);
+    }
+    return res;
+  };
+
   // Unpack R List to Rcpp Lists
   Rcpp::List savedState = param_list["savedState"];
   Rcpp::List population_List = savedState["population_List"];
@@ -84,19 +98,369 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   parameters.g_mosquito_deficit = Rcpp::as<int>(parameters_List["g_mosquito_deficit"]);
   parameters.g_scourge_today = Rcpp::as<int>(parameters_List["g_scourge_today"]);
   parameters.g_mean_mv = Rcpp::as<int>(parameters_List["g_mean_mv"]);
-  
-  parameters.g_identity_id = Rcpp::as<int>(parameters_List["g_identity_id"]);
-  parameters.g_num_loci = Rcpp::as<int>(parameters_List["g_num_loci"]);
-  parameters.g_ibd_length = Rcpp::as<int>(parameters_List["g_ibd_length"]);
-  parameters.g_barcode_length = Rcpp::as<int>(parameters_List["g_barcode_length"]);
-  parameters.g_plaf = Rcpp::as<std::vector<double> >(parameters_List["g_plaf"]);
-  parameters.g_prob_crossover = Rcpp::as<std::vector<double> >(parameters_List["g_prob_crossover"]);
-  parameters.g_barcode_type = static_cast<Parameters::g_barcode_type_enum>(
-    Rcpp::as<unsigned int>(parameters_List["g_barcode_type"])
-  );
+
+  if (parameters_List.containsElementNamed("g_years")) {
+    parameters.g_years = Rcpp::as<double>(parameters_List["g_years"]);
+  }
+  if (parameters_List.containsElementNamed("g_max_age")) {
+    parameters.g_max_age = Rcpp::as<int>(parameters_List["g_max_age"]);
+  }
+  if (parameters_List.containsElementNamed("g_average_age")) {
+    parameters.g_average_age = Rcpp::as<int>(parameters_List["g_average_age"]);
+  }
+  if (parameters_List.containsElementNamed("g_EIR")) {
+    parameters.g_EIR = Rcpp::as<double>(parameters_List["g_EIR"]);
+  }
+  if (parameters_List.containsElementNamed("g_a0")) {
+    parameters.g_a0 = Rcpp::as<double>(parameters_List["g_a0"]);
+  }
+  if (parameters_List.containsElementNamed("g_rho")) {
+    parameters.g_rho = Rcpp::as<double>(parameters_List["g_rho"]);
+  }
+  if (parameters_List.containsElementNamed("g_zeta_meanlog")) {
+    parameters.g_zeta_meanlog = Rcpp::as<double>(parameters_List["g_zeta_meanlog"]);
+  }
+  if (parameters_List.containsElementNamed("g_zeta_sdlog")) {
+    parameters.g_zeta_sdlog = Rcpp::as<double>(parameters_List["g_zeta_sdlog"]);
+  }
+  if (parameters_List.containsElementNamed("g_ft")) {
+    parameters.g_ft = Rcpp::as<double>(parameters_List["g_ft"]);
+  }
+  if (parameters_List.containsElementNamed("g_mu0")) {
+    parameters.g_mu0 = Rcpp::as<double>(parameters_List["g_mu0"]);
+  }
+  if (parameters_List.containsElementNamed("g_mean_mosquito_age")) {
+    parameters.g_mean_mosquito_age = Rcpp::as<double>(parameters_List["g_mean_mosquito_age"]);
+  }
+  if (parameters_List.containsElementNamed("g_beta_gradient")) {
+    parameters.g_beta_gradient = Rcpp::as<double>(parameters_List["g_beta_gradient"]);
+  }
+  if (parameters_List.containsElementNamed("g_beta_intercept")) {
+    parameters.g_beta_intercept = Rcpp::as<double>(parameters_List["g_beta_intercept"]);
+  }
+  if (parameters_List.containsElementNamed("g_ak")) {
+    parameters.g_ak = Rcpp::as<double>(parameters_List["g_ak"]);
+  }
+  if (parameters_List.containsElementNamed("g_Q0")) {
+    parameters.g_Q0 = Rcpp::as<double>(parameters_List["g_Q0"]);
+  }
+  if (parameters_List.containsElementNamed("g_mosquito_next_biting_day_vector")) {
+    parameters.g_mosquito_next_biting_day_vector = Rcpp::as<std::vector<int> >(parameters_List["g_mosquito_next_biting_day_vector"]);
+  }
+  if (parameters_List.containsElementNamed("g_mosquito_biting_counter")) {
+    parameters.g_mosquito_biting_counter = Rcpp::as<int>(parameters_List["g_mosquito_biting_counter"]);
+  }
+  if (parameters_List.containsElementNamed("g_max_mosquito_biting_counter")) {
+    parameters.g_max_mosquito_biting_counter = Rcpp::as<int>(parameters_List["g_max_mosquito_biting_counter"]);
+  }
+  if (parameters_List.containsElementNamed("g_delay_mos")) {
+    parameters.g_delay_mos = Rcpp::as<double>(parameters_List["g_delay_mos"]);
+  }
+  if (parameters_List.containsElementNamed("g_delay_gam")) {
+    parameters.g_delay_gam = Rcpp::as<double>(parameters_List["g_delay_gam"]);
+  }
+  if (parameters_List.containsElementNamed("g_dur_E")) {
+    parameters.g_dur_E = Rcpp::as<double>(parameters_List["g_dur_E"]);
+  }
+  if (parameters_List.containsElementNamed("g_dur_T")) {
+    parameters.g_dur_T = Rcpp::as<double>(parameters_List["g_dur_T"]);
+  }
+  if (parameters_List.containsElementNamed("g_dur_D")) {
+    parameters.g_dur_D = Rcpp::as<double>(parameters_List["g_dur_D"]);
+  }
+  if (parameters_List.containsElementNamed("g_dur_U")) {
+    parameters.g_dur_U = Rcpp::as<double>(parameters_List["g_dur_U"]);
+  }
+  if (parameters_List.containsElementNamed("g_dur_P")) {
+    parameters.g_dur_P = Rcpp::as<double>(parameters_List["g_dur_P"]);
+  }
+  if (parameters_List.containsElementNamed("g_dur_A")) {
+    parameters.g_dur_A = Rcpp::as<double>(parameters_List["g_dur_A"]);
+  }
+  if (parameters_List.containsElementNamed("g_dur_AU")) {
+    parameters.g_dur_AU = Rcpp::as<double>(parameters_List["g_dur_AU"]);
+  }
+  if (parameters_List.containsElementNamed("g_d1")) {
+    parameters.g_d1 = Rcpp::as<double>(parameters_List["g_d1"]);
+  }
+  if (parameters_List.containsElementNamed("g_dID")) {
+    parameters.g_dID = Rcpp::as<double>(parameters_List["g_dID"]);
+  }
+  if (parameters_List.containsElementNamed("g_ID0")) {
+    parameters.g_ID0 = Rcpp::as<double>(parameters_List["g_ID0"]);
+  }
+  if (parameters_List.containsElementNamed("g_kD")) {
+    parameters.g_kD = Rcpp::as<double>(parameters_List["g_kD"]);
+  }
+  if (parameters_List.containsElementNamed("g_uD")) {
+    parameters.g_uD = Rcpp::as<double>(parameters_List["g_uD"]);
+  }
+  if (parameters_List.containsElementNamed("g_aD")) {
+    parameters.g_aD = Rcpp::as<double>(parameters_List["g_aD"]);
+  }
+  if (parameters_List.containsElementNamed("g_fD0")) {
+    parameters.g_fD0 = Rcpp::as<double>(parameters_List["g_fD0"]);
+  }
+  if (parameters_List.containsElementNamed("g_gD")) {
+    parameters.g_gD = Rcpp::as<double>(parameters_List["g_gD"]);
+  }
+  if (parameters_List.containsElementNamed("g_alphaU")) {
+    parameters.g_alphaU = Rcpp::as<double>(parameters_List["g_alphaU"]);
+  }
+  if (parameters_List.containsElementNamed("g_b0")) {
+    parameters.g_b0 = Rcpp::as<double>(parameters_List["g_b0"]);
+  }
+  if (parameters_List.containsElementNamed("g_b1")) {
+    parameters.g_b1 = Rcpp::as<double>(parameters_List["g_b1"]);
+  }
+  if (parameters_List.containsElementNamed("g_dB")) {
+    parameters.g_dB = Rcpp::as<double>(parameters_List["g_dB"]);
+  }
+  if (parameters_List.containsElementNamed("g_IB0")) {
+    parameters.g_IB0 = Rcpp::as<double>(parameters_List["g_IB0"]);
+  }
+  if (parameters_List.containsElementNamed("g_kB")) {
+    parameters.g_kB = Rcpp::as<double>(parameters_List["g_kB"]);
+  }
+  if (parameters_List.containsElementNamed("g_uB")) {
+    parameters.g_uB = Rcpp::as<double>(parameters_List["g_uB"]);
+  }
+  if (parameters_List.containsElementNamed("g_phi0")) {
+    parameters.g_phi0 = Rcpp::as<double>(parameters_List["g_phi0"]);
+  }
+  if (parameters_List.containsElementNamed("g_phi1")) {
+    parameters.g_phi1 = Rcpp::as<double>(parameters_List["g_phi1"]);
+  }
+  if (parameters_List.containsElementNamed("g_dCA")) {
+    parameters.g_dCA = Rcpp::as<double>(parameters_List["g_dCA"]);
+  }
+  if (parameters_List.containsElementNamed("g_IC0")) {
+    parameters.g_IC0 = Rcpp::as<double>(parameters_List["g_IC0"]);
+  }
+  if (parameters_List.containsElementNamed("g_kC")) {
+    parameters.g_kC = Rcpp::as<double>(parameters_List["g_kC"]);
+  }
+  if (parameters_List.containsElementNamed("g_uCA")) {
+    parameters.g_uCA = Rcpp::as<double>(parameters_List["g_uCA"]);
+  }
+  if (parameters_List.containsElementNamed("g_PM")) {
+    parameters.g_PM = Rcpp::as<double>(parameters_List["g_PM"]);
+  }
+  if (parameters_List.containsElementNamed("g_dCM")) {
+    parameters.g_dCM = Rcpp::as<double>(parameters_List["g_dCM"]);
+  }
+  if (parameters_List.containsElementNamed("g_gamma1")) {
+    parameters.g_gamma1 = Rcpp::as<double>(parameters_List["g_gamma1"]);
+  }
+  if (parameters_List.containsElementNamed("g_cD")) {
+    parameters.g_cD = Rcpp::as<double>(parameters_List["g_cD"]);
+  }
+  if (parameters_List.containsElementNamed("g_cT")) {
+    parameters.g_cT = Rcpp::as<double>(parameters_List["g_cT"]);
+  }
+  if (parameters_List.containsElementNamed("g_cU")) {
+    parameters.g_cU = Rcpp::as<double>(parameters_List["g_cU"]);
+  }
+  if (parameters_List.containsElementNamed("g_total_human_infections")) {
+    parameters.g_total_human_infections = Rcpp::as<unsigned int>(parameters_List["g_total_human_infections"]);
+  }
+  if (parameters_List.containsElementNamed("g_total_mosquito_infections")) {
+    parameters.g_total_mosquito_infections = Rcpp::as<unsigned int>(parameters_List["g_total_mosquito_infections"]);
+  }
+  if (parameters_List.containsElementNamed("g_percentage_imported_human_infections")) {
+    parameters.g_percentage_imported_human_infections = Rcpp::as<double>(parameters_List["g_percentage_imported_human_infections"]);
+  }
+  if (parameters_List.containsElementNamed("g_percentage_imported_mosquito_infections")) {
+    parameters.g_percentage_imported_mosquito_infections = Rcpp::as<double>(parameters_List["g_percentage_imported_mosquito_infections"]);
+  }
+  if (parameters_List.containsElementNamed("g_cotransmission_frequencies")) {
+    parameters.g_cotransmission_frequencies = Rcpp::as<std::vector<int> >(parameters_List["g_cotransmission_frequencies"]);
+  }
+  if (parameters_List.containsElementNamed("g_cotransmission_frequencies_counter")) {
+    parameters.g_cotransmission_frequencies_counter = Rcpp::as<unsigned int>(parameters_List["g_cotransmission_frequencies_counter"]);
+  }
+  if (parameters_List.containsElementNamed("g_cotransmission_frequencies_size")) {
+    parameters.g_cotransmission_frequencies_size = Rcpp::as<unsigned int>(parameters_List["g_cotransmission_frequencies_size"]);
+  }
+  if (parameters_List.containsElementNamed("g_oocyst_frequencies")) {
+    parameters.g_oocyst_frequencies = Rcpp::as<std::vector<int> >(parameters_List["g_oocyst_frequencies"]);
+  }
+  if (parameters_List.containsElementNamed("g_oocyst_frequencies_counter")) {
+    parameters.g_oocyst_frequencies_counter = Rcpp::as<unsigned int>(parameters_List["g_oocyst_frequencies_counter"]);
+  }
+  if (parameters_List.containsElementNamed("g_oocyst_frequencies_size")) {
+    parameters.g_oocyst_frequencies_size = Rcpp::as<unsigned int>(parameters_List["g_oocyst_frequencies_size"]);
+  }
+
+  if (parameters_List.containsElementNamed("g_identity_id")) {
+    Parameters::g_identity_id = Rcpp::as<unsigned int>(parameters_List["g_identity_id"]);
+  }
+  if (parameters_List.containsElementNamed("g_num_loci")) {
+    Parameters::g_num_loci = Rcpp::as<unsigned int>(parameters_List["g_num_loci"]);
+  }
+  if (parameters_List.containsElementNamed("g_ibd_length")) {
+    Parameters::g_ibd_length = Rcpp::as<unsigned int>(parameters_List["g_ibd_length"]);
+  }
+  if (parameters_List.containsElementNamed("g_barcode_length")) {
+    Parameters::g_barcode_length = Rcpp::as<unsigned int>(parameters_List["g_barcode_length"]);
+  }
+  if (parameters_List.containsElementNamed("g_plaf")) {
+    Parameters::g_plaf = Rcpp::as<std::vector<double> >(parameters_List["g_plaf"]);
+  }
+  if (parameters_List.containsElementNamed("g_prob_crossover")) {
+    Parameters::g_prob_crossover = Rcpp::as<std::vector<double> >(parameters_List["g_prob_crossover"]);
+  }
+  if (parameters_List.containsElementNamed("g_barcode_type")) {
+    Parameters::g_barcode_type = static_cast<Parameters::g_barcode_type_enum>(
+      Rcpp::as<unsigned int>(parameters_List["g_barcode_type"])
+    );
+  }
+  if (parameters_List.containsElementNamed("g_island_imports_plaf_linked_flag")) {
+    Parameters::g_island_imports_plaf_linked_flag = Rcpp::as<bool>(parameters_List["g_island_imports_plaf_linked_flag"]);
+  }
+
   parameters.g_spatial_type = static_cast<Parameters::g_spatial_type_enum>(
     Rcpp::as<unsigned int>(parameters_List["g_spatial_type"])
   );
+  if (parameters_List.containsElementNamed("g_spatial_imported_cotransmission_frequencies")) {
+    parameters.g_spatial_imported_cotransmission_frequencies = Rcpp::as<std::vector<int> >(parameters_List["g_spatial_imported_cotransmission_frequencies"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_imported_oocyst_frequencies")) {
+    parameters.g_spatial_imported_oocyst_frequencies = Rcpp::as<std::vector<int> >(parameters_List["g_spatial_imported_oocyst_frequencies"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_exported_cotransmission_frequencies")) {
+    parameters.g_spatial_exported_cotransmission_frequencies = Rcpp::as<std::vector<int> >(parameters_List["g_spatial_exported_cotransmission_frequencies"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_exported_oocyst_frequencies")) {
+    parameters.g_spatial_exported_oocyst_frequencies = Rcpp::as<std::vector<int> >(parameters_List["g_spatial_exported_oocyst_frequencies"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_total_exported_barcodes")) {
+    parameters.g_spatial_total_exported_barcodes = Rcpp::as<unsigned int>(parameters_List["g_spatial_total_exported_barcodes"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_total_exported_oocysts")) {
+    parameters.g_spatial_total_exported_oocysts = Rcpp::as<unsigned int>(parameters_List["g_spatial_total_exported_oocysts"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_total_imported_human_infections")) {
+    parameters.g_spatial_total_imported_human_infections = Rcpp::as<unsigned int>(parameters_List["g_spatial_total_imported_human_infections"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_total_imported_mosquito_infections")) {
+    parameters.g_spatial_total_imported_mosquito_infections = Rcpp::as<unsigned int>(parameters_List["g_spatial_total_imported_mosquito_infections"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_imported_human_infection_counter")) {
+    parameters.g_spatial_imported_human_infection_counter = Rcpp::as<unsigned int>(parameters_List["g_spatial_imported_human_infection_counter"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_imported_mosquito_infection_counter")) {
+    parameters.g_spatial_imported_mosquito_infection_counter = Rcpp::as<unsigned int>(parameters_List["g_spatial_imported_mosquito_infection_counter"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_exported_barcode_counter")) {
+    parameters.g_spatial_exported_barcode_counter = Rcpp::as<unsigned int>(parameters_List["g_spatial_exported_barcode_counter"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_exported_oocyst_counter")) {
+    parameters.g_spatial_exported_oocyst_counter = Rcpp::as<unsigned int>(parameters_List["g_spatial_exported_oocyst_counter"]);
+  }
+  if (parameters_List.containsElementNamed("g_spatial_exported_barcodes")) {
+    parameters.g_spatial_exported_barcodes = int_matrix_to_bitsets(Rcpp::as<std::vector<std::vector<int> > >(parameters_List["g_spatial_exported_barcodes"]));
+  }
+  if (parameters_List.containsElementNamed("g_spatial_imported_barcodes")) {
+    parameters.g_spatial_imported_barcodes = int_matrix_to_bitsets(Rcpp::as<std::vector<std::vector<int> > >(parameters_List["g_spatial_imported_barcodes"]));
+  }
+  if (parameters_List.containsElementNamed("g_spatial_exported_oocysts")) {
+    parameters.g_spatial_exported_oocysts = int_matrix_to_bitsets(Rcpp::as<std::vector<std::vector<int> > >(parameters_List["g_spatial_exported_oocysts"]));
+  }
+  if (parameters_List.containsElementNamed("g_spatial_imported_oocysts")) {
+    parameters.g_spatial_imported_oocysts = int_matrix_to_bitsets(Rcpp::as<std::vector<std::vector<int> > >(parameters_List["g_spatial_imported_oocysts"]));
+  }
+
+  if (parameters_List.containsElementNamed("g_resistance_flag")) {
+    parameters.g_resistance_flag = Rcpp::as<bool>(parameters_List["g_resistance_flag"]);
+  }
+  if (parameters_List.containsElementNamed("g_absolute_fitness_cost_flag")) {
+    parameters.g_absolute_fitness_cost_flag = Rcpp::as<bool>(parameters_List["g_absolute_fitness_cost_flag"]);
+  }
+  if (parameters_List.containsElementNamed("g_number_of_resistance_loci")) {
+    parameters.g_number_of_resistance_loci = Rcpp::as<unsigned int>(parameters_List["g_number_of_resistance_loci"]);
+  }
+  if (parameters_List.containsElementNamed("g_resistance_loci")) {
+    parameters.g_resistance_loci = Rcpp::as<std::vector<unsigned int> >(parameters_List["g_resistance_loci"]);
+  }
+  if (parameters_List.containsElementNamed("g_artemisinin_loci")) {
+    parameters.g_artemisinin_loci = Rcpp::as<std::vector<unsigned int> >(parameters_List["g_artemisinin_loci"]);
+  }
+  if (parameters_List.containsElementNamed("g_cost_of_resistance")) {
+    parameters.g_cost_of_resistance = Rcpp::as<std::vector<double> >(parameters_List["g_cost_of_resistance"]);
+  }
+  if (parameters_List.containsElementNamed("g_partner_drug_ratios")) {
+    parameters.g_partner_drug_ratios = Rcpp::as<std::vector<double> >(parameters_List["g_partner_drug_ratios"]);
+  }
+  if (parameters_List.containsElementNamed("g_drug_choice")) {
+    parameters.g_drug_choice = Rcpp::as<int>(parameters_List["g_drug_choice"]);
+  }
+  if (parameters_List.containsElementNamed("g_number_of_drugs")) {
+    parameters.g_number_of_drugs = Rcpp::as<unsigned int>(parameters_List["g_number_of_drugs"]);
+  }
+  if (parameters_List.containsElementNamed("g_dur_SPC")) {
+    parameters.g_dur_SPC = Rcpp::as<double>(parameters_List["g_dur_SPC"]);
+  }
+  parameters.g_drugs.clear();
+  if (parameters_List.containsElementNamed("g_drugs")) {
+    Rcpp::List drugs_list = parameters_List["g_drugs"];
+    parameters.g_drugs.reserve(drugs_list.size());
+    for (int i = 0; i < drugs_list.size(); ++i) {
+      parameters.g_drugs.emplace_back(Rcpp::as<Rcpp::List>(drugs_list[i]));
+    }
+    parameters.g_number_of_drugs = static_cast<unsigned int>(parameters.g_drugs.size());
+  }
+  if (parameters_List.containsElementNamed("g_mft_flag")) {
+    parameters.g_mft_flag = Rcpp::as<bool>(parameters_List["g_mft_flag"]);
+  }
+
+  if (parameters_List.containsElementNamed("g_mutation_flag")) {
+    parameters.g_mutation_flag = Rcpp::as<bool>(parameters_List["g_mutation_flag"]);
+  }
+  if (parameters_List.containsElementNamed("g_mutation_rate")) {
+    parameters.g_mutation_rate = Rcpp::as<std::vector<double> >(parameters_List["g_mutation_rate"]);
+  }
+  if (parameters_List.containsElementNamed("g_mutation_treated_modifier")) {
+    parameters.g_mutation_treated_modifier = Rcpp::as<double>(parameters_List["g_mutation_treated_modifier"]);
+  }
+  if (parameters_List.containsElementNamed("g_mutations_today")) {
+    parameters.g_mutations_today = Rcpp::as<std::vector<unsigned int> >(parameters_List["g_mutations_today"]);
+  }
+  if (parameters_List.containsElementNamed("g_mutation_pos_allocator")) {
+    parameters.g_mutation_pos_allocator = Rcpp::as<unsigned int>(parameters_List["g_mutation_pos_allocator"]);
+  }
+
+  if (parameters_List.containsElementNamed("g_vector_adaptation_flag")) {
+    parameters.g_vector_adaptation_flag = Rcpp::as<bool>(parameters_List["g_vector_adaptation_flag"]);
+  }
+  if (parameters_List.containsElementNamed("g_vector_adaptation_loci")) {
+    parameters.g_vector_adaptation_loci = Rcpp::as<std::vector<unsigned int> >(parameters_List["g_vector_adaptation_loci"]);
+  }
+  if (parameters_List.containsElementNamed("g_local_oocyst_advantage")) {
+    parameters.g_local_oocyst_advantage = Rcpp::as<double>(parameters_List["g_local_oocyst_advantage"]);
+  }
+  if (parameters_List.containsElementNamed("g_gametocyte_sterilisation_flag")) {
+    parameters.g_gametocyte_sterilisation_flag = Rcpp::as<bool>(parameters_List["g_gametocyte_sterilisation_flag"]);
+  }
+  if (parameters_List.containsElementNamed("g_gametocyte_sterilisation")) {
+    parameters.g_gametocyte_sterilisation = Rcpp::as<double>(parameters_List["g_gametocyte_sterilisation"]);
+  }
+  if (parameters_List.containsElementNamed("g_oocyst_reduction_by_artemisinin")) {
+    parameters.g_oocyst_reduction_by_artemisinin = Rcpp::as<double>(parameters_List["g_oocyst_reduction_by_artemisinin"]);
+  }
+
+  if (parameters_List.containsElementNamed("g_nmf_flag")) {
+    parameters.g_nmf_flag = Rcpp::as<bool>(parameters_List["g_nmf_flag"]);
+  }
+  if (parameters_List.containsElementNamed("g_mean_nmf_frequency")) {
+    parameters.g_mean_nmf_frequency = Rcpp::as<std::vector<double> >(parameters_List["g_mean_nmf_frequency"]);
+  }
+  if (parameters_List.containsElementNamed("g_nmf_age_brackets")) {
+    parameters.g_nmf_age_brackets = Rcpp::as<std::vector<double> >(parameters_List["g_nmf_age_brackets"]);
+  }
+  if (parameters_List.containsElementNamed("g_prob_of_testing_nmf")) {
+    parameters.g_prob_of_testing_nmf = Rcpp::as<double>(parameters_List["g_prob_of_testing_nmf"]);
+  }
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // END: R -> C++ CONVERSIONS: parameters
@@ -133,9 +497,16 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   std::vector<double> ICA_v = Rcpp::as<vector<double> >(population_List["ICA"]);
   std::vector<double> ICM_v = Rcpp::as<vector<double> >(population_List["ICM"]);
   std::vector<double> ID_v = Rcpp::as<vector<double> >(population_List["ID"]);
-  std::vector<int> IB_last_boost_time = Rcpp::as<vector<int> >(population_List["IB_last_boost_time"]);
-  std::vector<int> ICA_last_boost_time = Rcpp::as<vector<int> >(population_List["ICA_last_boost_time"]);
-  std::vector<int> ID_last_boost_time = Rcpp::as<vector<int> >(population_List["ID_last_boost_time"]);
+  std::vector<double> cA_v = Rcpp::as<vector<double> >(population_List["cA"]);
+  std::vector<int> Treatment_Outcomes = Rcpp::as<vector<int> >(population_List["Treatment_Outcomes"]);
+  std::vector<int> Recrudescence_Outcomes = Rcpp::as<vector<int> >(population_List["Recrudescence_Outcomes"]);
+  std::vector<int> Drug_choices = Rcpp::as<vector<int> >(population_List["Drug_choices"]);
+  std::vector<int> Slow_parasite_clearance = Rcpp::as<vector<int> >(population_List["Slow_parasite_clearance"]);
+  std::vector<int> Day_of_nmf = Rcpp::as<vector<int> >(population_List["Day_of_nmf"]);
+  std::vector<unsigned int> NMF_age_band = Rcpp::as<vector<unsigned int> >(population_List["NMF_age_band"]);
+  std::vector<double> IB_last_boost_time = Rcpp::as<vector<double> >(population_List["IB_last_boost_time"]);
+  std::vector<double> ICA_last_boost_time = Rcpp::as<vector<double> >(population_List["ICA_last_boost_time"]);
+  std::vector<double> ID_last_boost_time = Rcpp::as<vector<double> >(population_List["ID_last_boost_time"]);
   std::vector<int> IB_last_calculated_time = Rcpp::as<vector<int> >(population_List["IB_last_calculated_time"]);
   std::vector<int> I_C_D_CM_last_calculated_time = Rcpp::as<vector<int> >(population_List["I_C_D_CM_last_calculated_time"]);
   std::vector<double> Immunity_boost_float = Rcpp::as<vector<double> >(population_List["Immunity_boost_float"]);
@@ -220,7 +591,13 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     population[n].set_m_ICA(ICA_v[n]);
     population[n].set_m_ICM(ICM_v[n]);
     population[n].set_m_ID(ID_v[n]);
-    
+    population[n].set_m_cA(cA_v[n]);
+
+    population[n].set_m_treatment_outcome(static_cast<Person::TreatmentOutcome>(Treatment_Outcomes[n]));
+    population[n].set_m_recrudescence_outcome(static_cast<Person::RecrudescenceOutcome>(Recrudescence_Outcomes[n]));
+    population[n].set_m_drug_choice(Drug_choices[n]);
+    population[n].set_m_slow_parasite_clearance_bool(static_cast<bool>(Slow_parasite_clearance[n]));
+
     // Set Boost times
     population[n].set_m_IB_last_boost_time(IB_last_boost_time[n]);
     population[n].set_m_ICA_last_boost_time(ICA_last_boost_time[n]);
@@ -239,6 +616,8 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     population[n].set_m_day_of_death(Day_of_death[n]);
     population[n].set_m_day_last_treated(Day_of_last_treatment[n]);
     population[n].set_m_day_prophylaxis_wanes(Day_of_prophylaxis_waning[n]);
+    population[n].set_m_day_of_nmf_from_saved(Day_of_nmf[n]);
+    population[n].set_m_nmf_age_band(NMF_age_band[n]);
     
     // Strain Numbers
     population[n].set_m_number_of_strains(Number_of_Strains[n]);
@@ -401,7 +780,9 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     // Something like passing in a function name within the param_list which is the 
     // name for a logger written else where which then returns the Loggers obeject below
     Infection_States[element] = static_cast<int>(population[element].get_m_infection_state());
-    population[element].update_immunities_to_today(parameters);
+    
+    // don't update immunities to todat to check reload is working correctly
+    //population[element].update_immunities_to_today(parameters);
     Ages[element] = population[element].get_m_person_age();
     IB[element] = population[element].get_m_IB();
     ICA[element] = population[element].get_m_ICA();

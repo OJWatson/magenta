@@ -52,9 +52,10 @@ reference:
       - drug_create_default_no_resistance
       - drug_table
   - title: "Barcode Misc"
-    desc: "Functions for converting and manipualting barcodes"
+    desc: "Functions for converting and manipulating barcodes"
     contents:
       - convert_barcode_vectors
+      - update_saved_state_barcode_plaf
   - title: "Data Objects"
     desc: "Internal Data Objects"
     contents:
