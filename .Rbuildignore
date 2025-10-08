@@ -30,3 +30,4 @@ vignettes_src
 ^docs$
 docs
 submission_data
+^\.github$
