@@ -1,3 +1,7 @@
+## magenta 1.3.7
+
+* Fix to saved state initialisation of barcode bitset sizing on Windows
+
 ## magenta 1.3.6
 
 * Reloading models saved to file working again
