@@ -1,4 +1,4 @@
-## magenta 1.3.6
+## magenta 1.3.7
 
 * Fix to saved state initialisation of barcode bitset sizing on Windows
 
