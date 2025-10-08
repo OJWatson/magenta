@@ -1,5 +1,9 @@
 ## magenta 1.3.6
 
+* Fix to saved state initialisation of barcode bitset sizing on Windows
+
+## magenta 1.3.6
+
 * Reloading models saved to file working again
 * New function `update_saved_state_barcode_plaf` to update plaf in saved simulation
 
