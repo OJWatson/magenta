@@ -76,11 +76,18 @@ navbar:
       href: reference/index.html
     - text: Articles
       menu:
-      - text: Introduction to magenta (Overview)
-        href: articles/Introduction.html
-      - text: -------
-      - text: Resistance
-        href: articles/Resistance.html
+        - text: Introduction to magenta (Overview)
+          href: articles/Introduction.html
+        - text: Loggers and model state
+          href: articles/Loggers.html
+        - text: Drug components
+          href: articles/DrugComponents.html
+        - text: Identity-by-descent simulations
+          href: articles/IBD.html
+        - text: Advanced features
+          href: articles/AdvancedFeatures.html
+        - text: Resistance
+          href: articles/Resistance.html
     - text: News
       href: news/index.html
   right:

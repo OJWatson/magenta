@@ -1,3 +1,12 @@
+## magenta (development version)
+
+* Fixed the `age_range` handling in `pfpr_to_eir_heuristic()` so custom age
+  bands are applied correctly during calibration.
+* Added dedicated vignettes covering loggers, drug components, identity-by-
+  descent simulations, and other advanced features.
+* Updated documentation and README to reflect the modern workflow and remove the
+  legacy vignette build process.
+
 ## magenta 1.3.6
 
 * Reloading models saved to file working again

@@ -1,7 +1,7 @@
 ---
 title: "How to use magenta"
 author: "OJ Watson"
-date: "2019-12-10"
+date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     fig_width: 7 
@@ -27,12 +27,12 @@ The model is written in C++/Rcpp and interfaced with R.
 
 ## Installation
 
-You can also install `rdhs` from github with:
+You can install the development version of `magenta` from GitHub with:
 
 
 ```r
 #install.packages("devtools")
-devtools::install_github("OJwatson/rdhs")
+devtools::install_github("OJWatson/magenta")
 ```
 
 
@@ -65,7 +65,7 @@ as.data.frame(tail(out1$Loggers, 6))
 ## 1 0.8608592 0.00156126 0.09441759 0.03743192 0.001026548 0.004703534
 ```
 
-(See [Loggers vignette](https://ojwatson.github.io/magenta/articles/loggers.html) for more info about what is returned in Loggers). 
+(See the Loggers vignette, available via `vignette("Loggers", package = "magenta")`, for more details on the logging output.)
 
 If we want to save information about the model state over time we set `update_save` to `TRUE` and then specify at what intervals we want to stop the simulation using `update_length`. For example, to fetch information about the simualtion at monthly intervals:
 
@@ -90,7 +90,7 @@ plot(time, S)
 abline(v = 1000, col = "red")
 ```
 
-![](https://github.com/OJWatson/magenta/raw/master/vignettes/Introduction_files/figure-html/updated out S-1.png)<!-- -->
+*Plot output omitted here; knit the vignette locally to reproduce the figure.*
 
 `magenta` starts simulations close to the equilibrium solution, but it is not quite perfect. For example, in the above plot there is a burn in period before the red vertical line. The required burn in time varies depending on the simulation parameters and so it is best to run the model a few times first to work out a suitable burn in time. For most simulations though a 40 year burn in period is more than sufficient. 
 
@@ -156,7 +156,7 @@ n_strains <- unlist(lapply(out3[[n]]$Strain_infection_state_vectors,length))
 plot(zetas, n_strains, log = "x", ylab = "Number of Strains")
 ```
 
-![](https://github.com/OJWatson/magenta/raw/master/vignettes/Introduction_files/figure-html/all infected individual-1.png)<!-- -->
+*Plot output omitted here; knit the vignette locally to reproduce the figure.*
 
 With the parasite barcode information we can work out what an individual's complexity of infection (COI) is, by looking at the number of unique parasite barcodes within an individual. For example, for the individual with the most amoutn of strains:
 
@@ -183,7 +183,7 @@ plot(n_strains, cois$COI, ylab = "Microscopy detectable COI",
 abline(0, 1)
 ```
 
-![](https://github.com/OJWatson/magenta/raw/master/vignettes/Introduction_files/figure-html/convert barcode vectors-1.png)<!-- -->
+*Plot output omitted here; knit the vignette locally to reproduce the figure.*
 
 We can also request magenta to return all the information about the human and mosquito population:
 
@@ -208,7 +208,7 @@ The last list element now contains 4 lists:
 3. `scourge_List` - The mosquito population and their parasite strains and event triggers. (a scourge is the collective noun for mosquitoes)
 4. `parameters_List` - List of simulation parameters
 
-The above 4 lists are sufficient for restarting a simulation and can thus be used to save the model state to file and then be reloaded. Again see the (See [Loggers vignette](https://ojwatson.github.io/magenta/articles/loggers.html) for more info about what information these lists actually contain, and also see the (See [Saving & Restarting vignette](https://ojwatson.github.io/magenta/articles/saving.html) for more info about how to save these lists and reload them to continue a model run. 
+The above 4 lists are sufficient for restarting a simulation and can thus be used to save the model state to file and then be reloaded. See the Loggers vignette (`vignette("Loggers", package = "magenta")`) for more information on what these lists contain, and the Advanced features vignette (`vignette("AdvancedFeatures", package = "magenta")`) for practical advice on saving and reloading model runs.
 
 ### Saving different model summaries
 
@@ -246,7 +246,7 @@ out6 <- pipeline(EIR = 1, years = 10, N = 10000,
 ## Running: [=====================================================================================] 100% eta: 0s
 ```
 
-When saving summaries of the genetic information, the mean COI, % polygenomic infections, % unique barcodes and coefficient of uniqueness (see manuscript for definition) are recorded for seperate age and infection status groups. In addition, the overall clonality is recorded (how many of each barcode were there) and the population level allele frequency are saved. Lastly, some extra summaries of the population are saved, which include treatments given in the preceeding month, EIR and prevalence. For full explanation see [Loggers vignette](https://ojwatson.github.io/magenta/articles/loggers.html). For example, for COI the following data is stored:
+When saving summaries of the genetic information, the mean COI, % polygenomic infections, % unique barcodes and coefficient of uniqueness (see manuscript for definition) are recorded for seperate age and infection status groups. In addition, the overall clonality is recorded (how many of each barcode were there) and the population level allele frequency are saved. Lastly, some extra summaries of the population are saved, which include treatments given in the preceeding month, EIR and prevalence. For a full explanation see the Loggers vignette (`vignette("Loggers", package = "magenta")`). For example, for COI the following data is stored:
 
 
 ```r
@@ -283,7 +283,7 @@ plot(tail(COI,100), xlab = "", ylab = "COI")
 plot(tail(prev,100), xlab = "", ylab = "PCR PfPR")
 ```
 
-![](https://github.com/OJWatson/magenta/raw/master/vignettes/Introduction_files/figure-html/plot coi over time-1.png)<!-- -->
+*Plot output omitted here; knit the vignette locally to reproduce the figure.*
 
 We can increase the length of the barcode or change the assumed population level allele frequencey as well:
 
@@ -312,7 +312,7 @@ plafs <- do.call(rbind,lapply(out7[pos], function(x) {x$barcode_freq}))
 lattice::levelplot(plafs, xlab = "Time", ylab = "loci")
 ```
 
-![](https://github.com/OJWatson/magenta/raw/master/vignettes/Introduction_files/figure-html/vals over time-1.png)<!-- -->
+*Plot output omitted here; knit the vignette locally to reproduce the figure.*
 
 We can also change how we summarise the simulation at each interval. This can be done in a couple of ways. The first is by altering the age and states:
 
@@ -368,7 +368,7 @@ plot(time, infected_mosquitoes, xlab = "Time (Years)", ylab = "Infected Mosquito
 abline(v = 10)
 ```
 
-![](https://github.com/OJWatson/magenta/raw/master/vignettes/Introduction_files/figure-html/infected mosquites-1.png)<!-- -->
+*Plot output omitted here; knit the vignette locally to reproduce the figure.*
 
 `magenta` incorporates vector based interventions by first running an equivalent deterministic version of the malaria transmission model with vector based intervetnions in. The output of the determininistic model is used to estimate the changing mosquito mortality rate and anthrophagy at each day as a result of the intervention changes. These are then fed through to the indivdual-based simulation to adjust the behaviour of the individual mosquitoes. 
 
@@ -403,7 +403,7 @@ plafs <- do.call(rbind,lapply(out10[pos], function(x) {x$barcode_freq}))
 matplot(plafs)
 ```
 
-![](https://github.com/OJWatson/magenta/raw/master/vignettes/Introduction_files/figure-html/fixation lattice-1.png)<!-- -->
+*Plot output omitted here; knit the vignette locally to reproduce the figure.*
 
 We can change this to have importation of barcodes over time. This occurs with a genetic island model where the population we are simulating is assumed to receive imported parasites from a genetically stable population. There are two forms of importation, the `spatial_incidence_matrix` and `spatial_mosquitoFOI_matrix`, which determine the rate at which new parasites are imported into the human and mosquito population respectively. In the following we assume that 20% of new infections in both the humans and mosquito populations are actually imported, with the barcodes drawn according to the population level allele frequency (PLAF) (by default the PLAF is 0.5 for each loci). This ensures that a genetic equilibrium is reached and barcode fixation does not occur.
 
@@ -431,7 +431,7 @@ plafs <- do.call(rbind,lapply(out11[pos], function(x) {x$barcode_freq}))
 matplot(plafs)
 ```
 
-![](https://github.com/OJWatson/magenta/raw/master/vignettes/Introduction_files/figure-html/importation-1.png)<!-- -->
+*Plot output omitted here; knit the vignette locally to reproduce the figure.*
 
 ### Seasonality and Specific Locations
 
@@ -513,7 +513,7 @@ plot(time, prev_2_10_micro, xlim = c(2000,2015),
 points(2000:2015, map_prev)
 ```
 
-![](https://github.com/OJWatson/magenta/raw/master/vignettes/Introduction_files/figure-html/country example-1.png)<!-- -->
+*Plot output omitted here; knit the vignette locally to reproduce the figure.*
 
 The above is similar to how the model fitting simulations were laid out and it gives the user a chance to check that the parameter sets being used are the correct parameters. However, you can use `use_historic_interventions` as `TRUE` and provide the year range and `pipeline` will conduct the above parameter searching for you.
 
@@ -710,5 +710,4 @@ Note how the denominator is different between the two measures. This is because 
 
 The above introduction gives an overview of how to run the model and covers all components of `magenta` that were used to produce the findings in the [BioArxiv manuscript](https://www.biorxiv.org/content/10.1101/793554v1). 
 
-`magenta`, however, has been developed to also simulate drug resistance and consider more nuanced spatial set ups. Both of these are under development, with the resistance implementation fully in (but needing more documentation) and the inclusion of space via a metapopulation not fully implemented yet. Once documented these will be availabe in the [Resistance Vignette](https://ojwatson.github.io/magenta/articles/resistance.html)
-and [Spatial Vignette](https://ojwatson.github.io/magenta/articles/spatial.html)
+`magenta`, however, has been developed to also simulate drug resistance and consider more nuanced spatial set ups. The dedicated Resistance vignette (`vignette("Resistance", package = "magenta")`) provides further worked examples. Exploratory features such as vector adaptation and non-malarial fevers are covered in the Advanced features vignette (`vignette("AdvancedFeatures", package = "magenta")`).

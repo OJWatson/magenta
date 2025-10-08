@@ -1,0 +1,131 @@
+---
+title: "Advanced features"
+author: "magenta development team"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    fig_width: 7
+    fig_height: 5
+    fig_align: center
+vignette: >
+  %\VignetteIndexEntry{Advanced features}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Overview
+
+In addition to the core malaria transmission dynamics, `magenta` implements a
+number of auxiliary processes that are useful for specialised analyses. This
+vignette describes three of them: non-malarial fevers, vector adaptation, and
+explicit tracking of male and female sexual parasites.
+
+```{r setup, eval = FALSE}
+library(magenta)
+```
+
+## Non-malarial fevers
+
+Non-malarial fevers (NMF) are modelled as a stochastic process that can trigger
+healthcare-seeking behaviour even in the absence of parasitaemia. This is useful
+when studying diagnostic specificity or the consequences of presumptive
+antimalarial treatment.
+
+The behaviour is controlled through `nmf_list_create()`, which bundles all
+parameters required by the simulator:
+
+```{r nmf, eval = FALSE}
+nmf <- nmf_list_create(
+  nmf_flag = TRUE,
+  mean_nmf_frequency = c(148, 140, 142, 156, 179, 200),
+  nmf_age_brackets = c(-0.1, 365, 730, 1095, 1460, 1825, 3650)
+)
+```
+
+- `nmf_flag` toggles the feature on or off.
+- `mean_nmf_frequency` gives the expected number of days between episodes for
+  each age bracket.
+- `nmf_age_brackets` sets the age cut-offs (in days) for those brackets.
+
+The resulting list is supplied to `pipeline()` through the `nmf_list` argument.
+During the simulation the loggers report the additional treatment demand caused
+by these events, allowing downstream analysis to separate malaria-positive and
+malaria-negative health facility visits.
+
+## Vector adaptation
+
+Vector adaptation captures changes in the vector population caused by
+interventions such as insecticide-treated nets or indoor residual spraying. The
+feature modulates the mosquito biting preference across the barcode loci that
+influence transmissibility.
+
+```{r vector-adaptation, eval = FALSE}
+va <- vector_adaptation_list_create(
+  vector_adaptation_loci = c(0, 1, 2),
+  vector_adaptation_flag = TRUE
+)
+```
+
+- `vector_adaptation_loci` identifies the loci that influence adaptation.
+- `vector_adaptation_flag` activates or deactivates the feature.
+
+As with the NMF configuration the returned list is passed to `pipeline()` via the
+`vector_adaptation_list` argument. The impact on the force of infection can be
+monitored through the standard logger outputs (`daily_bite_counters` and
+`daily_infectious_bite_counters`).
+
+## Male and female sexual parasites
+
+`magenta` explicitly tracks the male and female contributions of sexual stage
+parasites when generating new mosquito infections. This enables realistic
+recombination and underpins the resistance and IBD modules.
+
+While the underlying implementation lives in the C++ core (see `person.cpp` and
+`mosquito.cpp`), several user-facing behaviours are worth noting:
+
+- The infection summaries distinguish between male- and female-derived parasite
+  contributions when constructing oocysts. This is reflected in the
+  `populations_event_and_strains_List` element returned when `full_save = TRUE`.
+- When simulating IBD the male and female barcode vectors are updated separately
+  before being combined into the recombinant oocysts, preserving the pedigree
+  information.
+- The `daily_infectious_bite_counters` logger accounts for the number of
+  infectious bites arising from male–female pairings rather than from individual
+  parasites.
+
+Users rarely need to interact with these components directly, but understanding
+that they exist clarifies why certain summaries (for example `summary_within_ibd`)
+exclude mono-infections: a single strain lacks the male–female pairing required
+for recombination.
+
+## Combining advanced features
+
+All three features integrate with the standard `pipeline()` workflow:
+
+```{r advanced-pipeline, eval = FALSE}
+out <- pipeline(
+  years = 5,
+  N = 5000,
+  EIR = 1.2,
+  ft = 0.4,
+  nmf_list = nmf,
+  vector_adaptation_list = va,
+  update_save = TRUE,
+  summary_saves_only = TRUE,
+  full_save = TRUE
+)
+```
+
+Because they reuse the existing parameter list infrastructure they also work
+when simulations are restarted from a saved state.
+
+## Summary
+
+- Non-malarial fevers can be activated via `nmf_list_create()` to capture
+  treatment-seeking unrelated to malaria infections.
+- Vector adaptation is controlled with `vector_adaptation_list_create()` and
+  alters how parasite genotypes interact with the mosquito population.
+- The simulator maintains separate male and female parasite contributions,
+  enabling realistic recombination in both the standard and IBD modes.
+- These features can be combined with other options such as `update_save` and
+  `full_save` without additional boilerplate.

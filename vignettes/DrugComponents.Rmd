@@ -1,0 +1,108 @@
+---
+title: "Drug components"
+author: "magenta development team"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    fig_width: 7
+    fig_height: 5
+    fig_align: center
+vignette: >
+  %\VignetteIndexEntry{Drug components}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Overview
+
+Drug pressure is a key driver of the parasite genetics simulated by `magenta`.
+The package provides helper functions for constructing rich drug definitions and
+combining them into treatment policies. This vignette expands on the summary in
+the resistance article and explains how to work with the drug helper functions.
+
+```{r setup, eval = FALSE}
+library(magenta)
+```
+
+## Building drug lists
+
+The `pipeline()` function expects a `drug_list` element describing the drugs in
+use. The `drug_list_create()` helper is the primary entry point:
+
+```{r drug-list, eval = FALSE}
+drug_list <- drug_list_create(
+  drugs = list(magenta:::drug_create_dhappq()),
+  partner_drug_ratios = 1,
+  number_of_drugs = 1
+)
+```
+
+Each entry in the list corresponds to a therapy. Inspecting the structure reveals
+the parameters that `magenta` uses when simulating treatment outcomes.
+
+```{r inspect-drug, eval = FALSE}
+str(drug_list$drug_list[[1]])
+```
+
+The key components are:
+
+- `barcode_loci`: integer indices indicating which loci of the parasite barcode
+  are associated with the drug.
+- `m_lpf`: probabilities of late parasitological failure (LPF) for every possible
+  genotype, ordered lexicographically by the resistance loci. For six resistance
+  loci this vector has length `2^6 = 64`.
+- `prophylaxis_loci`: loci that determine the duration of prophylaxis provided by
+  the treatment.
+- `has_adherence` and `adherence`: switches that control whether imperfect
+  adherence is modelled and the distribution of adherence outcomes.
+
+All helper constructors ultimately call `drug_create()`, so custom therapies can
+be defined by supplying bespoke arguments to that function. The package includes
+convenience wrappers such as `drug_create_dhappq()` (dihydroartemisinin–piperaquine)
+and `drug_create_al()` (artemether–lumefantrine) for the most commonly modelled
+regimens.
+
+## Treatment policies
+
+Multiple drugs can be combined to simulate complex deployment strategies.
+`partner_drug_ratios` controls the mixing between therapies, and
+`mft_type = "cycling"` or `"mixing"` selects between sequential and simultaneous
+use.
+
+```{r multiple-drugs, eval = FALSE}
+drug_list <- drug_list_create(
+  drugs = list(
+    magenta:::drug_create_al(),
+    magenta:::drug_create_dhappq()
+  ),
+  partner_drug_ratios = c(0.5, 0.5),
+  number_of_drugs = 2,
+  mft_type = "mixing"
+)
+```
+
+The returned object is passed unchanged to `pipeline()` via the `drug_list`
+argument. During the simulation the active treatment is tracked in the loggers,
+allowing the investigator to link observed resistance dynamics back to the
+policy choices.
+
+## Reference tables
+
+The `drug_table` data set summarises the built-in therapies and can be used to
+look up the mapping between barcode loci and genetic mechanisms:
+
+```{r drug-table, eval = FALSE}
+head(drug_table)
+```
+
+Each row represents a drug with columns describing the loci involved in
+clearance, prophylaxis, partner drug protection, and the assumed efficacy. This
+resource is a useful starting point when defining bespoke treatment policies.
+
+## Summary
+
+- Use `drug_list_create()` to compose the treatments available in a simulation.
+- Helper constructors such as `drug_create_dhappq()` populate realistic defaults
+  but custom calls to `drug_create()` are supported.
+- The `drug_table` data object records the loci associated with each built-in
+  therapy and can be extended for new scenarios.
