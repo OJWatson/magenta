@@ -1,7 +1,7 @@
 Package: magenta
 Type: Package
 Title: Individual-Based Simulation Model of Malaria Epidemiology and Genomics
-Version: 1.3.5
+Version: 1.3.6
 Authors@R: 
     c(person(given = "OJ",
              family = "Watson",
@@ -37,7 +37,7 @@ Remotes:
 LinkingTo: Rcpp, BH
 LazyData: TRUE
 LazyDataCompression: xz
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 SystemRequirements: C++11
 VignetteBuilder: knitr
 Additional_repositories: https://mrc-ide.github.io/drat

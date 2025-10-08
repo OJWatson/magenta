@@ -1,3 +1,8 @@
+## magenta 1.3.6
+
+* Reloading models saved to file working again
+* New function `update_saved_state_barcode_plaf` to update plaf in saved simulation
+
 ## magenta 1.3.5
 
 * Seasonality patch so that admin and country name specification to `pipeline`
