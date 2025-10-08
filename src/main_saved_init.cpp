@@ -304,6 +304,19 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   if (parameters_List.containsElementNamed("g_barcode_length")) {
     Parameters::g_barcode_length = Rcpp::as<unsigned int>(parameters_List["g_barcode_length"]);
   }
+
+  // Ensure the static temporary barcodes used across the simulation are resized
+  // to match the (potentially) updated barcode configuration contained in the
+  // saved state.  Without this step different static initialisation orders on
+  // some platforms (e.g. Windows) leave these bitsets with zero length, which
+  // then leads to out-of-bounds writes when the saved infection and mosquito
+  // barcodes are unpacked.
+  Strain::temp_barcode = boost::dynamic_bitset<>(Parameters::g_barcode_length);
+  Strain::temp_identity_barcode = boost::dynamic_bitset<>(Parameters::g_ibd_length);
+  Strain::temp_crossovers = boost::dynamic_bitset<>(Parameters::g_num_loci);
+  Strain::temp_barcode_pair = std::vector<boost::dynamic_bitset<> >(
+    2, boost::dynamic_bitset<>(Parameters::g_barcode_length)
+  );
   if (parameters_List.containsElementNamed("g_plaf")) {
     Parameters::g_plaf = Rcpp::as<std::vector<double> >(parameters_List["g_plaf"]);
   }
