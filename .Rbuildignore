@@ -24,7 +24,6 @@ odin_run\.R
 run_check\.R
 README\.Rmd
 ^CONDUCT\.md$
-vignettes_src
 ^_pkgdown\.yml$
 ^codemeta\.json$
 ^docs$

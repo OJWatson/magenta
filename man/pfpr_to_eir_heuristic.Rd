@@ -23,8 +23,9 @@ pfpr_to_eir_heuristic(
 
 \item{mv}{Mosquito size if it's known. Default = NULL}
 
-\item{age_range}{Numeric vecotr length 2 for the age range to be included.
-Default = NULL}
+\item{age_range}{Numeric vector of length 2 giving the lower and upper ages
+(in years) to include when matching the target prevalence. Use `NULL` to
+include all ages. Default = NULL.}
 
 \item{all_a}{Boolean for whether all asymptomatics in state A are included
 in microscopy based prevalence estimates. Default = NULL}

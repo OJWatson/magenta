@@ -1,7 +1,7 @@
 ---
 title: "Resistance"
 author: "OJ Watson"
-date: "2021-02-23"
+date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     fig_width: 7 
@@ -56,7 +56,7 @@ str(out$Loggers$Treatments)
 ##  $ daily_infectious_bite_counters: int 5515
 ```
 
-(See [Loggers vignette](https://ojwatson.github.io/magenta/articles/loggers.html) for more info about what is returned in Loggers). 
+(See the Loggers vignette, available via `vignette("Loggers", package = "magenta")`, for more detail on the logging outputs.)
 
 The `Unsuccessful_Treatments_LPF` is the total number of failed treatments, defined as a 28-day late parasitological treatment failure (LPF). By default, `magenta` assumes a perfect drug with no treatment failure regardless of resistance. To start simulating resistance we need to understand a little bit more about how loci in `magenta` work. 
 

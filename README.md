@@ -1,7 +1,6 @@
 # magenta
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-[![Travis-CI Build Status](https://travis-ci.org/ojwatson/magenta.png?branch=master)](https://travis-ci.org/ojwatson/magenta)
 
 
 ## Motivation
@@ -12,12 +11,12 @@ The model is written in C++/Rcpp and interfaced with R, incorporating both the d
 
 ## Installation
 
-You can also install `rdhs` from github with:
+You can install the development version of `magenta` from GitHub with:
 
 
 ```r
 #install.packages("devtools")
-devtools::install_github("OJWatson/rdhs")
+devtools::install_github("OJWatson/magenta")
 ```
 
 Note that on Windows, a toolkit (Rtools) needs to be installed separately for devtools to work. 
@@ -30,20 +29,22 @@ Once installed, the package can be loaded using:
 library(magenta)
 ```
 
-Documentation
--------------
+## Documentation
 
-*magenta* is documented on a [dedicated
- website](https://ojwatson.github.io/magenta).
+*magenta* is documented on a [dedicated website](https://ojwatson.github.io/magenta).
 
-This includes the following vignettes:
+Key articles currently available are:
 
-- **`Introduction`**: general introduction to the design of `magenta` and how to use it
-- **`Loggers`**: brief overview of the logging information returned by `magenta`
-- **`Resistance`**: (under development) description of how to simulate resistance
+- **`Introduction`** – overview of the simulator and first steps for running experiments.
+- **`Loggers`** – details on the logging outputs, update intervals, and how to persist model state.
+- **`Resistance`** – guidance on configuring drug resistance scenarios and interpreting outputs.
+- **`Drug components`** – deeper discussion of the drug parameterisation and helper utilities.
+- **`Identity-by-descent (IBD)`** – explanation of the IBD mode and how to interpret IBD summaries.
+- **`Advanced features`** – notes on modelling non-malarial fevers, vector adaptation, and sexual parasite stages.
 
-Contributors
-------------
+Each vignette lives in `vignettes/` and can be browsed locally via `browseVignettes("magenta")` after installation.
+
+## Contributors
 - [OJ Watson](https://github.com/ojwatson)
 - [Bob Verity](https://github.com/bobverity)
 - [Joel Hellewell](https://github.com/jhellewell14)

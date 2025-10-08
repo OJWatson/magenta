@@ -1,0 +1,121 @@
+---
+title: "Identity-by-descent simulations"
+author: "magenta development team"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    fig_width: 7
+    fig_height: 5
+    fig_align: center
+vignette: >
+  %\VignetteIndexEntry{Identity-by-descent simulations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Overview
+
+`magenta` can run in a special identity-by-descent (IBD) mode where each barcode
+locus stores a unique identifier rather than a binary allele. This enables the
+model to track the pedigree of parasites through time and to calculate the
+population-level (pIBD) and within-host (iIBD) measures described in the
+accompanying manuscript. This vignette summarises how to configure IBD
+simulations and interpret the resulting output.
+
+```{r setup, eval = FALSE}
+library(magenta)
+```
+
+## Allocating barcode space
+
+IBD mode assigns consecutive integers to every parasite introduced during the
+simulation. The `ibd_length` argument controls how many bits are allocated per
+locus; the total number of unique identifiers is therefore `2^ibd_length`. To
+avoid exhausting the identifier space, first run a dry setup with
+`set_up_only = TRUE` and inspect the initialised population.
+
+```{r setup-only, eval = FALSE}
+out <- pipeline(
+  EIR = 1,
+  years = 10,
+  N = 1000,
+  ibd_length = 20,
+  num_loci = 24,
+  set_up_only = TRUE,
+  update_save = TRUE,
+  update_length = 30,
+  human_update_save = TRUE,
+  summary_saves_only = TRUE,
+  full_save = TRUE,
+  seed = 123456789L
+)
+```
+
+The `population_List` and `populations_event_and_strains_List` entries describe
+the seeded human population. Each infected host contains a list of IBD barcodes
+that can be converted back to integers with the unexported
+`convert_ibd_barcode()` helper.
+
+```{r inspect-barcode, eval = FALSE}
+strains <- out$populations_event_and_strains_List$Strain_barcode_vectors
+infected <- which(out$population_List$Infection_States %in% 1:4)
+magenta:::convert_ibd_barcode(strains[[infected[1]]][[1]], nl = 24)
+```
+
+If the largest identifier in the initial state is close to `2^ibd_length` then a
+larger `ibd_length` is required before running long simulations or adding heavy
+importation.
+
+## Running and checking simulations
+
+A regular simulation in IBD mode is started by passing the same arguments but
+leaving `set_up_only` at its default of `FALSE`.
+
+```{r ibd-run, eval = FALSE}
+out <- pipeline(
+  EIR = 1,
+  years = 10,
+  N = 1000,
+  ibd_length = 20,
+  num_loci = 24,
+  update_save = TRUE,
+  update_length = 30,
+  human_update_save = TRUE,
+  summary_saves_only = TRUE,
+  full_save = TRUE,
+  seed = 987654321L
+)
+```
+
+At the end of the run the final snapshot in the returned list contains the full
+state of the system. Inspecting the `Strain_barcode_vectors` confirms that the
+identifier space was sufficient:
+
+```{r ibd-final, eval = FALSE}
+final <- out[[length(out)]]
+strains <- final$populations_event_and_strains_List$Strain_barcode_vectors
+infected <- which(final$population_List$Infection_States %in% 1:4)
+converted <- lapply(strains[infected], function(x) lapply(x, magenta:::convert_ibd_barcode, nl = 24))
+max(unlist(converted))
+```
+
+## Understanding IBD summaries
+
+When IBD mode is active the monthly summaries include two additional entries:
+
+- `summary_ibd` stores the population-level pIBD stratified by infection state
+  and age groups.
+- `summary_within_ibd` stores the within-host iIBD statistics, calculated only
+  for hosts carrying more than one strain.
+
+Both summaries share the same structure as the barcode summaries in the standard
+mode and can be converted to tidy tibbles for plotting or further analysis.
+
+## Summary
+
+- Set `ibd_length` high enough to cover the expected number of unique parasites;
+  use `set_up_only = TRUE` to check the initial allocation.
+- Identity-by-descent simulations work seamlessly with `update_save`,
+  `summary_saves_only`, and `full_save`.
+- Monthly summaries include both pIBD and iIBD measures, enabling direct
+  comparison with the outputs reported in the manuscript.

@@ -1,0 +1,138 @@
+---
+title: "Loggers and model state"
+author: "magenta development team"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    fig_width: 7
+    fig_height: 5
+    fig_align: center
+vignette: >
+  %\VignetteIndexEntry{Loggers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Overview
+
+`magenta` summarises each simulation through a set of *loggers*. These are
+lists of scalar and tabular outputs that track high-level properties of the
+human and mosquito populations without needing to retain every individual in
+memory. This vignette describes the key loggers that are returned by
+`pipeline()` and how to control the different saving options.
+
+Throughout we assume that the package has been attached and that simulations are
+run with sensible settings. The code examples below set `eval = FALSE` so that
+they can be inspected without triggering a long simulation during vignette
+building.
+
+```{r setup, eval = FALSE}
+library(magenta)
+```
+
+## Inspecting the default loggers
+
+By default `pipeline()` returns a list with two components: the Rcpp pointer to
+the simulation universe and a `Loggers` list containing the final summaries.
+Running a short simulation and examining the structure illustrates what is
+available.
+
+```{r default-loggers, eval = FALSE}
+out <- pipeline(years = 5, N = 1000, EIR = 1, seed = 123)
+str(out$Loggers)
+```
+
+Some commonly used elements include:
+
+- `Successful_Treatments`, `Unsuccesful_Treatments_LPF`, and `Not_Treated`
+  summarising the most recent treatment events.
+- `daily_bite_counters` and `daily_infectious_bite_counters` recording vector
+  activity.
+- `S`, `D`, `A`, `U`, `T`, and `P`, which contain the proportion of the human
+  population in each infection state at the end of the run.
+
+Because the loggers are standard R lists they can be converted into data frames
+or other structures for downstream analysis.
+
+## Saving intermediate updates
+
+Longer simulations often require insight into the temporal evolution of the
+system. Setting `update_save = TRUE` instructs `pipeline()` to stop after every
+`update_length` days and append the requested summaries to the output list.
+
+```{r update-loggers, eval = FALSE}
+out <- pipeline(
+  years = 5,
+  N = 1000,
+  EIR = 1,
+  update_save = TRUE,
+  update_length = 30,
+  seed = 456
+)
+length(out)          # monthly snapshots plus the final state
+names(out[[1]])      # each snapshot contains the familiar Loggers list
+```
+
+Two additional switches refine the behaviour:
+
+- `human_update_save = TRUE` saves the full human population at every update
+  interval, allowing complex genetic summaries to be recomputed after the run.
+- `summary_saves_only = TRUE` keeps only the logger summaries for each update,
+  avoiding the large memory footprint associated with full population saves.
+
+The Loggers vignette complements the *Advanced features* article, which
+provides more practical tips on choosing update intervals for large scenarios.
+
+## Persisting and restoring model state
+
+`magenta` supports saving the full universe state so that simulations can be
+paused and resumed. Setting `full_save = TRUE` (optionally with
+`human_only_full_save = TRUE`) adds several additional entries to the list
+returned by `pipeline()`, including
+`populations_event_and_strains_List` and `population_List`. These contain the
+R objects required by `Simulation_Saved_Init_cpp()` to restart a run.
+
+```{r full-save, eval = FALSE}
+out <- pipeline(
+  years = 2,
+  N = 500,
+  EIR = 1.5,
+  full_save = TRUE,
+  summary_saves_only = FALSE,
+  seed = 789
+)
+```
+
+The combination of the loggers, the saved human population, and the parameter
+lists (`model_param_list`, `drug_list`, `nmf_list`, and so on) is sufficient to
+serialise a simulation to disk. See the advanced features vignette for worked
+examples on saving these components with `qs`, `saveRDS()`, or other
+serialisation helpers.
+
+## Logger summaries for genetics
+
+When `summary_saves_only = TRUE` the simulation records monthly summaries of the
+parasite genetics:
+
+- mean multiplicity of infection (COI) by age and infection state;
+- proportion of polygenomic infections and proportion of unique barcodes;
+- allele frequencies across the modelled barcode;
+- optional summaries for identity-by-descent (pIBD and iIBD) when simulating in
+  IBD mode.
+
+The summaries live within the `summary_stats` element of the loggers and are
+organised as nested lists keyed by the epidemiological groups. These objects are
+designed to be tidy-friendly; each is a data frame or matrix with columns for
+the bin definitions and summary statistics. The helper functions in
+`plotting.R` demonstrate how to convert the summaries into plots.
+
+## Summary
+
+- `pipeline()` always returns a `Loggers` list containing the final simulation
+  summaries.
+- `update_save`, `human_update_save`, and `summary_saves_only` control whether
+  intermediate snapshots or full human populations are retained.
+- `full_save` and `human_only_full_save` add the state required to resume a
+  simulation from an arbitrary checkpoint.
+- The logger summaries include rich information on parasite genetics that feeds
+  into downstream analysis and plotting utilities.
