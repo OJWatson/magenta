@@ -154,8 +154,8 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
   unsigned int scourge_size = u_ptr->scourge.size();
   unsigned int temp_deficit = 0;
   int intervention_counter = 0;
-  std::vector<int> temp_biting_frequency_vector(u_ptr->parameters.g_max_mosquito_biting_counter);
-  int temp_biting_frequency_vector_iterator = 0;
+  // Note: temp_biting_frequency_vector and temp_biting_frequency_vector_iterator removed
+  // as part of optimization - biting step is now computed directly
   
   // status eq for logging and other logging variables
   unsigned int not_treated = 0;
@@ -264,19 +264,13 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
     u_ptr->parameters.g_mean_mosquito_age = 1.0/mosquito_death_rates[intervention_counter];
     
     // frequency of biting also changes due to repel effects of interventions so generate next biting times
-    temp_biting_frequency_vector_iterator = 1;
-    std::generate(temp_biting_frequency_vector.begin(),
-                  temp_biting_frequency_vector.end(),
-                  [&temp_biting_frequency_vector_iterator] { return temp_biting_frequency_vector_iterator++;}
-    );
-    
-    // transform the vector of 
-    std::transform(temp_biting_frequency_vector.begin(), temp_biting_frequency_vector.end(), temp_biting_frequency_vector.begin(),
-                   std::bind(std::multiplies<double>(), (1.0/mosquito_biting_rates[intervention_counter]), std::placeholders::_1));
-    
-    std::adjacent_difference(temp_biting_frequency_vector.begin(),
-                             temp_biting_frequency_vector.end(),
-                             u_ptr->parameters.g_mosquito_next_biting_day_vector.begin());
+    // Optimized: The original code used generate + transform + adjacent_difference to compute
+    // what is essentially a constant step value (1/biting_rate). The adjacent_difference of
+    // [k, 2k, 3k, ...] is [k, k, k, ...], so we can directly fill with the step value.
+    const double biting_step = 1.0 / mosquito_biting_rates[intervention_counter];
+    std::fill(u_ptr->parameters.g_mosquito_next_biting_day_vector.begin(),
+              u_ptr->parameters.g_mosquito_next_biting_day_vector.end(),
+              static_cast<int>(biting_step));
     
     
     // Loop through each person and mosquito and update

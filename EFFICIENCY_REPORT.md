@@ -2,7 +2,68 @@
 
 This report documents several areas in the codebase where efficiency could be improved.
 
-## 1. Inefficient Vector Growth in Random Number Generation Functions
+## Profiling Results
+
+Profiling a simulation with 10,000 people for 10 years with 30-day updates revealed that **98.5% of execution time is spent in C++ code** (via `.Call` / Rcpp), specifically in `Simulation_Update_cpp`. The breakdown shows:
+
+| Component | Time (%) |
+|-----------|----------|
+| `.Call` (C++ code) | 98.48% |
+| `Simulation_Update_cpp` | 97.52% |
+| `gc` (garbage collection) | 0.34% |
+| R-side functions (`ztrgeomintp`, `ztrnbinom`, etc.) | < 0.5% |
+
+This means that **R-level optimizations have minimal impact** on overall performance. The real bottlenecks are in the C++ simulation loop.
+
+## C++ Optimizations Implemented
+
+### 1. Batch Insert in Multinomial Sampling (probability.cpp)
+
+**Location:** `src/probability.cpp`, `rmultinomN()` function
+
+**Issue:** The original implementation used individual `emplace_back()` calls in a while loop for each draw:
+```cpp
+while (draw > 0) {
+  output.emplace_back(k);
+  draw--;
+}
+```
+
+**Fix:** Replaced with batch `insert()` operations:
+```cpp
+if (draw > 0) {
+  output.insert(output.end(), draw, k);
+}
+```
+
+**Impact:** Reduces function call overhead and improves cache efficiency when `draw` is large.
+
+### 2. Simplified Biting Frequency Calculation (main_update.cpp)
+
+**Location:** `src/main_update.cpp`, daily biting frequency calculation
+
+**Issue:** The original code used three passes over a vector (generate + transform + adjacent_difference) to compute what is essentially a constant step value:
+```cpp
+std::generate(temp_biting_frequency_vector.begin(), ...);
+std::transform(temp_biting_frequency_vector.begin(), ...);
+std::adjacent_difference(temp_biting_frequency_vector.begin(), ...);
+```
+
+**Fix:** Replaced with a single `std::fill()` operation:
+```cpp
+const double biting_step = 1.0 / mosquito_biting_rates[intervention_counter];
+std::fill(u_ptr->parameters.g_mosquito_next_biting_day_vector.begin(),
+          u_ptr->parameters.g_mosquito_next_biting_day_vector.end(),
+          static_cast<int>(biting_step));
+```
+
+**Impact:** Reduces three vector passes to one, eliminating unnecessary intermediate computations.
+
+## R-Level Issues (Lower Priority)
+
+The following R-level issues have minimal impact on overall performance but are documented for completeness:
+
+### 1. Inefficient Vector Growth in Random Number Generation Functions
 
 **Location:** `R/stat_genetics_utils.R`, lines 86-116
 
