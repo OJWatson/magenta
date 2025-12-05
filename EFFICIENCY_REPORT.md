@@ -38,26 +38,31 @@ if (draw > 0) {
 
 **Impact:** Reduces function call overhead and improves cache efficiency when `draw` is large.
 
-### 2. Simplified Biting Frequency Calculation (main_update.cpp)
+### 2. Single-Pass Biting Frequency Calculation (main_update.cpp)
 
 **Location:** `src/main_update.cpp`, daily biting frequency calculation
 
-**Issue:** The original code used three passes over a vector (generate + transform + adjacent_difference) to compute what is essentially a constant step value:
+**Issue:** The original code used three passes over vectors (generate + transform + adjacent_difference) to compute biting intervals:
 ```cpp
-std::generate(temp_biting_frequency_vector.begin(), ...);
-std::transform(temp_biting_frequency_vector.begin(), ...);
-std::adjacent_difference(temp_biting_frequency_vector.begin(), ...);
+std::generate(temp_biting_frequency_vector.begin(), ...);  // [1, 2, 3, ...]
+std::transform(temp_biting_frequency_vector.begin(), ...); // [k, 2k, 3k, ...]
+std::adjacent_difference(temp_biting_frequency_vector.begin(), ...); // differences
 ```
 
-**Fix:** Replaced with a single `std::fill()` operation:
+**Fix:** Replaced with a single-pass loop that computes the same result without intermediate vectors:
 ```cpp
 const double biting_step = 1.0 / mosquito_biting_rates[intervention_counter];
-std::fill(u_ptr->parameters.g_mosquito_next_biting_day_vector.begin(),
-          u_ptr->parameters.g_mosquito_next_biting_day_vector.end(),
-          static_cast<int>(biting_step));
+double cumulative = 0.0;
+int prev = 0;
+for (auto& interval : u_ptr->parameters.g_mosquito_next_biting_day_vector) {
+  cumulative += biting_step;
+  int cur = static_cast<int>(cumulative);
+  interval = cur - prev;
+  prev = cur;
+}
 ```
 
-**Impact:** Reduces three vector passes to one, eliminating unnecessary intermediate computations.
+**Impact:** Reduces three vector passes to one, eliminates temporary vector allocation, and preserves the exact same integer interval sequence as the original code (important for non-integer biting rates).
 
 ## R-Level Issues (Lower Priority)
 

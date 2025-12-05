@@ -264,13 +264,21 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
     u_ptr->parameters.g_mean_mosquito_age = 1.0/mosquito_death_rates[intervention_counter];
     
     // frequency of biting also changes due to repel effects of interventions so generate next biting times
-    // Optimized: The original code used generate + transform + adjacent_difference to compute
-    // what is essentially a constant step value (1/biting_rate). The adjacent_difference of
-    // [k, 2k, 3k, ...] is [k, k, k, ...], so we can directly fill with the step value.
-    const double biting_step = 1.0 / mosquito_biting_rates[intervention_counter];
-    std::fill(u_ptr->parameters.g_mosquito_next_biting_day_vector.begin(),
-              u_ptr->parameters.g_mosquito_next_biting_day_vector.end(),
-              static_cast<int>(biting_step));
+    // Optimized: Single-pass computation of biting intervals that preserves the original semantics.
+    // Original code: generate [1,2,3,...], multiply by k=1/biting_rate, then adjacent_difference.
+    // This produces floor(i*k) - floor((i-1)*k) for each i, which varies when k is non-integer.
+    // We compute the same result in one pass without intermediate vectors.
+    {
+      const double biting_step = 1.0 / mosquito_biting_rates[intervention_counter];
+      double cumulative = 0.0;
+      int prev = 0;
+      for (auto& interval : u_ptr->parameters.g_mosquito_next_biting_day_vector) {
+        cumulative += biting_step;
+        int cur = static_cast<int>(cumulative);
+        interval = cur - prev;
+        prev = cur;
+      }
+    }
     
     
     // Loop through each person and mosquito and update
