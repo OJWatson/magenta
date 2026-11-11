@@ -373,7 +373,7 @@ drug_list_update <- function(drug_list, year, tf){
             drug_list$drug_choice <- 0
           }
           
-          message(drug_list$drug_choice)
+          message("Sequential cycling: switched to drug ", drug_list$drug_choice)
         }
       }
       
