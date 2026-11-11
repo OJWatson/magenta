@@ -11,8 +11,8 @@ reference:
       - pipeline
   - title: "Pipeline Misc"
     desc: >
-      "Functions that are actually being called by pipeline that trigger the 
-      simulation to run. These consist of functions that create the parameter 
+      "Functions that are actually being called by pipeline that trigger the
+      simulation to run. These consist of functions that create the parameter
       lists to be passed to the functions that call the similarly named Rcpp
       functions. Lastly, two functions that are used to summarise the population
       genetics using Rcpp functions. "
@@ -32,7 +32,7 @@ reference:
       - population_get_genetics_ibd_df_n
   - title: "Pipeline Parameter Creation"
     desc: >
-      "Functions to create parameters to be passed to pipeline" 
+      "Functions to create parameters to be passed to pipeline"
     contents:
       - drug_list_create
       - model_param_list_create
@@ -64,7 +64,20 @@ reference:
       - itn_2000_2015
       - drug_table
       - importations
-    
+
+articles:
+  - title: "Getting started"
+    navbar: ~
+    contents:
+      - Introduction
+      - Loggers
+  - title: "Antimalarial resistance"
+    navbar: "Resistance"
+    contents:
+      - Resistance
+      - DrugStrategies
+      - NewDrugs
+
 navbar:
   type: default
   left:
@@ -76,11 +89,19 @@ navbar:
       href: reference/index.html
     - text: Articles
       menu:
-      - text: Introduction to magenta (Overview)
+      - text: "Getting started"
+      - text: Introduction to magenta
         href: articles/Introduction.html
+      - text: Model output, loggers and saved state
+        href: articles/Loggers.html
       - text: -------
-      - text: Resistance
+      - text: "Antimalarial resistance"
+      - text: Simulating antimalarial resistance
         href: articles/Resistance.html
+      - text: Drug deployment strategies
+        href: articles/DrugStrategies.html
+      - text: "Adding a new drug: single low-dose primaquine"
+        href: articles/NewDrugs.html
     - text: News
       href: news/index.html
   right:

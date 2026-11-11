@@ -1,7 +1,8 @@
 # magenta
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-[![Travis-CI Build Status](https://travis-ci.org/ojwatson/magenta.png?branch=master)](https://travis-ci.org/ojwatson/magenta)
+[![R-CMD-check](https://github.com/OJWatson/magenta/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/OJWatson/magenta/actions/workflows/check-standard.yaml)
+[![pkgdown](https://github.com/OJWatson/magenta/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/OJWatson/magenta/actions/workflows/pkgdown.yaml)
 
 
 ## Motivation
@@ -12,12 +13,12 @@ The model is written in C++/Rcpp and interfaced with R, incorporating both the d
 
 ## Installation
 
-You can also install `rdhs` from github with:
+`magenta` is installed from github with:
 
 
-```r
+``` r
 #install.packages("devtools")
-devtools::install_github("OJWatson/rdhs")
+devtools::install_github("OJWatson/magenta")
 ```
 
 Note that on Windows, a toolkit (Rtools) needs to be installed separately for devtools to work. 
@@ -25,7 +26,7 @@ Note that on Windows, a toolkit (Rtools) needs to be installed separately for de
 Once installed, the package can be loaded using:
 
 
-```r
+``` r
 # Load the package
 library(magenta)
 ```
@@ -38,9 +39,21 @@ Documentation
 
 This includes the following vignettes:
 
-- **`Introduction`**: general introduction to the design of `magenta` and how to use it
-- **`Loggers`**: brief overview of the logging information returned by `magenta`
-- **`Resistance`**: (under development) description of how to simulate resistance
+- [**Introduction to magenta**](https://ojwatson.github.io/magenta/articles/Introduction.html):
+  general introduction to the design of `magenta` and how to use it
+- [**Model output, loggers and saved state**](https://ojwatson.github.io/magenta/articles/Loggers.html):
+  what a simulation returns, and how to save and restart runs
+- [**Simulating antimalarial resistance**](https://ojwatson.github.io/magenta/articles/Resistance.html):
+  resistance loci, drug definitions, prophylaxis, mutation, importation and fitness costs
+- [**Drug deployment strategies**](https://ojwatson.github.io/magenta/articles/DrugStrategies.html):
+  multiple first line therapies, drug cycling and non-malarial fevers
+- [**Adding a new drug**](https://ojwatson.github.io/magenta/articles/NewDrugs.html):
+  defining therapies the package does not ship with, worked through with
+  single low-dose primaquine
+
+Vignettes are pre-evaluated. The editable sources are in `vignettes_src/` and are
+built into `vignettes/` with `Rscript vignettes_src/build_vignettes.R`, so that building
+the package never re-runs a simulation.
 
 Contributors
 ------------
@@ -49,4 +62,4 @@ Contributors
 - [Joel Hellewell](https://github.com/jhellewell14)
 - [Hannah Slater](https://github.com/hannahslater)
 
-**Maintainer:** OJ Watson (oj.watson@imperial.ac.uk)
+**Maintainer:** OJ Watson (o.watson15@imperial.ac.uk)

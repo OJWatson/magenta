@@ -1,3 +1,37 @@
+# magenta 1.3.8
+
+## Bug fixes
+
+* Fixed a crash (`SIGFPE`, integer division by zero) in
+  `Person::late_paristological_failure_boolean()` that terminated the R session
+  whenever a resistance simulation was run with treatment, i.e. any
+  `drug_list_create(resistance_flag = TRUE)` with `ft > 0`. A strain whose
+  status change day equalled its acquisition day divided by zero. The window is
+  now guarded; behaviour is unchanged wherever it previously did not crash.
+* `drug_list_update()` now says which drug sequential cycling has switched to,
+  rather than printing a bare number.
+
+## Documentation
+
+* New vignette **Model output, loggers and saved state**, documenting every
+  logger and the save and restart workflow. This replaces the "Loggers"
+  vignette that the README and `Introduction` had linked to but which had never
+  existed.
+* New vignette **Drug deployment strategies**, covering multiple first line
+  therapies, sequential and temporal cycling, and non-malarial fevers.
+* New vignette **Adding a new drug: single low-dose primaquine**, covering how
+  to define a therapy the package does not ship with, and what would be needed
+  to represent a transmission-blocking drug.
+* **Simulating antimalarial resistance** substantially expanded: resistance
+  loci and their barcode positions, the anatomy of a drug, prophylaxis curves,
+  standing variation, importation, mutation and fitness costs.
+* `Introduction` now gives the correct installation command. It previously told
+  users to install `rdhs`, as did the README and the package website.
+* Broken vignette cross-references fixed; figures are referenced relatively
+  rather than through raw GitHub URLs.
+* Vignette build moved to `vignettes_src/build_vignettes.R`, which no longer silently
+  deletes the whole vignette when the simulation progress bar is absent.
+
 ## magenta 1.3.7
 
 * Fix to saved state initialisation of barcode bitset sizing on Windows
