@@ -44,3 +44,4 @@ from \code{vector_adaptation_list}}
 \code{simulation_R} for the beginning of a simulation. Also takes an argument
 for feeding in spatial parameters/data.
 }
+\keyword{internal}

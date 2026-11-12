@@ -2,6 +2,7 @@
 % Please edit documentation in R/pipeline_param_lists.R
 \name{vector_adaptation_list_create}
 \alias{vector_adaptation_list_create}
+\alias{validate_vector_adaptation_list}
 \title{Create vector adaptation list}
 \usage{
 vector_adaptation_list_create(
@@ -12,6 +13,8 @@ vector_adaptation_list_create(
   gametocyte_sterilisation = 0.5,
   oocyst_reduction_by_artemisinin = 0.2
 )
+
+validate_vector_adaptation_list(x)
 }
 \arguments{
 \item{vector_adaptation_loci}{Vector of integers detailing which loci
@@ -31,6 +34,12 @@ wild type male gametocyte will be chosen to be in oocysts is halved.}
 
 \item{oocyst_reduction_by_artemisinin}{Numeric for reduction in oocyst
 under artemisinin drug pressure. default = 0.2}
+
+\item{x}{List to validate.}
+}
+\value{
+A \code{magenta_vector_adaptation_list}: a list with the fields the
+  simulation reads, see \code{\link{cpp_contract}}.
 }
 \description{
 List for vector adaptations relating to oocyst success

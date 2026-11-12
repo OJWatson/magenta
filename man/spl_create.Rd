@@ -2,6 +2,7 @@
 % Please edit documentation in R/equilibrium_state_create.R
 \name{spl_create}
 \alias{spl_create}
+\alias{validate_spatial_list}
 \title{Spatial Parameter List Creation}
 \usage{
 spl_create(
@@ -15,6 +16,8 @@ spl_create(
   plaf = rep(0.5, 24),
   island_imports_plaf_linked_flag = FALSE
 )
+
+validate_spatial_list(x)
 }
 \arguments{
 \item{spatial_type}{Numeric for spatial type. Default = 0}
@@ -47,6 +50,8 @@ barcodes will either be all 0 or will be 1 at all loci where plaf > 0,
 if \code{rbinom(1, 1, plaf[plaf>0][1])} is TRUE. I.e. the first loci greater
 than 0 is used to determine if the incoming barcode is 1 at all sites where
 plaf is greater than 0.}
+
+\item{x}{List to validate.}
 }
 \description{
 \code{spl_create} creates the user required spatial

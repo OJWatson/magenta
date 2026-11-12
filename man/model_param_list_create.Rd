@@ -2,6 +2,7 @@
 % Please edit documentation in R/model_param_list_create.R
 \name{model_param_list_create}
 \alias{model_param_list_create}
+\alias{validate_model_param_list}
 \title{Model Parameter List Creation}
 \usage{
 model_param_list_create(
@@ -78,6 +79,8 @@ model_param_list_create(
   IRS_interval = 1 * DY,
   ITN_interval = 3 * DY
 )
+
+validate_model_param_list(x)
 }
 \arguments{
 \item{eta}{Death rate for exponential population distribution, i.e. 1/Mean
@@ -225,6 +228,12 @@ to early instars. Default = 13.25}
 \item{IRS_interval}{How long before IRS is repeated, i.e. when IRS decay = 1. Default =   1 * DY}
 
 \item{ITN_interval}{How long before ITN is repeated, i.e. when IRS decay = 1.  Default =   3 * DY}
+
+\item{x}{List to validate.}
+}
+\value{
+A \code{magenta_core_params}: a list with the fields the
+  simulation and the equilibrium solution read, see \code{\link{cpp_contract}}.
 }
 \description{
 \code{model_param_list_create} creates list of model parameters to be used

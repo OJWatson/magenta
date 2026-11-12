@@ -7,7 +7,9 @@
 #' @param cluster Boolean for simulation being on cluster. Default = TRUE
 #' @param clear_up Boolean for whether to clear up the memory used by the
 #'   simulation. Default = TRUE
-
+#' @return A \code{magenta_housekeeping_list}: a list with the fields the
+#'   simulation reads, see \code{\link{cpp_contract}}.
+#' @export
 housekeeping_list_create <- function(quiet = TRUE,
                                      quiet_test = TRUE,
                                      cluster = FALSE,
@@ -19,7 +21,19 @@ housekeeping_list_create <- function(quiet = TRUE,
     "clear_up" = clear_up
   )
 
-  return(l)
+  validate_housekeeping_list(new_param_list(l, "magenta_housekeeping_list"))
+}
+
+#' @rdname housekeeping_list_create
+#' @param x List to validate.
+#' @export
+validate_housekeeping_list <- function(x) {
+  what <- "housekeeping_list"
+  check_fields(x, cpp_contract$housekeeping, what)
+  for (field in cpp_contract$housekeeping$fields) {
+    check_flag(x[[field]], paste0(what, "$", field))
+  }
+  invisible(x)
 }
 
 
@@ -49,9 +63,9 @@ housekeeping_list_create <- function(quiet = TRUE,
 #' @param number_of_drugs Numeric for number of drugs used
 #' @param drug_choice What's the default drug choice to begin. Default = 0
 #' @param partner_drug_ratios Numeric vector for ratio of first line drugs used
-#'
+#' @return A \code{magenta_drug_list}: a list with the fields the simulation
+#'   reads, see \code{\link{cpp_contract}}.
 #' @export
-
 drug_list_create <- function(resistance_flag = FALSE,
                              number_of_resistance_loci = 2,
                              artemisinin_loci = c(0),
@@ -129,7 +143,53 @@ drug_list_create <- function(resistance_flag = FALSE,
     "partner_drug_ratios" = partner_drug_ratios
   )
 
-  return(l)
+  validate_drug_list(new_param_list(l, "magenta_drug_list"))
+}
+
+#' @rdname drug_list_create
+#' @param x List to validate.
+#' @export
+validate_drug_list <- function(x) {
+  what <- "drug_list"
+  check_fields(x, cpp_contract$drug, what)
+  # resistance_flag may be one value or one per simulation year; the pipeline
+  # slices it to the current year before the list reaches C++
+  check_flag(x$resistance_flag, paste0(what, "$resistance_flag"), n = NULL)
+  check_number(x$number_of_resistance_loci, paste0(what, "$number_of_resistance_loci"),
+    min = 1, integer = TRUE
+  )
+  check_number(x$resistance_loci, paste0(what, "$resistance_loci"),
+    min = 0, n = NULL, integer = TRUE
+  )
+  check_number(x$artemisinin_loci, paste0(what, "$artemisinin_loci"),
+    min = 0, n = NULL, integer = TRUE
+  )
+  check_number(x$cost_of_resistance, paste0(what, "$cost_of_resistance"),
+    min = 0, n = 2^x$number_of_resistance_loci
+  )
+  check_flag(x$absolute_fitness_cost_flag, paste0(what, "$absolute_fitness_cost_flag"))
+  check_flag(x$mft_flag, paste0(what, "$mft_flag"))
+  check_number(x$temporal_cycling, paste0(what, "$temporal_cycling"))
+  check_number(x$next_temporal_cycle, paste0(what, "$next_temporal_cycle"))
+  check_number(x$sequential_cycling, paste0(what, "$sequential_cycling"))
+  check_number(x$sequential_update, paste0(what, "$sequential_update"))
+  check_number(x$number_of_drugs, paste0(what, "$number_of_drugs"), min = 1, integer = TRUE)
+  check_number(x$drug_choice, paste0(what, "$drug_choice"),
+    min = 0, max = x$number_of_drugs - 1, integer = TRUE
+  )
+  check_number(x$partner_drug_ratios, paste0(what, "$partner_drug_ratios"),
+    min = 0, max = 1, n = x$number_of_drugs
+  )
+  if (!is.list(x$drugs) || length(x$drugs) < x$number_of_drugs) {
+    stop(sprintf(
+      "%s$drugs must be a list of at least number_of_drugs (%d) drugs", what,
+      x$number_of_drugs
+    ), call. = FALSE)
+  }
+  for (i in seq_along(x$drugs)) {
+    validate_drug(x$drugs[[i]], what = sprintf("%s$drugs[[%d]]", what, i))
+  }
+  invisible(x)
 }
 
 
@@ -169,7 +229,10 @@ drug_list_create <- function(resistance_flag = FALSE,
 #'  resistant to the partner drug. The last element reflects the probability after
 #'   \code{drug_clearance_max_time} and the first element is the probability at
 #'   time = 0 days.
+#' @return A \code{magenta_drug}: a list describing one therapy, see
+#'   \code{\link{cpp_contract}}.
 #' @importFrom stats pgamma dexp optim
+#' @export
 drug_create <- function(prob_of_lpf = c(1.0, 0.97, 0.80, 0.55),
                         barcode_res_pos = c(0, 1),
                         prophylactic_pos = 1,
@@ -241,11 +304,32 @@ drug_create <- function(prob_of_lpf = c(1.0, 0.97, 0.80, 0.55),
     "hill_res_kA" = hill_model_fit_res$par[2]
   )
 
-  return(res_list)
+  validate_drug(new_param_list(res_list, "magenta_drug"))
+}
+
+#' @rdname drug_create
+#' @param x List to validate.
+#' @param what Name used for the list in error messages.
+#' @export
+validate_drug <- function(x, what = "drug") {
+  check_fields(x, cpp_contract$drug_entry, what)
+  check_number(x$lpf, paste0(what, "$lpf"), min = 0, max = 1, n = NULL)
+  check_number(x$barcode_positions, paste0(what, "$barcode_positions"),
+    min = 0, n = NULL, integer = TRUE
+  )
+  check_number(x$prophylactic_positions, paste0(what, "$prophylactic_positions"),
+    min = 0, n = NULL, integer = TRUE
+  )
+  for (field in c("dur_P", "dur_SPC", "hill_n", "hill_kA", "hill_res_n", "hill_res_kA")) {
+    check_number(x[[field]], paste0(what, "$", field), min = 0)
+  }
+  invisible(x)
 }
 
 
 #' DHA-PPQ Drug Create
+#' @return A \code{magenta_drug}, see \code{\link{drug_create}}.
+#' @export
 drug_create_dhappq <- function() {
   drug_table <- magenta::drug_table
 
@@ -281,6 +365,8 @@ drug_create_dhappq <- function() {
 #' At the moment we will say that any loci associated with lumefantrine resistance
 #' yield the resistant curve but it may be better to have a distinct curve for each
 #' lumefantrine resistant genotype with the T0.5 aligned to the prob of lpf.
+#' @return A \code{magenta_drug}, see \code{\link{drug_create}}.
+#' @export
 drug_create_al <- function() {
   drug_table <- magenta::drug_table
 
@@ -314,6 +400,8 @@ drug_create_al <- function() {
 #' At the moment we will say that any loci associated with AQ resistance
 #' yield the resistant curve but it may be better to have a distinct curve for each
 #' AQ resistant genotype with the T0.5 aligned to the prob of lpf.
+#' @return A \code{magenta_drug}, see \code{\link{drug_create}}.
+#' @export
 drug_create_asaq <- function() {
   drug_table <- magenta::drug_table
 
@@ -341,8 +429,10 @@ drug_create_asaq <- function() {
 #'
 #' @note
 #' Perfect Efficacy Drug. Used as default to match deterministic model easily
+#' @return A \code{magenta_drug}, see \code{\link{drug_create}}.
+#' @export
 drug_create_default_no_resistance <- function() {
-  data.frame(
+  drug <- list(
     "lpf" = 1,
     "barcode_positions" = 0,
     "prophylactic_positions" = 0,
@@ -353,6 +443,7 @@ drug_create_default_no_resistance <- function() {
     "hill_res_n" = 9.274472,
     "hill_res_kA" = 0.02846058
   )
+  validate_drug(new_param_list(drug, "magenta_drug"))
 }
 
 
@@ -372,8 +463,9 @@ drug_create_default_no_resistance <- function() {
 #'   wild type male gametocyte will be chosen to be in oocysts is halved.
 #' @param oocyst_reduction_by_artemisinin Numeric for reduction in oocyst
 #'   under artemisinin drug pressure. default = 0.2
-#'
-
+#' @return A \code{magenta_vector_adaptation_list}: a list with the fields the
+#'   simulation reads, see \code{\link{cpp_contract}}.
+#' @export
 vector_adaptation_list_create <- function(vector_adaptation_loci,
                                           vector_adaptation_flag = FALSE,
                                           local_oocyst_advantage = 0.5,
@@ -389,7 +481,33 @@ vector_adaptation_list_create <- function(vector_adaptation_loci,
     "oocyst_reduction_by_artemisinin" = oocyst_reduction_by_artemisinin
   )
 
-  return(l)
+  validate_vector_adaptation_list(
+    new_param_list(l, "magenta_vector_adaptation_list")
+  )
+}
+
+#' @rdname vector_adaptation_list_create
+#' @param x List to validate.
+#' @export
+validate_vector_adaptation_list <- function(x) {
+  what <- "vector_adaptation_list"
+  check_fields(x, cpp_contract$vector_adaptation, what)
+  check_flag(x$vector_adaptation_flag, paste0(what, "$vector_adaptation_flag"))
+  check_number(x$vector_adaptation_loci, paste0(what, "$vector_adaptation_loci"),
+    min = 0, n = NULL, integer = TRUE
+  )
+  check_number(x$local_oocyst_advantage, paste0(what, "$local_oocyst_advantage"),
+    min = 0, max = 1
+  )
+  check_flag(x$gametocyte_sterilisation_flag, paste0(what, "$gametocyte_sterilisation_flag"))
+  check_number(x$gametocyte_sterilisation, paste0(what, "$gametocyte_sterilisation"),
+    min = 0, max = 1
+  )
+  check_number(x$oocyst_reduction_by_artemisinin,
+    paste0(what, "$oocyst_reduction_by_artemisinin"),
+    min = 0, max = 1
+  )
+  invisible(x)
 }
 
 
@@ -403,9 +521,9 @@ vector_adaptation_list_create <- function(vector_adaptation_loci,
 #' @param nmf_age_brackets Vector for age brackets
 #' @param prob_of_testing_nmf Numeric for probability that a NMF is tested by
 #'   RDT before being treated with antimalarials.
-#'
-#'
-
+#' @return A \code{magenta_nmf_list}: a list with the fields the simulation
+#'   reads, see \code{\link{cpp_contract}}.
+#' @export
 nmf_list_create <- function(nmf_flag = FALSE,
                             mean_nmf_frequency = c(
                               148.578, 139.578, 141.564, 155.874, 179.364,
@@ -425,7 +543,26 @@ nmf_list_create <- function(nmf_flag = FALSE,
     "prob_of_testing_nmf" = prob_of_testing_nmf
   )
 
-  return(l)
+  validate_nmf_list(new_param_list(l, "magenta_nmf_list"))
+}
+
+#' @rdname nmf_list_create
+#' @param x List to validate.
+#' @export
+validate_nmf_list <- function(x) {
+  what <- "nmf_list"
+  check_fields(x, cpp_contract$nmf, what)
+  check_flag(x$nmf_flag, paste0(what, "$nmf_flag"))
+  check_number(x$mean_nmf_frequency, paste0(what, "$mean_nmf_frequency"),
+    min = 0, n = NULL
+  )
+  check_number(x$nmf_age_brackets, paste0(what, "$nmf_age_brackets"),
+    n = length(x$mean_nmf_frequency) + 1
+  )
+  check_number(x$prob_of_testing_nmf, paste0(what, "$prob_of_testing_nmf"),
+    min = 0, max = 1
+  )
+  invisible(x)
 }
 
 
@@ -447,29 +584,26 @@ nmf_list_create <- function(nmf_flag = FALSE,
 #'   automatically calculated in the future. If we are not ding IBD, then this
 #'   should be 1, which is the defalt.
 #' @param plaf Vector of population level allele frequencies for the barcode.
-#'   Default = rep(0.5, barcode_length)
+#'   Default = rep(0.5, num_loci)
 #' @param prob_crossover Vector of probabilities for crossover events for the
-#'   barcode. Default = rep(0.5, barcode_length)
+#'   barcode. Default = rep(0.5, num_loci)
 #' @param starting_ibd Starting ibd. Default = 0
 #' @param mutation_flag Boolean for simulating mutations
 #' @param mutation_rate Probability of mutation occuring and fixing
 #' @param mutation_treated_modifier Multiplier for how much more likely mutations
 #'   are to occur in treated individuals with respect to resistance. Default = 1, i.e
 #'   no difference
-#'
-#' @keywords internal
+#' @return A \code{magenta_barcode_list}: a list with the fields the
+#'   simulation reads, see \code{\link{cpp_contract}}.
+#' @export
 barcode_list_create <- function(num_loci = 24,
                                 ibd_length = 1,
-                                plaf = rep(0.5, 24),
-                                prob_crossover = rep(0.5, 24),
+                                plaf = rep(0.5, num_loci),
+                                prob_crossover = rep(0.5, num_loci),
                                 starting_ibd = 0,
                                 mutation_flag = FALSE,
                                 mutation_rate = rep(1e-7, num_loci),
                                 mutation_treated_modifier = 1.0) {
-  if (length(mutation_rate) != num_loci) {
-    stop("Not enough mutation rates. Should be num_loci length")
-  }
-
   # are we doing ibd or not
   if (ibd_length > 1) {
     barcode_type <- TRUE
@@ -494,5 +628,29 @@ barcode_list_create <- function(num_loci = 24,
     res$mutation_flag <- res$mutation_flag[1]
   }
 
-  return(res)
+  validate_barcode_list(new_param_list(res, "magenta_barcode_list"))
+}
+
+#' @rdname barcode_list_create
+#' @param x List to validate.
+#' @export
+validate_barcode_list <- function(x) {
+  what <- "barcode_list"
+  check_fields(x, cpp_contract$barcode, what)
+  check_number(x$num_loci, paste0(what, "$num_loci"), min = 1, integer = TRUE)
+  check_number(x$ibd_length, paste0(what, "$ibd_length"), min = 1, integer = TRUE)
+  check_number(x$starting_ibd, paste0(what, "$starting_ibd"), min = 0, max = 1)
+  check_number(x$plaf, paste0(what, "$plaf"), min = 0, max = 1, n = x$num_loci)
+  check_number(x$prob_crossover, paste0(what, "$prob_crossover"),
+    min = 0, max = 1, n = x$num_loci
+  )
+  check_flag(x$barcode_type, paste0(what, "$barcode_type"))
+  check_flag(x$mutation_flag, paste0(what, "$mutation_flag"))
+  check_number(x$mutation_rate, paste0(what, "$mutation_rate"),
+    min = 0, max = 1, n = x$num_loci
+  )
+  check_number(x$mutation_treated_modifier, paste0(what, "$mutation_treated_modifier"),
+    min = 0
+  )
+  invisible(x)
 }

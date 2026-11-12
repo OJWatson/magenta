@@ -2,6 +2,7 @@
 % Please edit documentation in R/pipeline_param_lists.R
 \name{drug_create}
 \alias{drug_create}
+\alias{validate_drug}
 \title{Create list describing parameters for drug efficacy and prophlyaxis}
 \usage{
 drug_create(
@@ -16,6 +17,8 @@ drug_create(
   prophylactic_resistant_probability = 1 - pgamma(seq(0, drug_clearance_max_time, 0.2),
     shape = 16.8, rate = 16.8/8.7)
 )
+
+validate_drug(x, what = "drug")
 }
 \arguments{
 \item{prob_of_lpf}{Vector of probabilities for the chance of late
@@ -57,6 +60,14 @@ time = 0 days.}
 resistant to the partner drug. The last element reflects the probability after
  \code{drug_clearance_max_time} and the first element is the probability at
  time = 0 days.}
+
+\item{x}{List to validate.}
+
+\item{what}{Name used for the list in error messages.}
+}
+\value{
+A \code{magenta_drug}: a list describing one therapy, see
+  \code{\link{cpp_contract}}.
 }
 \description{
 Create list describing parameters for drug efficacy and prophlyaxis

@@ -2,6 +2,7 @@
 % Please edit documentation in R/pipeline_param_lists.R
 \name{drug_list_create}
 \alias{drug_list_create}
+\alias{validate_drug_list}
 \title{Create drug list}
 \usage{
 drug_list_create(
@@ -20,6 +21,8 @@ drug_list_create(
   drug_choice = 0,
   partner_drug_ratios = rep(1/number_of_drugs, number_of_drugs)
 )
+
+validate_drug_list(x)
 }
 \arguments{
 \item{resistance_flag}{Boolean are we simulating resistance}
@@ -57,6 +60,12 @@ created by \code{drug_create}.}
 \item{drug_choice}{What's the default drug choice to begin. Default = 0}
 
 \item{partner_drug_ratios}{Numeric vector for ratio of first line drugs used}
+
+\item{x}{List to validate.}
+}
+\value{
+A \code{magenta_drug_list}: a list with the fields the simulation
+  reads, see \code{\link{cpp_contract}}.
 }
 \description{
 List for simulating drug usage for resistance/mft variables

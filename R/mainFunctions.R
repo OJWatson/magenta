@@ -19,50 +19,23 @@
 #'   from \code{vector_adaptation_list}
 #' @param mpl model parameter list from \code{model_param_list_create}
 #'
-#' @export
+#' @keywords internal
 
 param_list_simulation_init_create <- function(N = 1e+04, eqSS, barcode_list,
                                               spatial_list, housekeeping_list,
                                               drug_list, nmf_list,
                                               vector_adaptation_list,
                                               mpl) {
-  ## CHECKS ##
-  ## ---------------------------------------------
-  if (class(eqSS) != "list") stop("eqSS is not of class list")
+  check_number(N, "N", min = 1, integer = TRUE)
+  validate_eqss(eqSS)
+  validate_barcode_list(barcode_list)
+  validate_spatial_list(spatial_list)
+  validate_housekeeping_list(housekeeping_list)
+  validate_drug_list(drug_list)
+  validate_nmf_list(nmf_list)
+  validate_vector_adaptation_list(vector_adaptation_list)
+  validate_model_param_list(mpl)
 
-  if (!identical(
-    names(eqSS),
-    c(
-      "age_brackets", "het_brackets", "Smat",
-      "Dmat", "Amat", "Umat", "Tmat", "Pmat",
-      "IBmat", "ICAmat", "ICMmat", "IDmat",
-      "FOI", "phi",
-      "Sv", "Ev", "Iv", "ICM_Init",
-      "theta"
-    )
-  )) {
-    stop("Incorrect variable names within equilibrium.steady.state")
-  }
-
-  dims.1 <- lapply(eqSS, function(x) {
-    return(dim(x)[1])
-  })
-  dims.2 <- lapply(eqSS, function(x) {
-    return(dim(x)[2])
-  })
-  if (unique(unlist(dims.1[grep("mat", names(eqSS))])) != length(eqSS$age_brackets)) {
-    stop("Dimensions 1 error in equilibrium.stead.state matrices")
-  }
-  if (unique(unlist(dims.2[grep("mat", names(eqSS))])) != length(eqSS$het_brackets)) {
-    stop("Dimensions 2 error in equilibrium.stead.state matrices")
-  }
-
-  numerics <- which(!unlist(lapply(eqSS, is.numeric)))
-  if (length(numerics) != 0) stop(paste(names(numerics), "provided not numeric"))
-
-  ## ---------------------------------------------
-
-  # Create paramlist
   param_list <- list(
     N = N, eqSS = eqSS,
     barcode_list = barcode_list,
@@ -73,8 +46,8 @@ param_list_simulation_init_create <- function(N = 1e+04, eqSS, barcode_list,
     vector_adaptation_list = vector_adaptation_list,
     core_parameter_list = mpl
   )
-
-  return(param_list)
+  stopifnot(identical(names(param_list), cpp_contract$init))
+  param_list
 }
 
 #------------------------------------------------
@@ -95,7 +68,7 @@ param_list_simulation_init_create <- function(N = 1e+04, eqSS, barcode_list,
 #' @param drug_list Drug list
 #' @param barcode_list Barcode parameter list
 #'
-#' @export
+#' @keywords internal
 
 param_list_simulation_update_create <- function(years = 1, ft = 0.4,
                                                 mu_vec = NULL, fv_vec = NULL,
@@ -103,34 +76,22 @@ param_list_simulation_update_create <- function(years = 1, ft = 0.4,
                                                 spatial_list,
                                                 drug_list,
                                                 barcode_list) {
-  ## CHECKS ##
-  ## ---------------------------------------------
-  if (class(statePtr) != "externalptr") stop("state.ptr is not of class externalptr")
-  if (!is.numeric(years)) stop("years provided is not numeric")
-  if (!is.numeric(ft)) stop("ft provided is not numeric")
-  if (!is.null(mu_vec)) {
-    if (!(length(mu_vec) == floor(years * 365))) {
-      stop("mu_vec not long enough")
-    }
-  }
-  if (!is.null(fv_vec)) {
-    if (!(length(fv_vec) == floor(years * 365))) {
-      stop("fv_vec not long enough")
-    }
-  }
-
-  ## ---------------------------------------------
-
-  # generate mu_vec if needed
+  assert_state_ptr(statePtr)
+  check_number(years, "years", min = 0)
+  check_number(ft, "ft", min = 0)
+  n_days <- floor(years * 365)
   if (is.null(mu_vec)) {
-    mu_vec <- rep(0.132, floor(years * 365))
+    mu_vec <- rep(0.132, n_days)
   }
-  # generate fv_vec if needed
   if (is.null(fv_vec)) {
-    fv_vec <- rep(1 / 3, floor(years * 365))
+    fv_vec <- rep(1 / 3, n_days)
   }
+  check_number(mu_vec, "mu_vec", min = 0, n = n_days)
+  check_number(fv_vec, "fv_vec", min = 0, n = n_days)
+  validate_spatial_list(spatial_list)
+  validate_drug_list(drug_list)
+  validate_barcode_list(barcode_list)
 
-  # Create paramlist
   param_list <- list(
     years = years, ft = ft, mu_vec = mu_vec,
     fv_vec = fv_vec,
@@ -139,101 +100,9 @@ param_list_simulation_update_create <- function(years = 1, ft = 0.4,
     drug_list = drug_list,
     barcode_list = barcode_list
   )
-
-  return(param_list)
+  stopifnot(identical(names(param_list), cpp_contract$update))
+  param_list
 }
-
-#------------------------------------------------
-#' Parameter List creation for magenta simulation getting (saving to disk)
-#'
-#' \code{param_list_simulation_get_create} creates suitable parameter list for
-#' \code{simulation_R} for continuing a simulation from memory within the active
-#' session.
-#'
-#' @param statePtr Pointer for current model state as return by \code{simulation_R}$Ptr
-#'
-#' @export
-
-param_list_simulation_get_create <- function(statePtr) {
-  ## CHECKS ##
-  ## ---------------------------------------------
-  if (class(statePtr) != "externalptr") {
-    stop("state.ptr is not of class externalptr")
-  }
-
-  ## ---------------------------------------------
-
-  # Create paramlist
-  param_list <- list(statePtr = statePtr)
-
-  return(param_list)
-}
-
-#------------------------------------------------
-#' Parameter List creation for magenta simulation finalizer
-#'
-#' \code{param_list_simulation_finalizer_create} creates suitable parameter list for
-#' \code{simulation_R} for free memory used by a simulation
-#'
-#' @param statePtr Pointer for current model state as return by \code{simulation_R}$Ptr
-#'
-#' @export
-
-param_list_simulation_finalizer_create <- function(statePtr) {
-  ## CHECKS ##
-  ## ---------------------------------------------
-  if (class(statePtr) != "externalptr") {
-    stop("state.ptr is not of class externalptr")
-  }
-
-  ## ---------------------------------------------
-
-  # Create paramlist
-  param_list <- list(
-    statePtr = statePtr,
-    finalizer = TRUE
-  )
-
-  return(param_list)
-}
-
-#------------------------------------------------
-#' Parameter List creation for loading saved magenta simulation
-#'
-#' \code{param_list_simulation_saved_init_create} creates
-#' suitable parameter list for \code{simulation_R} for continuing a
-#' simulation from memory within the active session.
-#'
-#' @param savedState Saved state generated by
-#'   \code{simulation_R} when provided with a
-#'   \code{param_list_simulation_get_create} parameter list
-#'
-#' @export
-
-param_list_simulation_saved_init_create <- function(savedState) {
-  ## CHECKS ##
-  ## ---------------------------------------------
-  if (class(savedState) != "list") {
-    stop("savedState is not of class list")
-  }
-  required <- c(
-    "population_List",
-    "populations_event_and_strains_List",
-    "scourge_List",
-    "parameters_List",
-    "parameter_housekeeping_List"
-  )
-
-  if (!all(required %in% names(savedState))) {
-    stop("Incorrect variable names within savedState")
-  }
-
-  # Create paramlist
-  param_list <- list(savedState = savedState)
-
-  return(param_list)
-}
-
 
 #------------------------------------------------
 #' Deprecated dispatcher for the simulation bindings
@@ -249,7 +118,6 @@ param_list_simulation_saved_init_create <- function(savedState) {
 #'   \code{param_list_simulation_update_create}
 #' @param seed Seed for the simulation
 #' @keywords internal
-#' @export
 simulation_R <- function(param_list, seed) {
   .Deprecated(
     msg = paste(

@@ -31,7 +31,37 @@ equilibrium_ss_create <- function(eqInit) {
     "theta" = seasonal_profile(eqInit$admin, eqInit$country)
   )
 
-  return(equilibrium_state)
+  validate_eqss(new_param_list(equilibrium_state, "magenta_eqss"))
+}
+
+#' @rdname equilibrium_ss_create
+#' @param x List to validate.
+validate_eqss <- function(x) {
+  what <- "eqSS"
+  check_fields(x, cpp_contract$eqss, what)
+  na <- length(x$age_brackets)
+  nh <- length(x$het_brackets)
+  check_number(x$age_brackets, paste0(what, "$age_brackets"), min = 0, n = NULL)
+  check_number(x$het_brackets, paste0(what, "$het_brackets"), min = 0, n = NULL)
+  mats <- c(
+    "Smat", "Dmat", "Amat", "Umat", "Tmat", "Pmat", "IBmat", "ICAmat",
+    "ICMmat", "IDmat", "FOI", "phi"
+  )
+  for (field in mats) {
+    m <- x[[field]]
+    if (!is.matrix(m) || !is.numeric(m) || anyNA(m) || !identical(dim(m), c(na, nh))) {
+      stop(sprintf(
+        "%s$%s must be a %d by %d numeric matrix (age by heterogeneity brackets)",
+        what, field, na, nh
+      ), call. = FALSE)
+    }
+  }
+  for (field in c("Sv", "Ev", "Iv")) {
+    check_number(x[[field]], paste0(what, "$", field), min = 0)
+  }
+  check_number(x$ICM_Init, paste0(what, "$ICM_Init"), min = 0, n = nh)
+  check_number(x$theta, paste0(what, "$theta"), n = NULL)
+  invisible(x)
 }
 
 
@@ -105,7 +135,28 @@ spl_create <- function(spatial_type = 0,
     stop("metapopulation spatial lists are not implemented")
   }
 
-  spatial_list
+  validate_spatial_list(new_param_list(spatial_list, "magenta_spatial_list"))
+}
+
+#' @rdname spl_create
+#' @param x List to validate.
+validate_spatial_list <- function(x) {
+  what <- "spatial_list"
+  check_fields(x, cpp_contract$spatial, what)
+  check_number(x$spatial_type, paste0(what, "$spatial_type"), min = 0, max = 1, integer = TRUE)
+  check_number(x$cotransmission_freq_vector, paste0(what, "$cotransmission_freq_vector"),
+    min = 1, n = NULL, integer = TRUE
+  )
+  check_number(x$oocyst_freq_vector, paste0(what, "$oocyst_freq_vector"),
+    min = 1, n = NULL, integer = TRUE
+  )
+  check_number(x$imported_cotransmissions_events, paste0(what, "$imported_cotransmissions_events"),
+    min = 0
+  )
+  check_number(x$imported_oocyst_events, paste0(what, "$imported_oocyst_events"), min = 0)
+  check_number(x$plaf, paste0(what, "$plaf"), min = 0, max = 1, n = NULL)
+  check_flag(x$island_imports_plaf_linked_flag, paste0(what, "$island_imports_plaf_linked_flag"))
+  invisible(x)
 }
 
 

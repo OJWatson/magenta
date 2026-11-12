@@ -2,6 +2,7 @@
 % Please edit documentation in R/pipeline_param_lists.R
 \name{nmf_list_create}
 \alias{nmf_list_create}
+\alias{validate_nmf_list}
 \title{Create nmf list}
 \usage{
 nmf_list_create(
@@ -12,6 +13,8 @@ nmf_list_create(
     7300, 9125, 10950, 36850),
   prob_of_testing_nmf = 0.5
 )
+
+validate_nmf_list(x)
 }
 \arguments{
 \item{nmf_flag}{Boolean are we doing non malarial fevers}
@@ -23,6 +26,12 @@ the age bracket considered}
 
 \item{prob_of_testing_nmf}{Numeric for probability that a NMF is tested by
 RDT before being treated with antimalarials.}
+
+\item{x}{List to validate.}
+}
+\value{
+A \code{magenta_nmf_list}: a list with the fields the simulation
+  reads, see \code{\link{cpp_contract}}.
 }
 \description{
 List for simulating non malarial fever

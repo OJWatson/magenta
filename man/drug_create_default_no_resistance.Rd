@@ -6,6 +6,9 @@
 \usage{
 drug_create_default_no_resistance()
 }
+\value{
+A \code{magenta_drug}, see \code{\link{drug_create}}.
+}
 \description{
 Perfect Drug Create
 }

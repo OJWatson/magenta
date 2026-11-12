@@ -6,6 +6,9 @@
 \usage{
 drug_create_asaq()
 }
+\value{
+A \code{magenta_drug}, see \code{\link{drug_create}}.
+}
 \description{
 ASAQ Drug Create
 }
