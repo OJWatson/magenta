@@ -65,7 +65,7 @@ treatment:
 ``` r
 out <- pipeline(EIR = 10, N = 2000, years = 5, ft = 0.4, seed = 1L)
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.3.8
 str(out$Loggers$Treatments)
 ## List of 5
 ##  $ Successful_Treatments         : num 1939
@@ -209,11 +209,11 @@ If the draw succeeds but the individual carries a strain resistant at any of the
 drug's positions, they spend an extra `dur_SPC` days in the treated state before
 moving to prophylaxis.
 
-The code also intends to discount an asymptomatic strain's failure probability
-according to how far through its course it is. At present that discount does not
-take effect, because the fraction is computed with integer arithmetic and
-truncates to zero for any strain partway through its course. It is noted here so
-that the vignette matches the model rather than the intention.
+An asymptomatic strain's failure probability is also discounted according to how
+far through its course it is, so that a strain close to clearing on its own is
+less likely to survive treatment. Up to version 1.3.7 that discount silently did
+nothing, because the fraction was computed with integer arithmetic and truncated
+to zero for any strain partway through its course; it takes effect from 1.3.8.
 
 ### Prophylaxis
 
@@ -344,7 +344,7 @@ res_pipeline <- function(drug_list, years = 20, plaf = rep(0.1, 6),
 
 out_standing <- res_pipeline(dl)
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.3.8
 ## Starting Stochastic Simulation for 20 years
 ```
 
@@ -400,7 +400,7 @@ dl_staged <- drug_list_create(
 
 out_staged <- res_pipeline(dl_staged, years = 30)
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.3.8
 ## Starting Stochastic Simulation for 30 years
 plot_af(af_over_time(out_staged), main = "Resistance switched on at year 10")
 abline(v = 10, lty = 3)
@@ -439,7 +439,7 @@ out_import <- res_pipeline(
   spatial_mosquitoFOI_matrix = c(rep(1, import_years), rep(0, years - import_years))
 )
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.3.8
 ## Starting Stochastic Simulation for 30 years
 
 plot_af(af_over_time(out_import), main = "Imported resistance, selection from year 10")
@@ -479,7 +479,7 @@ out_mutation <- res_pipeline(
   mutation_treated_modifier = 10
 )
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.3.8
 ## Starting Stochastic Simulation for 30 years
 
 plot_af(af_over_time(out_mutation), main = "De novo emergence under DHA-PPQ")
@@ -502,12 +502,12 @@ pos <- seq_len(length(out_mutation) - 1)
 mutations <- colSums(do.call(rbind, lapply(out_mutation[pos], "[[", "mutations")))
 data.frame(locus = loci, mutations = mutations)
 ##                        locus mutations
-## 1                    crt 76T        97
-## 2                   mdr1 86Y        94
-## 3                  mdr1 184F        90
-## 4           mdr1 copy number        68
-## 5               kelch13 580Y        75
-## 6 plasmepsin 2-3 copy number        92
+## 1                    crt 76T        73
+## 2                   mdr1 86Y        85
+## 3                  mdr1 184F        88
+## 4           mdr1 copy number        94
+## 5               kelch13 580Y        77
+## 6 plasmepsin 2-3 copy number        81
 ```
 
 ---
@@ -566,11 +566,11 @@ dl_absolute <- drug_list_create(
 
 out_relative <- res_pipeline(dl_cost, years = 20)
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.3.8
 ## Starting Stochastic Simulation for 20 years
 out_absolute <- res_pipeline(dl_absolute, years = 20)
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.3.8
 ## Starting Stochastic Simulation for 20 years
 
 kelch <- function(out) af_over_time(out)[, "kelch13 580Y"]

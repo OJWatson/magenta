@@ -261,9 +261,11 @@ str(magenta:::vector_adaptation_list_create(
     "oocyst_reduction_by_artemisinin")])
 ```
 
-* **`gametocyte_sterilisation`** multiplies a strain's weight in the pool from
-  which gametocytes are drawn, for hosts who are treated or who recently failed
-  treatment. It changes **which** strain is transmitted, not whether one is.
+* **`gametocyte_sterilisation`** multiplies the weight of an artemisinin
+  *sensitive* strain in the pool from which gametocytes are drawn, for hosts who
+  are treated or who recently failed treatment. It changes **which** strain is
+  transmitted, not whether one is, so it shifts the genetic composition of
+  onward transmission towards resistance without reducing its amount.
 * **`oocyst_reduction_by_artemisinin`** multiplies the number of oocysts formed
   when a mosquito bites a recently treated host. Because the result is passed
   through `ceiling()`, at least one oocyst always forms. It reduces the genetic
@@ -312,26 +314,25 @@ Even a 99% reduction in oocysts barely moves prevalence, because the mosquito
 still becomes infected. This is the empirical confirmation that the existing
 hooks are not a transmission-blocking mechanism.
 
-### Two things to be aware of in the current implementation
+### Two things to be aware of in the implementation
 
-While tracing this, two discrepancies came to light that anyone using these
-parameters should know about.
+While tracing this, two discrepancies came to light. Both only matter when
+`gametocyte_sterilisation_flag = TRUE`, which is off by default.
 
-1. In `src/person.cpp`, the sterilisation multiplier is applied to strains that
-   are resistant at **all** `artemisinin_loci`. The comment immediately above
-   it, and the documentation of `gametocyte_sterilisation`, both describe the
-   opposite intent, namely that the **wild type** contribution should be
-   reduced because artemisinin sterilises sensitive gametocytes. As written,
-   the code advantages the sensitive parasite rather than the resistant one.
-2. In `src/mosquito.cpp`, the reduction is written back into the shared
-   pre-drawn oocyst frequency vector rather than applied to a copy, so the
-   reduced value persists for later mosquitoes that reuse that element until
-   the vector is regenerated at the start of the next year.
-
-Both only matter when `gametocyte_sterilisation_flag = TRUE`, which is off by
-default, so existing results are unaffected. They have been left unchanged here
-because fixing either one changes model behaviour, which is a decision for the
-package maintainer rather than a documentation change.
+1. **Fixed in 1.3.8.** The sterilisation multiplier in `src/person.cpp` was
+   applied to strains resistant at **all** `artemisinin_loci`, the opposite of
+   what the comment above it and the documentation of
+   `gametocyte_sterilisation` describe. Artemisinin sterilises the gametocytes
+   of parasites that are *sensitive* to it, so the multiplier now applies to
+   the sensitive strain. The practical consequence is that switching
+   sterilisation on now gives the artemisinin resistant parasite a transmission
+   advantage, where previously it penalised it.
+2. **Still outstanding.** In `src/mosquito.cpp`, `oocyst_reduction_by_artemisinin`
+   is written back into the shared pre-drawn oocyst frequency vector rather
+   than applied to a copy, so the reduced value persists for later mosquitoes
+   that reuse that element until the vector is regenerated at the start of the
+   next year. Since that code sits in `handle_bite()`, it is best fixed
+   alongside any work that adds a transmission blocking term.
 
 ---
 

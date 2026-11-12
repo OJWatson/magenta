@@ -8,8 +8,27 @@
   `drug_list_create(resistance_flag = TRUE)` with `ft > 0`. A strain whose
   status change day equalled its acquisition day divided by zero. The window is
   now guarded; behaviour is unchanged wherever it previously did not crash.
+* The discounting of an asymptomatic strain's probability of surviving
+  treatment, by how far through its course that strain is, now takes effect. It
+  was computed with integer arithmetic and truncated to zero for any strain
+  partway through its course, so it had silently done nothing. Which strains
+  survive a late parasitological failure is unchanged.
+* Gametocyte sterilisation is now applied to artemisinin *sensitive* strains
+  rather than resistant ones, matching the documented intent that artemisinin
+  sterilises the gametocytes of parasites sensitive to it. Switching
+  `gametocyte_sterilisation_flag` on therefore now gives the artemisinin
+  resistant parasite a transmission advantage, where previously it penalised
+  it. Only affects simulations with that flag set, which is not the default.
 * `drug_list_update()` now says which drug sequential cycling has switched to,
   rather than printing a bare number.
+
+## Known issues
+
+* `oocyst_reduction_by_artemisinin` is written back into the shared pre-drawn
+  oocyst frequency vector in `src/mosquito.cpp` rather than applied to a copy,
+  so a reduced value persists for later mosquitoes reusing that element until
+  the vector is regenerated the following year. Only affects simulations with
+  `gametocyte_sterilisation_flag` set.
 
 ## Documentation
 
