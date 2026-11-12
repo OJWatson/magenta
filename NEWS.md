@@ -13,7 +13,7 @@ handling has changed are listed under "Schedule" below.
   `vector_adaptation_list_create()` and `barcode_list_create()`) is now
   exported, returns a classed list and is checked by a matching
   `validate_*()` function with messages that name the list and field, e.g.
-  `drug_list$drug_choice must be a single whole number between 0 and 0`.
+  `drug_list$partner_drug_ratios must have length 2, not 3`.
   The lists are still plain lists underneath.
 * The field names the C++ simulation reads are recorded once, in
   `cpp_contract`, and a test checks that each constructor produces exactly
