@@ -180,3 +180,22 @@ test_that("the init and update parameter lists are validated and ordered", {
     "statePtr must be an external pointer"
   )
 })
+
+test_that("drug_list_create builds the resistance cost table for any number of loci", {
+  one <- drug_list_create(number_of_resistance_loci = 1, cost_of_resistance = 0.9)
+  expect_equal(one$cost_of_resistance, c(1, 0.9))
+  two <- drug_list_create(number_of_resistance_loci = 2, cost_of_resistance = c(0.9, 0.8))
+  expect_equal(two$cost_of_resistance, c(1, 0.9, 0.8, 0.72))
+  # extra costs beyond the number of loci are dropped
+  extra <- drug_list_create(number_of_resistance_loci = 2, cost_of_resistance = c(0.9, 0.8, 0.5))
+  expect_equal(extra$cost_of_resistance, two$cost_of_resistance)
+  expect_error(
+    drug_list_create(number_of_drugs = 2, partner_drug_ratios = c(0.5, 0.5)),
+    "drug_list\\$drugs must be a list of at least number_of_drugs \\(2\\) drugs"
+  )
+})
+
+test_that("barcode_list_create keeps only the first mutation flag", {
+  bl <- barcode_list_create(num_loci = 2, plaf = c(0.5, 0.5), mutation_flag = c(TRUE, FALSE))
+  expect_identical(bl$mutation_flag, TRUE)
+})

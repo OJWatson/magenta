@@ -115,7 +115,7 @@ drug_list_create <- function(resistance_flag = FALSE,
 
     max_bits <- (2^(number_of_resistance_loci)) - 1
     barcode_poss <- matrix(intToBits(0:max_bits), ncol = 32, byrow = TRUE)
-    barcode_poss <- barcode_poss[, seq_len(number_of_resistance_loci)]
+    barcode_poss <- barcode_poss[, seq_len(number_of_resistance_loci), drop = FALSE]
     results <- rep(1, nrow(barcode_poss))
     count <- 1
 

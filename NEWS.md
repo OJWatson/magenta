@@ -118,6 +118,10 @@ handling has changed are listed under "Schedule" below.
 * Asking for `spatial_type = "metapop"` now stops with a clear message
   instead of failing inside the C++ initialisation. Metapopulation
   simulations were never implemented.
+* `drug_list_create(number_of_resistance_loci = 1)` works; it previously
+  failed building the resistance cost table because the one-column matrix
+  of resistance barcodes was dropped to a vector. The table for two or more
+  loci is unchanged.
 
 ## Removed
 
