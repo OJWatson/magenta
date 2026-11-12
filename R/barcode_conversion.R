@@ -111,3 +111,15 @@ convert_barcode_vectors <- function(sim_save, ID,
 
   return(list("nums" = int.out, "COI" = COI))
 }
+
+# convert a population's IBD barcodes (last strain per individual) to integer
+# vectors, dropping individuals with no strains
+population_ibd_barcodes <- function(barcode_vec, nl) {
+  n.strains <- lapply(barcode_vec, length) %>% unlist()
+  lapply(
+    barcode_vec[which(n.strains > 0)],
+    function(x) {
+      lapply(tail(x, 1), convert_ibd_barcode, nl) %>% unlist()
+    }
+  )
+}
