@@ -184,20 +184,11 @@ pipeline <- function(EIR = 120,
   call$seed <- args$seed
 
   # PRE-SET UP HOUSEKEEPING ------------------------ ####
-  # if no seed is specified then save the seed
   set.seed(seed)
   message(paste0("Seed set to ", seed))
   message("magenta v", utils::packageVersion("magenta"))
 
-  # simulation save variables
-  strain_vars <- c(
-    "Strain_infection_state_vectors",
-    "Strain_day_of_infection_state_change_vectors",
-    "Strain_barcode_vectors"
-  )
-  human_vars <- c("Infection_States", "Zetas", "Ages", "ID")
-
-  # historic intervetnion grab if asked
+  # historic intervention grab if asked
   if (use_historic_interventions && length(years) > 1) {
     ints <- intervention_grab(country = country, admin = admin, year_range = years)
     spl <- spl_grab(country = country, admin = admin, year_range = years)
@@ -209,479 +200,419 @@ pipeline <- function(EIR = 120,
   }
 
   # INITIALISATION --------------------------------- ####
-  # If we don't have a saved state then we initialise first
+  inputs <- list(
+    EIR = EIR, ft = ft, years = years, country = country, admin = admin,
+    num_loci = num_loci, ibd_length = ibd_length, plaf = plaf,
+    prob_crossover = prob_crossover, starting_ibd = starting_ibd,
+    mutation_flag = mutation_flag, mutation_rate = mutation_rate,
+    mutation_treated_modifier = mutation_treated_modifier,
+    spatial_type = spatial_type,
+    spatial_incidence_matrix = spatial_incidence_matrix,
+    spatial_mosquitoFOI_matrix = spatial_mosquitoFOI_matrix,
+    island_imports_plaf_linked_flag = island_imports_plaf_linked_flag,
+    survival_percentage = survival_percentage,
+    oocyst_mean = oocyst_mean, oocyst_shape = oocyst_shape
+  )
+
   if (is.null(saved_state_path)) {
-    # Create parameter list, changine any key parameters
-    mpl <- model_param_list_create(...)
-
-    # Create geometric age brackets
-    age_vector <- age_brackets(100, 40, TRUE)
-
-    # check to change the ft for the initial and odin to reflect 28 day failure rates
-    lpfs <- unlist(lapply(drug_list$drugs, function(x) {
-      x$lpf[1]
-    }))
-    ft_odin <- ft * weighted.mean(lpfs, drug_list$partner_drug_ratios)
-
-    # Create a near equilibirum initial condition
-    eqInit <- equilibrium_init_create(
-      age_vector = age_vector,
-      het_brackets = 5,
-      ft = ft_odin[1],
-      EIR = EIR,
-      country = country,
-      admin = admin,
-      model_param_list = mpl
-    )
-
-    # reset seed here as there is some randomness in equlibirum (Need?)
-    set.seed(seed)
-
-    # Next create the starting state
-    eqSS <- equilibrium_ss_create(eqInit = eqInit)
-
-    # and the barcode parms list
-    plaf_matrix <- plaf_matrix_check(plaf, years)
-    barcode_list <- barcode_list_create(
-      num_loci = num_loci,
-      ibd_length = ibd_length,
-      plaf = plaf_matrix[1, ],
-      prob_crossover = prob_crossover,
-      starting_ibd = starting_ibd,
-      mutation_flag = mutation_flag,
-      mutation_rate = mutation_rate,
-      mutation_treated_modifier = mutation_treated_modifier
-    )
-
-    # handle mutations parms
-    if (length(mutation_flag) == 1) {
-      mutation_flag <- rep(mutation_flag, ceiling(years))
-    }
-
-    # spatial checks and formatting
-    if (!is.null(spatial_type)) {
-      if (spatial_type == "metapop") {
-        stop("metapopulation simulations are not implemented")
-      } else if (spatial_type == "island") {
-        spatial_type <- 1
-      }
-    } else {
-      spatial_type <- 0
-    }
-
-    # make spatial list
-    spatial_incidence_matrix <- spl_matrix_check(spatial_incidence_matrix, years)
-    spatial_mosquitoFOI_matrix <- spl_matrix_check(spatial_mosquitoFOI_matrix, years)
-    spatial_list <- spl_create(
-      spatial_type = spatial_type,
-      human_importation_rate_vector = spatial_incidence_matrix[1, ],
-      mosquito_imporation_rate_vector = spatial_mosquitoFOI_matrix[1, ],
-      cotransmission_freq_vector = ztrgeomintp(10000, 10, survival_percentage),
-      oocyst_freq_vector = ztrnbinom(10000, mean = oocyst_mean, size = oocyst_shape),
-      plaf = plaf_matrix[1, ],
-      island_imports_plaf_linked_flag = island_imports_plaf_linked_flag
-    )
-
-
-    # handle drug parms
-    resistance_flags <- drug_list$resistance_flag
-    if (length(resistance_flags) == 1) {
-      resistance_flags <- rep(resistance_flags, ceiling(years))
-    }
-    drug_list$resistance_flag <- resistance_flags[1]
-
-    # Now check and create the parameter list for use in the Rcpp simulation
-    pl <- param_list_simulation_init_create(
-      N = N, eqSS = eqSS,
-      barcode_list = barcode_list,
-      spatial_list = spatial_list,
-      housekeeping_list = housekeeping_list,
-      drug_list = drug_list,
-      nmf_list = nmf_list,
-      vector_adaptation_list = vector_adaptation_list,
-      mpl = mpl
+    state <- setup_fresh(
+      N = N, inputs = inputs, mpl = model_param_list_create(...),
+      housekeeping_list = housekeeping_list, drug_list = drug_list,
+      nmf_list = nmf_list, vector_adaptation_list = vector_adaptation_list,
+      seed = seed
     )
   } else {
-    # If we have provided the saved state then load this and then delete as can be large
-    saved_state <- readRDS(saved_state_path)
-    saved_inputs <- saved_state$saved_inputs
-    if (is.null(saved_inputs)) {
-      stop("Saved state missing saved_inputs; please re-run the simulation with full_save = TRUE")
-    }
-    barcode_list <- saved_inputs$barcode_list
-    spatial_list <- saved_inputs$spatial_list
-    housekeeping_list <- saved_inputs$housekeeping_list
-    drug_list <- saved_inputs$drug_list
-    vector_adaptation_list <- saved_inputs$vector_adaptation_list
-    nmf_list <- saved_inputs$nmf_list
-    mpl <- saved_inputs$core_parameter_list
-
-    # Create geometric age brackets
-    age_vector <- age_brackets(100, 40, TRUE)
-
-    # check to change the ft for the initial and odin to reflect 28 day failure rates
-    lpfs <- unlist(lapply(drug_list$drugs, function(x) {
-      x$lpf[1]
-    }))
-    ft_odin <- ft * weighted.mean(lpfs, drug_list$partner_drug_ratios)
-
-    # Create a near equilibirum initial condition
-    eqInit <- equilibrium_init_create(
-      age_vector = age_vector,
-      het_brackets = 5,
-      ft = ft_odin[1],
-      EIR = EIR,
-      country = country,
-      admin = admin,
-      model_param_list = mpl
-    )
-
-    # reset seed here as there is some randomness in equlibirum (Need?)
-    set.seed(seed)
-
-    # Next create the starting state
-    eqSS <- equilibrium_ss_create(eqInit = eqInit)
-
-    # and the barcode parms list
-    plaf_matrix <- plaf_matrix_check(plaf, years)
-    barcode_list <- barcode_list_create(
-      num_loci = num_loci,
-      ibd_length = ibd_length,
-      plaf = plaf_matrix[1, ],
-      prob_crossover = prob_crossover,
-      starting_ibd = starting_ibd,
-      mutation_flag = mutation_flag,
-      mutation_rate = mutation_rate,
-      mutation_treated_modifier = mutation_treated_modifier
-    )
-
-    # handle mutations parms
-    if (length(mutation_flag) == 1) {
-      mutation_flag <- rep(mutation_flag, ceiling(years))
-    }
-
-    # spatial checks and formatting
-    if (!is.null(spatial_type)) {
-      if (spatial_type == "metapop") {
-        stop("metapopulation simulations are not implemented")
-      } else if (spatial_type == "island") {
-        spatial_type <- 1
-      }
-    } else {
-      spatial_type <- 0
-    }
-
-    # make spatial list
-    spatial_incidence_matrix <- spl_matrix_check(spatial_incidence_matrix, years)
-    spatial_mosquitoFOI_matrix <- spl_matrix_check(spatial_mosquitoFOI_matrix, years)
-    spatial_list <- spl_create(
-      spatial_type = spatial_type,
-      human_importation_rate_vector = spatial_incidence_matrix[1, ],
-      mosquito_imporation_rate_vector = spatial_mosquitoFOI_matrix[1, ],
-      cotransmission_freq_vector = ztrgeomintp(10000, 10, survival_percentage),
-      oocyst_freq_vector = ztrnbinom(10000, mean = oocyst_mean, size = oocyst_shape),
-      plaf = plaf_matrix[1, ],
-      island_imports_plaf_linked_flag = island_imports_plaf_linked_flag
-    )
-
-
-    # handle drug parms
-    resistance_flags <- drug_list$resistance_flag
-    if (length(resistance_flags) == 1) {
-      resistance_flags <- rep(resistance_flags, ceiling(years))
-    }
-    drug_list$resistance_flag <- resistance_flags[1]
-
-    # clear the saved state
-    saved_state$saved_inputs <- NULL
-
-    # set up
-    pl <- param_list_simulation_saved_init_create(savedState = saved_state)
-    rm(saved_state)
-    gc()
+    state <- setup_from_saved(saved_state_path, inputs = inputs, seed = seed)
   }
+  housekeeping_list <- state$housekeeping_list
 
-  # Create model simulation state
-  sim.out <- simulation_R(param_list = pl, seed = seed)
-
-  # If we just want the set up
-  # INITIALISATIION ONLY --------------------------- ####
+  # INITIALISATION ONLY ---------------------------- ####
   if (set_up_only) {
     message("Set Up Grab")
-    # Now let's save the simulation in full
-    pl2 <- param_list_simulation_get_create(statePtr = sim.out$Ptr)
-    sim_save <- simulation_R(pl2, seed = seed)
-    sim_save$saved_inputs <- list(
-      barcode_list = barcode_list,
-      spatial_list = spatial_list,
-      housekeeping_list = housekeeping_list,
-      drug_list = drug_list,
-      vector_adaptation_list = vector_adaptation_list,
-      nmf_list = nmf_list,
-      core_parameter_list = mpl
-    )
-
+    sim_save <- prepare_state_save(state, seed)
     if (housekeeping_list$clear_up) {
-      pl5 <- param_list_simulation_finalizer_create(sim.out$Ptr)
-      sim.out <- simulation_R(pl5, seed = seed)
+      sim_free(state$sim$Ptr, seed)
       gc()
     }
-
-    # If we want just the humans then get the keybits and save that instead
-    if (full_save) {
-      return(sim_save)
-    }
-    if (human_only_full_save) {
-      Strains <- sim_save$populations_event_and_strains_List[strain_vars]
-      Humans <- c(sim_save$population_List[human_vars], Strains)
-      res <- Humans
-      return(res)
-    } else {
-      res <- sim_save
-      return(res)
-    }
+    return(collect_output(sim_save, human_only = human_only_full_save && !full_save))
   }
 
-
-
-  # DETERMINISTIC MOSQUITO PRE-SIMULATION ---------- #####
-  out <- mu_fv_create(
-    eqInit = eqInit, ft = ft_odin, itn_cov = itn_cov,
+  # DETERMINISTIC MOSQUITO PRE-SIMULATION ---------- ####
+  mu_fv <- mu_fv_create(
+    eqInit = state$eqInit, ft = state$ft_odin, itn_cov = itn_cov,
     irs_cov = irs_cov, years = years
   )
 
-  if (length(ft) == 1 && update_save) {
-    ft <- rep(ft, ceiling(years))
-  }
-
-
-  # SIMULATION WITH LOGGING ------------------------ #####
-  # If we have specified a yearly save we iterate through
-  # the total time in chunks saving the loggers at each stage
+  # SIMULATION ------------------------------------- ####
   if (update_save) {
-    # set up results list
-    res <- list()
-    length(res) <- round((years * 365) / update_length)
-
-    # Update times in days
-    update_times <- (update_length * ((1:(round((years * 365) / update_length)))))
-
-    # Vector for stroing computation time
-    comp_times <- rep(0, length(res) - 1)
-
-    # and set up annual checks for variables that change discretely
-    year <- 1
-    ft_now <- ft[year]
-
-    # messaging
-    message("Starting Stochastic Simulation for ", years, " years")
-    p <- progress::progress_bar$new(
-      format = paste0(" Running: [:bar] :percent eta: :eta"),
-      total = length(res)
-    )
-    p_print <- progress_logging(housekeeping_list, res, p, initial = TRUE)
-
-    # START MAIN SIMULATION LOOP
-    if (length(res) > 1) {
-      for (i in 1:(length(res) - 1)) {
-        # messaging
-        p_print <- progress_logging(housekeeping_list, res, p, i,
-          initial = FALSE, p_print = p_print
-        )
-        comp_times[i] <- Sys.time()
-
-        # annual updates
-        if (floor((update_times[i] - update_length + 1) / 365) == year) {
-          # update the year, ft and resistance flag
-          year <- year + 1
-          ft_now <- ft[year]
-          drug_list$resistance_flag <- resistance_flags[year]
-          barcode_list$mutation_flag <- mutation_flag[year]
-
-          # update the spatial list
-          spatial_list <- spl_create(
-            spatial_type = spatial_type,
-            human_importation_rate_vector = spatial_incidence_matrix[year, ],
-            mosquito_imporation_rate_vector = spatial_mosquitoFOI_matrix[year, ],
-            cotransmission_freq_vector = ztrgeomintp(10000, 10, survival_percentage),
-            oocyst_freq_vector = ztrnbinom(10000, mean = oocyst_mean, size = oocyst_shape),
-            plaf = plaf_matrix[year, ]
-          )
-        }
-
-        # prepare simulation for update
-        pl2 <- param_list_simulation_update_create(
-          years = update_length / 365,
-          ft = ft_now,
-          mu_vec = out$mu[1:update_length + ((i - 1) * update_length)],
-          fv_vec = out$fv[1:update_length + ((i - 1) * update_length)],
-          spatial_list = spatial_list,
-          drug_list = drug_list,
-          barcode_list = barcode_list,
-          statePtr = sim.out$Ptr
-        )
-
-        # carry out simulation
-        sim.out <- simulation_R(pl2, seed = seed)
-
-        # save what we want to save
-        if (is.null(update_save_func)) {
-          res <- update_saves(
-            res = res, i = i, sim.out = sim.out,
-            sample_states = sample_states,
-            sample_size = sample_size, sample_reps = sample_reps,
-            mean_only = mean_only, barcode_list = barcode_list,
-            num_loci = num_loci,
-            genetics_df_without_summarising = genetics_df_without_summarising,
-            save_lineages = save_lineages,
-            human_update_save = human_update_save,
-            summary_saves_only = summary_saves_only,
-            only_allele_freqs = only_allele_freqs,
-            mpl = mpl, seed = seed,
-            full_update_save = full_update_save
-          )
-        } else {
-          res <- update_save_func(res, i, sim.out, mpl, num_loci)
-        }
-
-
-        # drug resistance updates
-        if (i == 1) {
-          drug_list <- drug_list_update(
-            drug_list, year, res[[i]]$overall_treatment_failure
-          )
-        } else {
-          drug_list <- drug_list_update(
-            drug_list, year,
-            mean(c(res[[i - 1]]$overall_treatment_failure, res[[i]]$overall_treatment_failure))
-          )
-        }
-      }
+    if (length(ft) == 1) {
+      ft <- rep(ft, ceiling(years))
     }
-
-
-    # last rep may not occupy a full update length
-    temp_mu <- out$mu[1:update_length + ((i) * update_length)]
-    abridged_length <- sum(!is.na(temp_mu))
-
-    # final run
-    pl2 <- param_list_simulation_update_create(
-      years = abridged_length / 365, ft = ft_now,
-      mu_vec = out$mu[1:abridged_length + ((i) * update_length)],
-      fv_vec = out$fv[1:abridged_length + ((i) * update_length)],
-      spatial_list = spatial_list,
-      drug_list = drug_list,
-      barcode_list = barcode_list,
-      statePtr = sim.out$Ptr
-    )
-    sim.out <- simulation_R(pl2, seed = seed)
-
-    # If we have specified a full save then we grab that and save
-    # it or just the human bits of interest
-    if (full_save || human_only_full_save) {
-      # Now let's save the simulation in full
-      pl2 <- param_list_simulation_get_create(statePtr = sim.out$Ptr)
-      sim_save <- simulation_R(pl2, seed = seed)
-      sim_save$saved_inputs <- list(
-        barcode_list = barcode_list,
-        spatial_list = spatial_list,
-        housekeeping_list = housekeeping_list,
-        drug_list = drug_list,
-        vector_adaptation_list = vector_adaptation_list,
-        nmf_list = nmf_list,
-        core_parameter_list = mpl
-      )
-
-      # If we want just the humans then get the keybits and save that instead
-      if (human_only_full_save) {
-        Strains <- sim_save$populations_event_and_strains_List[strain_vars]
-        Humans <- c(sim_save$population_List[human_vars], Strains)
-        res[[length(res)]] <- Humans
+    saver <- function(res, i, sim_out) {
+      if (is.null(update_save_func)) {
+        update_saves(
+          res = res, i = i, sim.out = sim_out,
+          sample_states = sample_states, sample_size = sample_size,
+          sample_reps = sample_reps, mean_only = mean_only,
+          age_breaks = age_breaks, barcode_list = state$barcode_list,
+          num_loci = num_loci, full_update_save = full_update_save,
+          genetics_df_without_summarising = genetics_df_without_summarising,
+          save_lineages = save_lineages, human_update_save = human_update_save,
+          summary_saves_only = summary_saves_only,
+          only_allele_freqs = only_allele_freqs, mpl = state$mpl, seed = seed
+        )
       } else {
-        res[[length(res)]] <- sim_save
+        update_save_func(res, i, sim_out, state$mpl, num_loci)
       }
-    } else {
-      # If we don't want a full save then just save the Loggers as usual
-      res[[length(res)]] <- sim.out
     }
-
-    # OR SIMULATION NO LOGGING ----------------------- #####
+    run <- run_update_loop(state, mu_fv, years, update_length, ft, saver, seed)
+    state <- run$state
+    res <- run$res
+    if (full_save || human_only_full_save) {
+      sim_save <- prepare_state_save(state, seed)
+      res[[length(res)]] <- collect_output(sim_save, human_only = human_only_full_save)
+    } else {
+      res[[length(res)]] <- state$sim
+    }
   } else {
-    # Set up update for years long
-    pl2 <- param_list_simulation_update_create(
-      years = years, ft = min(ft[ft > 0]),
-      mu_vec = out$mu,
-      fv_vec = out$fv,
-      spatial_list = spatial_list,
-      drug_list = drug_list,
-      barcode_list = barcode_list,
-      statePtr = sim.out$Ptr
-    )
-
-    sim.out <- simulation_R(param_list = pl2, seed = seed)
-
-    # If we have specified a full save or human save then we grab that
-    # and save it or just the human bits of interest
+    state <- run_single_period(state, mu_fv, years, ft, seed)
     if (full_save || human_only_full_save) {
-      # Now let's save the simulation in full
-      pl2 <- param_list_simulation_get_create(statePtr = sim.out$Ptr)
-      sim_save <- simulation_R(pl2, seed = seed)
-      sim_save$saved_inputs <- list(
-        barcode_list = barcode_list,
-        spatial_list = spatial_list,
-        housekeeping_list = housekeeping_list,
-        drug_list = drug_list,
-        vector_adaptation_list = vector_adaptation_list,
-        nmf_list = nmf_list,
-        core_parameter_list = mpl
+      sim_save <- prepare_state_save(state, seed)
+      res <- collect_output(sim_save,
+        human_only = human_only_full_save && !full_save,
+        human_vars = c("Infection_States", "Zetas", "Ages")
       )
-
-      # If we want just the humans then get the keybits and save that instead
-      if (human_only_full_save && !full_save) {
-        human_vars <- c("Infection_States", "Zetas", "Ages")
-        Strains <- sim_save$populations_event_and_strains_List[strain_vars]
-        Humans <- c(sim_save$population_List[human_vars], Strains)
-        res <- Humans
-      } else {
-        res <- sim_save
-      }
     } else {
-      # If we don't want a full save then just save the Loggers as usual
-      res <- sim.out
+      res <- state$sim
     }
   }
 
-  # FINISH ----------------------------------------- #####
-
-  # Save the seed and function call
-  meta <- list()
-  meta$call <- call
-  meta$seed <- seed
-  meta$Ptr <- sim.out$Ptr
-  meta$version <- utils::packageVersion("magenta")
-
-  # append times if an update simulation was done
+  # FINISH ----------------------------------------- ####
+  meta <- list(
+    call = call, seed = seed, Ptr = state$sim$Ptr,
+    version = utils::packageVersion("magenta")
+  )
   if (update_save) {
-    meta$times <- comp_times
+    meta$times <- run$comp_times
   }
-
-  # add this as an attribute
   attr(res, "meta") <- meta
 
-  # if we want all memory to be freed
   if (housekeeping_list$clear_up) {
     res <- return_sim_memory(res)
-    meta$Ptr <- NULL
   }
-  return(res)
+  res
 }
 
+# Build the equilibrium, barcode and spatial inputs from the pipeline()
+# arguments. This is needed whether the simulation starts fresh or from a saved
+# state, because the deterministic mosquito model and the per-period spatial
+# lists are always rebuilt from the current arguments.
+#
+# The order of the random draws matters: equilibrium_init_create() is followed
+# by set.seed(seed) and the importation frequency vectors are then drawn by
+# spl_create() from that freshly seeded generator.
+prepare_inputs <- function(EIR, ft, years, country, admin, mpl, drug_list, seed,
+                           num_loci, ibd_length, plaf, prob_crossover,
+                           starting_ibd, mutation_flag, mutation_rate,
+                           mutation_treated_modifier, spatial_type,
+                           spatial_incidence_matrix, spatial_mosquitoFOI_matrix,
+                           island_imports_plaf_linked_flag,
+                           survival_percentage, oocyst_mean, oocyst_shape) {
+  # geometric age brackets
+  age_vector <- age_brackets(100, 40, TRUE)
+
+  # change the ft for the equilibrium and odin to reflect 28 day failure rates
+  lpfs <- unlist(lapply(drug_list$drugs, function(x) x$lpf[1]))
+  ft_odin <- ft * weighted.mean(lpfs, drug_list$partner_drug_ratios)
+
+  # near equilibrium initial condition
+  eqInit <- equilibrium_init_create(
+    age_vector = age_vector,
+    het_brackets = 5,
+    ft = ft_odin[1],
+    EIR = EIR,
+    country = country,
+    admin = admin,
+    model_param_list = mpl
+  )
+
+  # reset seed here as there is some randomness in equilibrium
+  set.seed(seed)
+  eqSS <- equilibrium_ss_create(eqInit = eqInit)
+
+  # barcode parameters
+  plaf_matrix <- plaf_matrix_check(plaf, years)
+  barcode_list <- barcode_list_create(
+    num_loci = num_loci,
+    ibd_length = ibd_length,
+    plaf = plaf_matrix[1, ],
+    prob_crossover = prob_crossover,
+    starting_ibd = starting_ibd,
+    mutation_flag = mutation_flag,
+    mutation_rate = mutation_rate,
+    mutation_treated_modifier = mutation_treated_modifier
+  )
+  if (length(mutation_flag) == 1) {
+    mutation_flag <- rep(mutation_flag, ceiling(years))
+  }
+
+  # spatial parameters
+  spatial_type <- spatial_type_code(spatial_type)
+  spatial_incidence_matrix <- spl_matrix_check(spatial_incidence_matrix, years)
+  spatial_mosquitoFOI_matrix <- spl_matrix_check(spatial_mosquitoFOI_matrix, years)
+  spatial_list <- spl_create(
+    spatial_type = spatial_type,
+    human_importation_rate_vector = spatial_incidence_matrix[1, ],
+    mosquito_imporation_rate_vector = spatial_mosquitoFOI_matrix[1, ],
+    cotransmission_freq_vector = ztrgeomintp(10000, 10, survival_percentage),
+    oocyst_freq_vector = ztrnbinom(10000, mean = oocyst_mean, size = oocyst_shape),
+    plaf = plaf_matrix[1, ],
+    island_imports_plaf_linked_flag = island_imports_plaf_linked_flag
+  )
+
+  # drug parameters
+  resistance_flags <- drug_list$resistance_flag
+  if (length(resistance_flags) == 1) {
+    resistance_flags <- rep(resistance_flags, ceiling(years))
+  }
+  drug_list$resistance_flag <- resistance_flags[1]
+
+  list(
+    eqInit = eqInit, eqSS = eqSS, ft_odin = ft_odin,
+    plaf_matrix = plaf_matrix, barcode_list = barcode_list,
+    mutation_flags = mutation_flag,
+    spatial_type = spatial_type,
+    spatial_incidence_matrix = spatial_incidence_matrix,
+    spatial_mosquitoFOI_matrix = spatial_mosquitoFOI_matrix,
+    spatial_list = spatial_list,
+    resistance_flags = resistance_flags, drug_list = drug_list,
+    survival_percentage = survival_percentage,
+    oocyst_mean = oocyst_mean, oocyst_shape = oocyst_shape, mpl = mpl
+  )
+}
+
+# Map the user-facing spatial_type to the integer code the C++ reads.
+spatial_type_code <- function(spatial_type) {
+  if (is.null(spatial_type)) {
+    return(0)
+  }
+  if (spatial_type == "metapop") {
+    stop("metapopulation simulations are not implemented")
+  }
+  if (spatial_type == "island") {
+    return(1)
+  }
+  spatial_type
+}
+
+# Start a new simulation from the equilibrium solution. Returns the simulation
+# "state": the C++ handle plus every R-side list the main loop and the savers
+# need.
+setup_fresh <- function(N, inputs, mpl, housekeeping_list, drug_list, nmf_list,
+                        vector_adaptation_list, seed) {
+  state <- do.call(
+    prepare_inputs,
+    c(inputs, list(mpl = mpl, drug_list = drug_list, seed = seed))
+  )
+  state$housekeeping_list <- housekeeping_list
+  state$nmf_list <- nmf_list
+  state$vector_adaptation_list <- vector_adaptation_list
+
+  pl <- param_list_simulation_init_create(
+    N = N, eqSS = state$eqSS,
+    barcode_list = state$barcode_list,
+    spatial_list = state$spatial_list,
+    housekeeping_list = housekeeping_list,
+    drug_list = state$drug_list,
+    nmf_list = nmf_list,
+    vector_adaptation_list = vector_adaptation_list,
+    mpl = mpl
+  )
+  state$sim <- sim_init(pl, seed)
+  state
+}
+
+# Continue a simulation from a saved state on disk. The housekeeping, drug,
+# vector adaptation, non-malarial fever and core parameter lists are taken from
+# the file; the equilibrium, barcode and spatial inputs are rebuilt from the
+# current arguments exactly as for a fresh start.
+setup_from_saved <- function(saved_state_path, inputs, seed) {
+  saved_state <- readRDS(saved_state_path)
+  saved_inputs <- saved_state$saved_inputs
+  if (is.null(saved_inputs)) {
+    stop("Saved state missing saved_inputs; please re-run the simulation with full_save = TRUE")
+  }
+  saved_state$saved_inputs <- NULL
+
+  state <- do.call(
+    prepare_inputs,
+    c(inputs, list(
+      mpl = saved_inputs$core_parameter_list,
+      drug_list = saved_inputs$drug_list,
+      seed = seed
+    ))
+  )
+  state$housekeeping_list <- saved_inputs$housekeeping_list
+  state$nmf_list <- saved_inputs$nmf_list
+  state$vector_adaptation_list <- saved_inputs$vector_adaptation_list
+
+  state$sim <- sim_init_saved(saved_state, seed)
+  rm(saved_state)
+  gc()
+  state
+}
+
+# Rebuild the spatial list for a new simulation year. The importation
+# frequency vectors are redrawn each time, from the generator state the
+# previous C++ call left behind.
+annual_spatial_list <- function(state, year) {
+  spl_create(
+    spatial_type = state$spatial_type,
+    human_importation_rate_vector = state$spatial_incidence_matrix[year, ],
+    mosquito_imporation_rate_vector = state$spatial_mosquitoFOI_matrix[year, ],
+    cotransmission_freq_vector = ztrgeomintp(10000, 10, state$survival_percentage),
+    oocyst_freq_vector = ztrnbinom(10000,
+      mean = state$oocyst_mean, size = state$oocyst_shape
+    ),
+    plaf = state$plaf_matrix[year, ]
+  )
+}
+
+# Run the simulation forward over one block of days.
+run_period <- function(state, days, ft, mu_fv, seed) {
+  pl <- param_list_simulation_update_create(
+    years = length(days) / 365,
+    ft = ft,
+    mu_vec = mu_fv$mu[days],
+    fv_vec = mu_fv$fv[days],
+    spatial_list = state$spatial_list,
+    drug_list = state$drug_list,
+    barcode_list = state$barcode_list,
+    statePtr = state$sim$Ptr
+  )
+  state$sim <- sim_update(pl, seed)
+  state
+}
+
+# Run the whole simulation as a single period with no intermediate saves.
+run_single_period <- function(state, mu_fv, years, ft, seed) {
+  pl <- param_list_simulation_update_create(
+    years = years, ft = min(ft[ft > 0]),
+    mu_vec = mu_fv$mu,
+    fv_vec = mu_fv$fv,
+    spatial_list = state$spatial_list,
+    drug_list = state$drug_list,
+    barcode_list = state$barcode_list,
+    statePtr = state$sim$Ptr
+  )
+  state$sim <- sim_update(pl, seed)
+  state
+}
+
+# Step through the simulation in blocks of update_length days, calling the
+# saver after every block but the last. Annual inputs (ft, resistance and
+# mutation flags, importation and plaf rows) are switched when a block starts
+# in a new year. The last block is run without a save so that the caller can
+# decide what to put in the final slot.
+run_update_loop <- function(state, mu_fv, years, update_length, ft, saver, seed) {
+  n_periods <- round((years * 365) / update_length)
+  res <- vector("list", n_periods)
+  update_times <- update_length * seq_len(n_periods)
+  comp_times <- rep(0, n_periods - 1)
+
+  year <- 1
+  ft_now <- ft[year]
+
+  message("Starting Stochastic Simulation for ", years, " years")
+  p <- progress::progress_bar$new(
+    format = paste0(" Running: [:bar] :percent eta: :eta"),
+    total = n_periods
+  )
+  p_print <- progress_logging(state$housekeeping_list, res, p, initial = TRUE)
+
+  if (n_periods > 1) {
+    for (i in seq_len(n_periods - 1)) {
+      p_print <- progress_logging(state$housekeeping_list, res, p, i,
+        initial = FALSE, p_print = p_print
+      )
+      comp_times[i] <- Sys.time()
+
+      # annual updates
+      if (floor((update_times[i] - update_length + 1) / 365) == year) {
+        year <- year + 1
+        ft_now <- ft[year]
+        state$drug_list$resistance_flag <- state$resistance_flags[year]
+        state$barcode_list$mutation_flag <- state$mutation_flags[year]
+        state$spatial_list <- annual_spatial_list(state, year)
+      }
+
+      days <- seq_len(update_length) + ((i - 1) * update_length)
+      state <- run_period(state, days, ft_now, mu_fv, seed)
+      res <- saver(res, i, state$sim)
+
+      # drug resistance updates
+      state$drug_list <- drug_list_update(
+        state$drug_list, year, recent_treatment_failure(res, i)
+      )
+    }
+  }
+
+  # the last period may not occupy a full update length
+  days <- seq_len(update_length) + ((n_periods - 1) * update_length)
+  days <- days[!is.na(mu_fv$mu[days])]
+  state <- run_period(state, days, ft_now, mu_fv, seed)
+
+  list(state = state, res = res, comp_times = comp_times)
+}
+
+# Treatment failure over the last two saved periods, used by the sequential
+# cycling rule in drug_list_update(). Only the summary savers record it; for
+# the others it is NA.
+recent_treatment_failure <- function(res, i) {
+  recent <- res[seq(max(1, i - 1), i)]
+  tf <- unlist(lapply(recent, function(x) x$overall_treatment_failure))
+  if (is.null(tf)) {
+    return(NA_real_)
+  }
+  mean(tf)
+}
+
+# Copy the full model state back to R and attach the R-side parameter lists
+# that a later call needs to continue the simulation.
+prepare_state_save <- function(state, seed) {
+  sim_save <- sim_get_state(state$sim$Ptr, seed)
+  sim_save$saved_inputs <- list(
+    barcode_list = state$barcode_list,
+    spatial_list = state$spatial_list,
+    housekeeping_list = state$housekeeping_list,
+    drug_list = state$drug_list,
+    vector_adaptation_list = state$vector_adaptation_list,
+    nmf_list = state$nmf_list,
+    core_parameter_list = state$mpl
+  )
+  sim_save
+}
+
+# Reduce a full state save to the human and strain components when only those
+# are wanted.
+collect_output <- function(sim_save, human_only,
+                           human_vars = c("Infection_States", "Zetas", "Ages", "ID")) {
+  if (!human_only) {
+    return(sim_save)
+  }
+  strain_vars <- c(
+    "Strain_infection_state_vectors",
+    "Strain_day_of_infection_state_change_vectors",
+    "Strain_barcode_vectors"
+  )
+  strains <- sim_save$populations_event_and_strains_List[strain_vars]
+  c(sim_save$population_List[human_vars], strains)
+}
 
 #' @noRd
 return_sim_memory <- function(sim) {
   meta <- attr(sim, "meta")
-  pl <- param_list_simulation_finalizer_create(meta$Ptr)
-  simulation_R(pl, seed = meta$seed)
+  sim_free(meta$Ptr, meta$seed)
   for (i in seq_along(sim)) {
     if ("Ptr" %in% names(sim[[i]])) {
       sim[[i]]$Ptr <- NULL
