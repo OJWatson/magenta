@@ -280,22 +280,21 @@ res_pipeline <- function(drug_list, years = 20, plaf = rep(0.1, 6),
   pipeline(EIR = EIR, N = N, years = years, ft = ft,
            num_loci = 6, plaf = plaf,
            update_length = 30, update_save = TRUE,
-           human_update_save = TRUE, summary_saves_only = TRUE,
-           genetics_df_without_summarising = TRUE,
+           output = save_summary(genetics = "allele_freqs"),
            drug_list = drug_list, seed = seed, ...)
 }
 
 out_standing <- res_pipeline(dl)
 ```
 
-The saved elements hold an `af` vector, one allele frequency per locus. The
-final element of the returned list is the simulation itself rather than a
-summary, so it is dropped when pulling results out:
+The saved elements of `out$output` hold an `af` vector, one allele frequency
+per locus. The final element is the loggers at the end of the run rather than
+a summary, so it is dropped when pulling results out:
 
 ```{r af-helper}
 af_over_time <- function(out) {
-  pos <- seq_len(length(out) - 1)
-  af <- do.call(rbind, lapply(out[pos], "[[", "af"))
+  pos <- seq_len(length(out$output) - 1)
+  af <- do.call(rbind, lapply(out$output[pos], "[[", "af"))
   colnames(af) <- loci
   af
 }
@@ -416,8 +415,8 @@ is recorded, which is useful for checking that the rate is doing what you
 expect:
 
 ```{r mutation-counts}
-pos <- seq_len(length(out_mutation) - 1)
-mutations <- colSums(do.call(rbind, lapply(out_mutation[pos], "[[", "mutations")))
+pos <- seq_len(length(out_mutation$output) - 1)
+mutations <- colSums(do.call(rbind, lapply(out_mutation$output[pos], "[[", "mutations")))
 data.frame(locus = loci, mutations = mutations)
 ```
 
@@ -478,7 +477,7 @@ out_absolute <- res_pipeline(dl_absolute, years = 20)
 kelch <- function(out) af_over_time(out)[, "kelch13 580Y"]
 ppq <- function(out) af_over_time(out)[, "plasmepsin 2-3 copy number"]
 
-years_axis <- seq_len(length(out_relative) - 1) / 12
+years_axis <- seq_len(length(out_relative$output) - 1) / 12
 plot(years_axis, kelch(out_relative), type = "l", lwd = 2, col = "steelblue",
      ylim = c(0, 1), xlab = "Years", ylab = "Allele frequency")
 lines(years_axis, ppq(out_relative), lwd = 2, lty = 2, col = "steelblue")
@@ -500,12 +499,11 @@ explicit about the choice when reporting results.
 
 ## Reading resistance out of a simulation
 
-With `summary_saves_only = TRUE` and
-`genetics_df_without_summarising = TRUE`, each saved interval carries a compact
-set of resistance relevant summaries:
+With `output = save_summary(genetics = "allele_freqs")`, each saved interval
+carries a compact set of resistance relevant summaries:
 
 ```{r summary-names}
-names(out_standing[[1]])
+names(out_standing$output[[1]])
 ```
 
 The ones most used are:
@@ -524,10 +522,9 @@ Plotting treatment failure alongside allele frequency is the quickest way to
 check a resistance scenario is behaving:
 
 ```{r treatment-failure, fig.height = 4.5}
-tf <- unlist(lapply(out_standing[seq_len(length(out_standing) - 1)],
-                    "[[", "overall_treatment_failure"))
-prev <- unlist(lapply(out_standing[seq_len(length(out_standing) - 1)],
-                      "[[", "micro_2_10"))
+saved <- out_standing$output[seq_len(length(out_standing$output) - 1)]
+tf <- unlist(lapply(saved, "[[", "overall_treatment_failure"))
+prev <- unlist(lapply(saved, "[[", "micro_2_10"))
 years_axis <- seq_along(tf) / 12
 
 par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))

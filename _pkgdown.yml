@@ -6,9 +6,12 @@ template:
 
 reference:
   - title: "Simulation"
-    desc: "Functions for running magenta."
+    desc: "Running magenta, choosing what it keeps, and the object it returns."
     contents:
       - pipeline
+      - savers
+      - magenta_sim
+      - sim_save
   - title: "Parameter lists"
     desc: >
       "Constructors for the parameter lists passed to pipeline(), each with a

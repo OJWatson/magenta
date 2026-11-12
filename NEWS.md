@@ -53,6 +53,37 @@ handling has changed are listed under "Schedule" below.
   interventions apply whenever every `itn_cov` and `irs_cov` value is zero,
   rather than only when each is the single value `0`.
 
+## Output, results and saved states
+
+* `pipeline()` takes one `output` argument in place of the seven output
+  booleans. It is a *saver*: `save_loggers()` (the default),
+  `save_summary()`, `save_humans()` or `save_full()`, or a
+  `function(state, period, params)` of your own. Each saver has a `final`
+  argument saying what the last element holds (`"loggers"`, `"full"` or
+  `"humans"`). The old flags (`full_save`, `full_update_save`,
+  `human_only_full_save`, `human_update_save`, `summary_saves_only`,
+  `genetics_df_without_summarising`, `only_allele_freqs`, `save_lineages`,
+  `mean_only`, `sample_size`, `sample_states`, `sample_reps`, `age_breaks`
+  and `update_save_func`) still work for this release: they are mapped onto
+  the equivalent saver with a warning that spells out the replacement.
+  `update_saves()` is gone.
+* `pipeline()` returns a `magenta_sim` with elements `output` (what the saver
+  kept; with `update_save = FALSE` the final slot alone), `params`,
+  `schedule` and `meta`, with `print()`, `summary()` and `as.data.frame()`
+  methods. `output` holds exactly what `pipeline()` used to return, so
+  `out[[i]]` becomes `out$output[[i]]`, and the `meta` attribute becomes
+  `out$meta`. `set_up_only = TRUE` still returns the initialised state.
+* `sim_save(sim, path)` writes the full state at the end of a run as one
+  versioned object together with the run's parameters, schedule and
+  metadata; `sim_restore(path)` reads and checks it. `pipeline()` accepts
+  either the path or the restored object as `saved_state_path`, and still
+  accepts the plain full saves written by earlier versions.
+* A human-only final save from a single-period run (`update_save = FALSE`)
+  now includes `ID`, as it always did from an update run. Per-period full
+  saves from `save_full()` carry `saved_inputs`, so any of them can be
+  restarted from.
+* The vignettes are written against the new interface.
+
 ## Simulation bindings
 
 * `simulation_R()` is deprecated and no longer exported. `pipeline()` calls

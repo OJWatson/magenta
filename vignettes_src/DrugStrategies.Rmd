@@ -80,13 +80,12 @@ run_strategy <- function(drug_list, years = 20, seed = 1L) {
   pipeline(EIR = 10, N = 3000, years = years, ft = 0.4,
            num_loci = 6, plaf = rep(0.1, 6),
            update_length = 30, update_save = TRUE,
-           human_update_save = TRUE, summary_saves_only = TRUE,
-           genetics_df_without_summarising = TRUE,
+           output = save_summary(genetics = "allele_freqs"),
            drug_list = drug_list, seed = seed)
 }
 
-# saved intervals, dropping the final element which is the simulation itself
-saved <- function(out) out[seq_len(length(out) - 1)]
+# saved intervals, dropping the final element which holds the end-of-run loggers
+saved <- function(out) out$output[seq_len(length(out$output) - 1)]
 
 af_over_time <- function(out) {
   af <- do.call(rbind, lapply(saved(out), "[[", "af"))
@@ -281,8 +280,7 @@ out_nmf <- pipeline(
   EIR = 10, N = 3000, years = 20, ft = 0.4,
   num_loci = 6, plaf = rep(0.1, 6),
   update_length = 30, update_save = TRUE,
-  human_update_save = TRUE, summary_saves_only = TRUE,
-  genetics_df_without_summarising = TRUE,
+  output = save_summary(genetics = "allele_freqs"),
   drug_list = strategy_list(mft_flag = FALSE,
                             partner_drug_ratios = c(0, 0, 1),
                             drug_choice = 2),

@@ -1,432 +1,134 @@
-test_that("dependent plaf draws with 100% importation fixes plaf", {
-  nl <- 6
-  hd <- 1
-  tl <- 5
-  m <- 0.00084
-  sp <- 0.22
-  start_p <- 0.5
-  plaf <- matrix(
-    c(rep(c(start_p, start_p, 0, 0, 0, 0), hd), rep(0, nl * tl)),
-    ncol = nl, byrow = TRUE
+# Longer end-to-end runs of the resistance, fitness and seasonality machinery.
+# These take a few minutes together and are skipped on CRAN.
+
+resistance_drug_list <- function(hd, tl, absolute = FALSE, always_lpf = FALSE) {
+  dl <- drug_list_create(
+    resistance_flag = c(rep(FALSE, hd), rep(TRUE, tl)),
+    mft_flag = FALSE,
+    artemisinin_loci = 5,
+    absolute_fitness_cost_flag = absolute,
+    partner_drug_ratios = 1,
+    drugs = list(drug_create_asaq()),
+    cost_of_resistance = rep(1 - (0.0005 * 1), 6),
+    sequential_cycling = -1,
+    number_of_drugs = 1,
+    sequential_update = -1,
+    number_of_resistance_loci = 6
   )
+  if (always_lpf) {
+    dl$drugs[[1]]$lpf <- rep(0, length(dl$drugs[[1]]$lpf))
+  }
+  dl
+}
 
-
-  drug_list <-
-    magenta:::drug_list_create(
-      resistance_flag = c(rep(FALSE, hd), rep(TRUE, tl)),
-      mft_flag = FALSE,
-      artemisinin_loci = 5,
-      absolute_fitness_cost_flag = FALSE,
-      partner_drug_ratios = 1,
-      drugs = list(magenta:::drug_create_asaq()),
-      cost_of_resistance = rep(1 - (0.0005 * 1), 6),
-      sequential_cycling = -1,
-      number_of_drugs = 1,
-      sequential_update = -1,
-      number_of_resistance_loci = 6
-    )
-
-  x <- list(
-    EIR = 1,
-    N = 1000,
-    years = hd + tl,
-    itn_cov = 0,
-    save_lineages = TRUE,
-    irs_cov = 0,
-    ft = 0.2,
-    num_loci = nl,
-    sample_reps = 1,
+# An island simulation with one year of importation at the given plaf and
+# then tl years of resistance and mutation, saving allele and lineage
+# frequencies every 30 days.
+run_resistance_sim <- function(hd, tl, plaf_row, drug_list, ft, seed,
+                               housekeeping = housekeeping_list_create(
+                                 quiet = TRUE, cluster = TRUE
+                               )) {
+  nl <- 6
+  pipeline(
+    EIR = 1, N = 1000, years = hd + tl, seed = seed,
+    itn_cov = 0, irs_cov = 0, ft = ft,
+    num_loci = nl, ibd_length = 1,
+    plaf = matrix(c(rep(plaf_row, hd), rep(0, nl * tl)), ncol = nl, byrow = TRUE),
     mutation_flag = c(rep(FALSE, hd), rep(TRUE, tl)),
     mutation_treated_modifier = 100,
-    mutation_rate = rep(m, nl),
-    survival_percentage = sp,
-    genetics_df_without_summarising = TRUE,
+    mutation_rate = rep(0.00084, nl),
+    survival_percentage = 0.22,
+    spatial_type = "island",
     spatial_incidence_matrix = c(rep(1, hd), rep(0, tl)),
     spatial_mosquitoFOI_matrix = c(rep(1, hd), rep(0, tl)),
-    human_only_full_save = FALSE,
-    spatial_type = "island",
-    use_historic_interventions = TRUE,
-    seed = as.integer(runif(1, 1, 1000000000)),
-    sample_size = c(100, 1000),
-    sample_states = c(1, 2, 4),
-    genetics_df_without_summarising = TRUE,
-    ibd_length = 1,
-    update_length = 30,
-    plaf = plaf,
-    update_save = TRUE,
-    human_update_save = TRUE,
-    summary_saves_only = TRUE,
-    housekeeping_list = magenta:::housekeeping_list_create(quiet = TRUE, cluster = TRUE),
+    island_imports_plaf_linked_flag = TRUE,
+    update_save = TRUE, update_length = 30,
+    output = save_summary(
+      genetics = "allele_freqs", lineages = TRUE,
+      sample_size = c(100, 1000), sample_states = c(1, 2, 4), sample_reps = 1
+    ),
+    housekeeping_list = housekeeping,
     drug_list = drug_list,
-    nmf_list = magenta:::nmf_list_create(nmf_flag = FALSE, prob_of_testing_nmf = 1),
-    island_imports_plaf_linked_flag = TRUE
+    nmf_list = nmf_list_create(nmf_flag = FALSE, prob_of_testing_nmf = 1)
   )
+}
 
-  out <- magenta::pipeline(
-    EIR = x$EIR,
-    seed = x$seed,
-    save_lineages = x$save_lineages,
-    N = x$N,
-    mutation_rate = x$mutation_rate,
-    mutation_flag = x$mutation_flag,
-    sample_size = x$sample_size,
-    sample_reps = x$sample_reps,
-    years = x$years,
-    survival_percentage = x$survival_percentage,
-    itn_cov = x$itn_cov,
-    irs_cov = x$irs_cov,
-    ft = x$ft,
-    genetics_df_without_summarising = x$genetics_df_without_summarising,
-    spatial_incidence_matrix = x$spatial_incidence_matrix,
-    spatial_mosquitoFOI_matrix = x$spatial_mosquitoFOI_matrix,
-    spatial_type = x$spatial_type,
-    use_historic_interventions = x$use_historic_interventions,
-    human_only_full_save = x$human_only_full_save,
-    ibd_length = x$ibd_length,
-    num_loci = x$num_loci,
-    sample_states = x$sample_states,
-    update_length = x$update_length,
-    update_save = x$update_save,
-    human_update_save = x$human_update_save,
-    summary_saves_only = x$summary_saves_only,
-    housekeeping_list = x$housekeeping_list,
-    island_imports_plaf_linked_flag = x$island_imports_plaf_linked_flag,
-    drug_list = x$drug_list,
-    nmf_list = x$nmf_list, plaf = x$plaf
+test_that("dependent plaf draws with 100% importation fixes plaf", {
+  skip_on_cran()
+  out <- run_resistance_sim(
+    hd = 1, tl = 5, plaf_row = c(0.5, 0.5, 0, 0, 0, 0),
+    drug_list = resistance_drug_list(1, 5), ft = 0.2,
+    seed = as.integer(runif(1, 1, 1000000000))
   )
-
-
-  expect_equal(as.numeric(which(out[[1]]$lineage > 0)), c(1, 4))
-  expect_false(identical(as.numeric(which(out[[length(out) - 1]]$lineage > 0)), c(1, 4)))
+  res <- out$output
+  expect_equal(as.numeric(which(res[[1]]$lineage > 0)), c(1, 4))
+  expect_false(identical(as.numeric(which(res[[length(res) - 1]]$lineage > 0)), c(1, 4)))
 })
 
-
 test_that("Asymptomatic Prophylaxis Test", {
-  nl <- 6
-  hd <- 1
-  tl <- 5
-  m <- 0.00084
-  sp <- 0.22
-  start_p <- 0.5
-  plaf <- matrix(
-    c(rep(c(start_p, start_p, 0, 0, start_p, 0), hd), rep(0, nl * tl)),
-    ncol = nl, byrow = TRUE
-  )
-
-
-  drug_list <-
-    magenta:::drug_list_create(
-      resistance_flag = c(rep(FALSE, hd), rep(TRUE, tl)),
-      mft_flag = FALSE,
-      artemisinin_loci = 5,
-      absolute_fitness_cost_flag = FALSE,
-      partner_drug_ratios = 1,
-      drugs = list(magenta:::drug_create_asaq()),
-      cost_of_resistance = rep(1 - (0.0005 * 1), 6),
-      sequential_cycling = -1,
-      number_of_drugs = 1,
-      sequential_update = -1,
-      number_of_resistance_loci = 6
-    )
-
-  # Force the drug to always be LPF
-  drug_list$drugs[[1]]$lpf <- rep(0, length(drug_list$drugs[[1]]$lpf))
-
-  x <- list(
-    EIR = 1,
-    N = 1000,
-    years = hd + tl,
-    itn_cov = 0,
-    save_lineages = TRUE,
-    irs_cov = 0,
-    ft = 1,
-    num_loci = nl,
-    sample_reps = 1,
-    mutation_flag = c(rep(FALSE, hd), rep(TRUE, tl)),
-    mutation_treated_modifier = 100,
-    mutation_rate = rep(m, nl),
-    survival_percentage = sp,
-    genetics_df_without_summarising = TRUE,
-    spatial_incidence_matrix = c(rep(1, hd), rep(0, tl)),
-    spatial_mosquitoFOI_matrix = c(rep(1, hd), rep(0, tl)),
-    human_only_full_save = FALSE,
-    spatial_type = "island",
-    use_historic_interventions = TRUE,
-    seed = as.integer(runif(1, 1, 1000000000)),
-    sample_size = c(100, 1000),
-    sample_states = c(1, 2, 4),
-    genetics_df_without_summarising = TRUE,
-    ibd_length = 1,
-    update_length = 30,
-    plaf = plaf,
-    update_save = TRUE,
-    human_update_save = TRUE,
-    summary_saves_only = TRUE,
-    housekeeping_list = magenta:::housekeeping_list_create(
-      quiet = TRUE, cluster = TRUE, quiet_test = FALSE
-    ),
-    drug_list = drug_list,
-    nmf_list = magenta:::nmf_list_create(nmf_flag = FALSE, prob_of_testing_nmf = 1),
-    island_imports_plaf_linked_flag = TRUE
-  )
-
+  skip_on_cran()
   expect_output(
-    out <- magenta::pipeline(
-      EIR = x$EIR,
-      seed = x$seed,
-      save_lineages = x$save_lineages,
-      N = x$N,
-      mutation_rate = x$mutation_rate,
-      mutation_flag = x$mutation_flag,
-      sample_size = x$sample_size,
-      sample_reps = x$sample_reps,
-      years = x$years,
-      survival_percentage = x$survival_percentage,
-      itn_cov = x$itn_cov,
-      irs_cov = x$irs_cov,
-      ft = x$ft,
-      genetics_df_without_summarising = x$genetics_df_without_summarising,
-      spatial_incidence_matrix = x$spatial_incidence_matrix,
-      spatial_mosquitoFOI_matrix = x$spatial_mosquitoFOI_matrix,
-      spatial_type = x$spatial_type,
-      use_historic_interventions = x$use_historic_interventions,
-      human_only_full_save = x$human_only_full_save,
-      ibd_length = x$ibd_length,
-      num_loci = x$num_loci,
-      sample_states = x$sample_states,
-      update_length = x$update_length,
-      update_save = x$update_save,
-      human_update_save = x$human_update_save,
-      summary_saves_only = x$summary_saves_only,
-      housekeeping_list = x$housekeeping_list,
-      island_imports_plaf_linked_flag = x$island_imports_plaf_linked_flag,
-      drug_list = x$drug_list,
-      nmf_list = x$nmf_list, plaf = x$plaf
+    run_resistance_sim(
+      hd = 1, tl = 5, plaf_row = c(0.5, 0.5, 0, 0, 0.5, 0),
+      drug_list = resistance_drug_list(1, 5, always_lpf = TRUE), ft = 1,
+      seed = as.integer(runif(1, 1, 1000000000)),
+      housekeeping = housekeeping_list_create(quiet = TRUE, cluster = TRUE, quiet_test = FALSE)
     ),
     regexp = "Asymptomatic LPF"
   )
 })
 
-
 test_that("Fitness Test", {
-  nl <- 6
-  hd <- 1
-  tl <- 10
-  m <- 0.00084
-  sp <- 0.22
-  start_p <- 0.5
-  plaf <- matrix(
-    c(rep(c(start_p, start_p, 0, 0, start_p, 0), hd), rep(0, nl * tl)),
-    ncol = nl, byrow = TRUE
+  skip_on_cran()
+  seed <- as.integer(runif(1, 1, 1000000000))
+  dl <- resistance_drug_list(1, 10, absolute = TRUE, always_lpf = TRUE)
+  out <- run_resistance_sim(
+    hd = 1, tl = 10, plaf_row = c(0.5, 0.5, 0, 0, 0.5, 0),
+    drug_list = dl, ft = 1, seed = seed
   )
-
-
-  drug_list <-
-    magenta:::drug_list_create(
-      resistance_flag = c(rep(FALSE, hd), rep(TRUE, tl)),
-      mft_flag = FALSE,
-      artemisinin_loci = 5,
-      absolute_fitness_cost_flag = TRUE,
-      partner_drug_ratios = 1,
-      drugs = list(magenta:::drug_create_asaq()),
-      cost_of_resistance = rep(1 - (0.0005 * 1), 6),
-      sequential_cycling = -1,
-      number_of_drugs = 1,
-      sequential_update = -1,
-      number_of_resistance_loci = 6
-    )
-
-  # Force the drug to always be LPF
-  drug_list$drugs[[1]]$lpf <- rep(0, length(drug_list$drugs[[1]]$lpf))
-
-  x <- list(
-    EIR = 1,
-    N = 1000,
-    years = hd + tl,
-    itn_cov = 0,
-    save_lineages = TRUE,
-    irs_cov = 0,
-    ft = 1,
-    num_loci = nl,
-    sample_reps = 1,
-    mutation_flag = c(rep(FALSE, hd), rep(TRUE, tl)),
-    mutation_treated_modifier = 100,
-    mutation_rate = rep(m, nl),
-    survival_percentage = sp,
-    genetics_df_without_summarising = TRUE,
-    spatial_incidence_matrix = c(rep(1, hd), rep(0, tl)),
-    spatial_mosquitoFOI_matrix = c(rep(1, hd), rep(0, tl)),
-    human_only_full_save = FALSE,
-    spatial_type = "island",
-    use_historic_interventions = TRUE,
-    seed = as.integer(runif(1, 1, 1000000000)),
-    sample_size = c(100, 1000),
-    sample_states = c(1, 2, 4),
-    genetics_df_without_summarising = TRUE,
-    ibd_length = 1,
-    update_length = 30,
-    plaf = plaf,
-    update_save = TRUE,
-    human_update_save = TRUE,
-    summary_saves_only = TRUE,
-    housekeeping_list = magenta:::housekeeping_list_create(
-      quiet = TRUE, cluster = TRUE, quiet_test = TRUE
-    ),
-    drug_list = drug_list,
-    nmf_list = magenta:::nmf_list_create(nmf_flag = FALSE, prob_of_testing_nmf = 1),
-    island_imports_plaf_linked_flag = TRUE
+  dl$cost_of_resistance <- dl$cost_of_resistance * 0.5
+  dl$cost_of_resistance[1] <- 1
+  out2 <- run_resistance_sim(
+    hd = 1, tl = 10, plaf_row = c(0.5, 0.5, 0, 0, 0.5, 0),
+    drug_list = dl, ft = 1, seed = seed
   )
-
-  out <- magenta::pipeline(
-    EIR = x$EIR,
-    seed = x$seed,
-    save_lineages = x$save_lineages,
-    N = x$N,
-    mutation_rate = x$mutation_rate,
-    mutation_flag = x$mutation_flag,
-    sample_size = x$sample_size,
-    sample_reps = x$sample_reps,
-    years = x$years,
-    survival_percentage = x$survival_percentage,
-    itn_cov = x$itn_cov,
-    irs_cov = x$irs_cov,
-    ft = x$ft,
-    genetics_df_without_summarising = x$genetics_df_without_summarising,
-    spatial_incidence_matrix = x$spatial_incidence_matrix,
-    spatial_mosquitoFOI_matrix = x$spatial_mosquitoFOI_matrix,
-    spatial_type = x$spatial_type,
-    use_historic_interventions = x$use_historic_interventions,
-    human_only_full_save = x$human_only_full_save,
-    ibd_length = x$ibd_length,
-    num_loci = x$num_loci,
-    sample_states = x$sample_states,
-    update_length = x$update_length,
-    update_save = x$update_save,
-    human_update_save = x$human_update_save,
-    summary_saves_only = x$summary_saves_only,
-    housekeeping_list = x$housekeeping_list,
-    island_imports_plaf_linked_flag = x$island_imports_plaf_linked_flag,
-    drug_list = x$drug_list,
-    nmf_list = x$nmf_list, plaf = x$plaf
-  )
-
-  x$drug_list$cost_of_resistance <- x$drug_list$cost_of_resistance * 0.5
-  x$drug_list$cost_of_resistance[1] <- 1
-
-  out2 <- magenta::pipeline(
-    EIR = x$EIR,
-    seed = x$seed,
-    save_lineages = x$save_lineages,
-    N = x$N,
-    mutation_rate = x$mutation_rate,
-    mutation_flag = x$mutation_flag,
-    sample_size = x$sample_size,
-    sample_reps = x$sample_reps,
-    years = x$years,
-    survival_percentage = x$survival_percentage,
-    itn_cov = x$itn_cov,
-    irs_cov = x$irs_cov,
-    ft = x$ft,
-    genetics_df_without_summarising = x$genetics_df_without_summarising,
-    spatial_incidence_matrix = x$spatial_incidence_matrix,
-    spatial_mosquitoFOI_matrix = x$spatial_mosquitoFOI_matrix,
-    spatial_type = x$spatial_type,
-    use_historic_interventions = x$use_historic_interventions,
-    human_only_full_save = x$human_only_full_save,
-    ibd_length = x$ibd_length,
-    num_loci = x$num_loci,
-    sample_states = x$sample_states,
-    update_length = x$update_length,
-    update_save = x$update_save,
-    human_update_save = x$human_update_save,
-    summary_saves_only = x$summary_saves_only,
-    housekeeping_list = x$housekeeping_list,
-    island_imports_plaf_linked_flag = x$island_imports_plaf_linked_flag,
-    drug_list = x$drug_list,
-    nmf_list = x$nmf_list, plaf = x$plaf
-  )
-
-  expect_true(sum(out[[100]]$af) > sum(out2[[100]]$af))
+  expect_true(sum(out$output[[100]]$af) > sum(out2$output[[100]]$af))
 })
 
-
 test_that("Seasonality Test", {
-  # set up the years
+  skip_on_cran()
   year_range <- 2010:2015
-
-  # grab the interventions for region of interest
   country <- "Democratic Republic of the Congo"
   admin <- "Kinshasa"
-  ints <- intervention_grab(
-    country = country,
-    admin = admin,
-    year_range = year_range
-  )
-  ## Requested: Kinshasa, Democratic Republic of the Congo
-  ## Returned: Kinshasa, Democratic Republic of the Congo
-  # grab the importation from the migration model
+  ints <- intervention_grab(country = country, admin = admin, year_range = year_range)
   spl <- spl_grab(country, admin, year_range)
-  ## Requested: Kinshasa, Democratic Republic of the Congo
-  ## Returned: Kinshasa_City, Democratic Republic of the Congo
-  # get the intervention parmeters
-  ft <- ints$ft
-  itn_cov <- ints$itn_cov
-  irs_cov <- ints$irs_cov
 
-  # load the Malaria Atlas Project Prevalence data
-  MAP_file <- system.file("extdata/MAP_PfPR_population_weighted.csv",
-    package = "magenta"
-  )
+  MAP_file <- system.file("extdata/MAP_PfPR_population_weighted.csv", package = "magenta")
   MAP <- read.csv(MAP_file)
-
-  # work out the EIR for the prevalence in year 2000 (i.e. pre interventions)
   pfpr_micro <- MAP$X2000[which(MAP$Name == admin)]
   EIR <- magenta:::pfpr_to_eir_heuristic(ft = 0, PfPR_micro = pfpr_micro)
-  ## 0.00152858753907675
-  # run the simulation
-  out12 <- pipeline(
-    EIR = EIR,
-    N = 1000,
-    years = length(itn_cov),
-    country = country,
-    admin = admin,
-    itn_cov = itn_cov,
-    irs_cov = irs_cov,
-    ft = ft,
-    spatial_incidence_matrix = spl$incidence,
-    spatial_mosquitoFOI_matrix = spl$mosquitoFOI,
-    spatial_type = "island",
-    human_only_full_save = TRUE,
-    update_length = 30,
-    update_save = TRUE,
-    human_update_save = FALSE,
-    summary_saves_only = FALSE
-  )
 
+  seasonal_run <- function(seasonal) {
+    pipeline(
+      EIR = EIR, N = 1000, years = length(ints$itn_cov),
+      country = if (seasonal) country else NULL,
+      admin = if (seasonal) admin else NULL,
+      itn_cov = ints$itn_cov, irs_cov = ints$irs_cov, ft = ints$ft,
+      spatial_incidence_matrix = spl$incidence,
+      spatial_mosquitoFOI_matrix = spl$mosquitoFOI,
+      spatial_type = "island",
+      update_save = TRUE, update_length = 30,
+      output = save_loggers(final = "humans")
+    )
+  }
+  out12 <- seasonal_run(TRUE)
+  out_no_seas <- seasonal_run(FALSE)
 
-  out_no_seas <- pipeline(
-    EIR = EIR,
-    N = 1000,
-    years = length(itn_cov),
-    itn_cov = itn_cov,
-    irs_cov = irs_cov,
-    ft = ft,
-    spatial_incidence_matrix = spl$incidence,
-    spatial_mosquitoFOI_matrix = spl$mosquitoFOI,
-    spatial_type = "island",
-    human_only_full_save = TRUE,
-    update_length = 30,
-    update_save = TRUE,
-    human_update_save = FALSE,
-    summary_saves_only = FALSE
-  )
-
-  inc_ses <- unlist(lapply(out12, function(x) {
-    sum(unlist(x$Incidence))
-  }))
-  inc <- unlist(lapply(out_no_seas, function(x) {
-    sum(unlist(x$Incidence))
-  }))
+  incidence <- function(sim) {
+    unlist(lapply(sim$output, function(x) sum(unlist(x$Incidence))))
+  }
+  inc_ses <- incidence(out12)
+  inc <- incidence(out_no_seas)
   ranges <- magenta:::ranges(12, length(inc))
   varses <- varno <- c()
   for (i in ranges) {

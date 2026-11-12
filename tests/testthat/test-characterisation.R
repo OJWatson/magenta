@@ -13,10 +13,11 @@ test_that("characterisation: default single-run loggers", {
     housekeeping_list = quiet_housekeeping()
   ))
 
-  expect_named(out, c("Loggers"))
-  expect_type(attr(out, "meta"), "list")
-  expect_equal(attr(out, "meta")$seed, 1L)
-  expect_snapshot_value(snapshot_summary(out), style = "deparse", tolerance = 1e-6)
+  expect_s3_class(out, "magenta_sim")
+  expect_named(out$output, c("Loggers"))
+  expect_type(out$meta, "list")
+  expect_equal(out$meta$seed, 1L)
+  expect_snapshot_value(snapshot_summary(out$output), style = "deparse", tolerance = 1e-6)
 })
 
 test_that("characterisation: update_save loggers over monthly periods", {
@@ -29,8 +30,9 @@ test_that("characterisation: update_save loggers over monthly periods", {
     housekeeping_list = quiet_housekeeping()
   ))
 
-  expect_length(out, round(365 / 30))
-  expect_snapshot_value(snapshot_summary(out), style = "deparse", tolerance = 1e-6)
+  expect_length(out$output, round(365 / 30))
+  expect_equal(nrow(out$schedule), round(365 / 30))
+  expect_snapshot_value(snapshot_summary(out$output), style = "deparse", tolerance = 1e-6)
 })
 
 test_that("characterisation: summary saves with COI summaries", {
@@ -39,18 +41,17 @@ test_that("characterisation: summary saves with COI summaries", {
   out <- suppressMessages(pipeline(
     EIR = 5, years = 1, N = 300, seed = 3L, num_loci = 6,
     update_save = TRUE, update_length = 60,
-    human_update_save = TRUE, summary_saves_only = TRUE,
-    sample_size = Inf, sample_reps = 1, mean_only = TRUE,
+    output = save_summary(sample_size = Inf, sample_reps = 1, mean_only = TRUE),
     housekeeping_list = quiet_housekeeping()
   ))
 
-  first <- out[[1]]
+  first <- out$output[[1]]
   expect_true(all(c(
     "summary_coi", "summary_coi_detected", "summary_polygenom",
     "summary_unique", "summary_cou", "clonality", "barcode_freq",
     "overall_treatment_failure", "pcr_prev", "micro_2_10"
   ) %in% names(first)))
-  expect_snapshot_value(snapshot_summary(out), style = "deparse", tolerance = 1e-6)
+  expect_snapshot_value(snapshot_summary(out$output), style = "deparse", tolerance = 1e-6)
 })
 
 test_that("characterisation: resistance, importation, mutation and lineages", {
@@ -78,17 +79,18 @@ test_that("characterisation: resistance, importation, mutation and lineages", {
     spatial_type = "island", island_imports_plaf_linked_flag = TRUE,
     spatial_incidence_matrix = c(1, 0), spatial_mosquitoFOI_matrix = c(1, 0),
     update_save = TRUE, update_length = 60,
-    human_update_save = TRUE, summary_saves_only = TRUE,
-    genetics_df_without_summarising = TRUE, save_lineages = TRUE,
-    sample_size = c(50, 100), sample_states = c(1, 2, 4),
+    output = save_summary(
+      genetics = "allele_freqs", lineages = TRUE,
+      sample_size = c(50, 100), sample_states = c(1, 2, 4)
+    ),
     drug_list = drug_list,
     nmf_list = nmf_list_create(nmf_flag = TRUE, prob_of_testing_nmf = 0.5),
     housekeeping_list = quiet_housekeeping()
   ))
 
-  expect_true(all(c("af", "lineage", "mutations") %in% names(out[[1]])))
-  expect_length(out[[1]]$lineage, 2^nl)
-  expect_snapshot_value(snapshot_summary(out), style = "deparse", tolerance = 1e-6)
+  expect_true(all(c("af", "lineage", "mutations") %in% names(out$output[[1]])))
+  expect_length(out$output[[1]]$lineage, 2^nl)
+  expect_snapshot_value(snapshot_summary(out$output), style = "deparse", tolerance = 1e-6)
 })
 
 test_that("characterisation: seasonal admin unit with historic interventions", {
@@ -117,7 +119,7 @@ test_that("characterisation: seasonal admin unit with historic interventions", {
     housekeeping_list = quiet_housekeeping()
   ))
 
-  expect_snapshot_value(snapshot_summary(out), style = "deparse", tolerance = 1e-6)
+  expect_snapshot_value(snapshot_summary(out$output), style = "deparse", tolerance = 1e-6)
 })
 
 test_that("characterisation: set_up_only state and full save inputs", {
@@ -125,7 +127,7 @@ test_that("characterisation: set_up_only state and full save inputs", {
 
   state <- suppressMessages(pipeline(
     EIR = 1, years = 1, N = 100, seed = 6L, num_loci = 3,
-    set_up_only = TRUE, full_save = TRUE,
+    set_up_only = TRUE, output = save_loggers(final = "full"),
     housekeeping_list = quiet_housekeeping()
   ))
 
@@ -138,10 +140,10 @@ test_that("characterisation: set_up_only state and full save inputs", {
   full <- suppressMessages(pipeline(
     EIR = 1, years = 1, N = 100, seed = 6L, num_loci = 3,
     update_save = TRUE, update_length = 180,
-    full_save = TRUE,
+    output = save_loggers(final = "full"),
     housekeeping_list = quiet_housekeeping()
   ))
-  final <- full[[length(full)]]
+  final <- full$output[[length(full$output)]]
   expect_named(
     final$saved_inputs,
     c(
