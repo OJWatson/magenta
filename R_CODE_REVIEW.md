@@ -669,9 +669,54 @@ Each phase is one or two PRs; each PR leaves `R CMD check` and the tests green.
 from the `docs-revamp` tip so it merges after the documentation work: snapshot
 tests (`tests/testthat/test-characterisation.R`, Linux only), styler + `.lintr` +
 a lint workflow (zero lints), research code removed, DESCRIPTION brought up to
-date, the plain bug fixes in 4.6 with tests, version 1.4.0 with NEWS. Snapshots
-are unchanged by every later commit on the branch. Phases 1-5 have not started;
-the seed replay and the other behaviour-changing fixes in 4.6 are still open.
+date, the plain bug fixes in 4.6 with tests, version 1.4.0 with NEWS.
+
+Phases 1-3 are done on branch `claude/competent-boyd-0d8538`, cut from the
+Phase 0 tip, as one commit per step with the tests and lints green after each.
+The characterisation snapshot file is unchanged throughout; the tests read
+`out$output` instead of `out` because of the new return object. What landed,
+and where it departs from the plan above:
+
+- *Phase 1.* `R/sim_bindings.R` holds `sim_init()`, `sim_update()`,
+  `sim_get_state()`, `sim_free()` and `sim_init_saved()`; the last is named
+  that rather than `sim_restore()` because 6.5 reserves `sim_restore(path)` for
+  the user-facing function. `simulation_R()` is a deprecated, unexported
+  alias. `pipeline()` is a wrapper over `sim_setup()`, `run_schedule()`,
+  `prepare_state_save()` and `collect_output()` (~120 lines of body).
+- *Phase 2.* `R/params_contract.R` holds `cpp_contract` and the `check_*()`
+  helpers; every constructor returns a classed list and has a `validate_*()`;
+  `tests/testthat/test-params.R` checks the constructors against the contract
+  and the contract against the C++ sources. `model_param_list_create()` is
+  `as.list(environment())` plus derived values, reordered to the contract so
+  the list is unchanged. `R/schedule.R` holds `build_schedule()` with the
+  padding rule of 6.3 (last value forward, longer than `ceiling(years)` is an
+  error); the behaviour changes it implies for odd inputs are in NEWS and none
+  touched a snapshot. The year change that fell on the final period, the
+  single-period `update_save` error and calendar-year `years` were fixed in
+  passing because the schedule made the old code paths unreachable; they are
+  in NEWS too. `Person::m_cA` is initialised in C++ because an uninitialised
+  read showed up in the set_up_only snapshot once allocations changed.
+  Exports: constructors and `build_schedule()` in, Rcpp wrappers,
+  `simulation_R()`, `param_list_simulation_*()` and `%>%` out.
+- *Phase 3.* `R/savers.R` (`save_loggers()`, `save_summary()`,
+  `save_humans()`, `save_full()`, each with `final = "loggers" | "full" |
+  "humans"` for the last slot; a user `function(state, period, params)` is
+  accepted; the old flags map onto a saver with a warning naming the
+  replacement; `update_saves()` deleted). `R/results.R` (`magenta_sim` with
+  `print()`, `summary()`, `as.data.frame()`; `sim_save()` / `sim_restore()`
+  writing a flat, classed, `format_version`ed object that is also accepted
+  by `pipeline(saved_state_path = )`, as are the old plain full saves). The
+  saver's `final` replaces `full_save` / `human_only_full_save` for
+  `set_up_only` too. The vignette sources are rewritten against the new
+  interface.
+
+Still open: Phase 4 (seed replay; `min(ft[ft > 0])` for a single period,
+which the schedule keeps deliberately; the metapop error is done; the
+`human_vars` and single-period `i` items were absorbed above) and Phase 5.
+The two commits on `docs-revamp` after the Phase 0 base (the asymptomatic
+discount and the sterilisation direction) change C++ results and are not on
+this branch; merging them will move the snapshots and needs a deliberate
+`snapshot_accept()`.
 
 **Phase 0: safety net and hygiene (small PRs, no behaviour change).**
 - Characterisation snapshot tests (5.5 item 1).
