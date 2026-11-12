@@ -665,6 +665,14 @@ saver. The attribute-based `meta` goes away.
 
 Each phase is one or two PRs; each PR leaves `R CMD check` and the tests green.
 
+**Status (2026-11-12).** Phase 0 is done on branch `worktree-r-code-review`, cut
+from the `docs-revamp` tip so it merges after the documentation work: snapshot
+tests (`tests/testthat/test-characterisation.R`, Linux only), styler + `.lintr` +
+a lint workflow (zero lints), research code removed, DESCRIPTION brought up to
+date, the plain bug fixes in 4.6 with tests, version 1.4.0 with NEWS. Snapshots
+are unchanged by every later commit on the branch. Phases 1-5 have not started;
+the seed replay and the other behaviour-changing fixes in 4.6 are still open.
+
 **Phase 0: safety net and hygiene (small PRs, no behaviour change).**
 - Characterisation snapshot tests (5.5 item 1).
 - `styler::style_pkg()`; `.lintr`; lintr in CI. One commit, no other changes.
