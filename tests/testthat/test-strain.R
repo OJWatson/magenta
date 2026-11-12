@@ -1,4 +1,3 @@
-context("strain")
 
 test_that("random from plaf", {
   

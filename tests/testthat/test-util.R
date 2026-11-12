@@ -1,4 +1,3 @@
-context("util")
 
 test_that("bitset roundtrip", {
   for (i in 1:10) {

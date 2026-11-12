@@ -1,4 +1,3 @@
-context("simulations")
 
 test_that("dependent plaf draws with 100% importation fixes plaf", {
   
