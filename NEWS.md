@@ -1,7 +1,70 @@
 # magenta 1.4.0
 
-Tidy-up of the R layer ahead of a larger refactor (see `R_CODE_REVIEW.md` in
-the repository for the review and plan). No change to simulation results.
+Restructuring of the R layer (see `R_CODE_REVIEW.md` in the repository for
+the review and plan). Simulation results are unchanged for every
+configuration covered by the characterisation tests; the few inputs whose
+handling has changed are listed under "Schedule" below.
+
+## Parameter lists
+
+* Every parameter list constructor (`model_param_list_create()`,
+  `drug_list_create()`, `drug_create()` and the preset drugs,
+  `housekeeping_list_create()`, `nmf_list_create()`,
+  `vector_adaptation_list_create()` and `barcode_list_create()`) is now
+  exported, returns a classed list and is checked by a matching
+  `validate_*()` function with messages that name the list and field, e.g.
+  `drug_list$drug_choice must be a single whole number between 0 and 0`.
+  The lists are still plain lists underneath.
+* The field names the C++ simulation reads are recorded once, in
+  `cpp_contract`, and a test checks that each constructor produces exactly
+  that set and that the C++ sources read no others.
+* `model_param_list_create()` is written as its arguments plus the derived
+  quantities; the output is the same list as before, in the same order.
+* `barcode_list_create()` defaults `plaf`, `prob_crossover` and
+  `mutation_rate` to `num_loci` entries rather than 24.
+
+## Schedule
+
+* `build_schedule()` turns the yearly inputs to `pipeline()` (`ft`,
+  `itn_cov`, `irs_cov`, `resistance_flag`, `mutation_flag`, `plaf` and the
+  two importation matrices) into one data frame with a row per update
+  period. `pipeline()` runs from it and records the drug used in each
+  period. The schedule is returned in the `meta` attribute.
+* One padding rule replaces the five that were in use: a yearly input shorter
+  than the simulation repeats its *last* value to the end, and one longer
+  than `ceiling(years)` is an error. This changes results only for inputs
+  that relied on the old behaviour: importation matrices with fewer rows than
+  years were padded at the *front* with their first row; `plaf` matrices were
+  padded with their *second* row; `ft`, `itn_cov` and `irs_cov` shorter than
+  `years` were recycled from the start in the deterministic mosquito model
+  and gave `NA` in the stochastic one. Inputs with one value or one value per
+  year, which is every configuration in the tests and vignettes, are
+  unaffected.
+* Each period's inputs, including the last period's, are now applied. Before,
+  a year change that fell on the final period (for example the second year of
+  a two year run with `update_length = 365`) was silently skipped and the
+  previous year's `ft`, flags and importation rates were used.
+* `update_save = TRUE` with a single period (for example `years = 1,
+  update_length = 365`) now runs instead of failing with
+  `object 'i' not found`.
+* A vector of calendar years (`years = 2000:2015`) is accepted again, with or
+  without `use_historic_interventions`.
+* The constant mosquito death and biting rates used when there are no vector
+  interventions apply whenever every `itn_cov` and `irs_cov` value is zero,
+  rather than only when each is the single value `0`.
+
+## Simulation bindings
+
+* `simulation_R()` is deprecated and no longer exported. `pipeline()` calls
+  the C++ entry points through the internal bindings `sim_init()`,
+  `sim_update()`, `sim_get_state()`, `sim_free()` and `sim_init_saved()`.
+  The raw `Simulation_*_cpp()` wrappers, the `param_list_simulation_*()`
+  helpers and the `%>%` re-export are no longer exported.
+* `pipeline()` is now a short wrapper over `sim_setup()`, `run_schedule()`,
+  `prepare_state_save()` and `collect_output()`.
+* `Person::m_cA` is initialised, so the asymptomatic infectivity reported for
+  a never-updated individual in a saved state is `0` rather than whatever was
+  in memory.
 
 ## Bug fixes
 

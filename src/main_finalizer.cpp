@@ -45,7 +45,7 @@ struct Universe {
 //'
 //' @param param_list parameter list generated with \code{param_list_simulation_finalizer_create}
 //' @return list of 1 confirming finalizer has finished
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 Rcpp::List Simulation_Finalizer_cpp(Rcpp::List param_list)
 {

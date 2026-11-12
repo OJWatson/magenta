@@ -422,16 +422,16 @@ test_that("Seasonality Test", {
   )
 
   inc_ses <- unlist(lapply(out12, function(x) {
-    sum(x$Incidence %>% unlist())
+    sum(unlist(x$Incidence))
   }))
   inc <- unlist(lapply(out_no_seas, function(x) {
-    sum(x$Incidence %>% unlist())
+    sum(unlist(x$Incidence))
   }))
   ranges <- magenta:::ranges(12, length(inc))
   varses <- varno <- c()
   for (i in ranges) {
-    varses <- c(varses, inc_ses[i] %>% var())
-    varno <- c(varno, inc[i] %>% var())
+    varses <- c(varses, var(inc_ses[i]))
+    varno <- c(varno, var(inc[i]))
   }
 
   expect_true(mean(varses) > mean(varno))

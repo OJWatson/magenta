@@ -15,3 +15,4 @@ list with ptr to model state and loggers describing the current model state
 \description{
 Continues simulation forward for as long as specified in param_list
 }
+\keyword{internal}
