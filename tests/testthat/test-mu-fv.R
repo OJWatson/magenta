@@ -13,9 +13,9 @@ eq_for <- function(EIR = 5, ft = 0.4, country = NULL, admin = NULL) {
 expect_same_rates <- function(eq, ft, itn_cov, irs_cov, years, int_times = NULL) {
   odin <- suppressMessages(magenta:::run_odin_model(eq, ft, itn_cov, irs_cov, years, int_times))
   direct <- magenta:::mu_fv_from_coverage(eq, ft, itn_cov, irs_cov, years, int_times)
-  expect_equal(nrow(direct), round(years * 365))
-  expect_identical(direct$mu, odin$mu)
-  expect_identical(direct$fv, odin$fv)
+  testthat::expect_equal(nrow(direct), round(years * 365))
+  testthat::expect_identical(direct$mu, odin$mu)
+  testthat::expect_identical(direct$fv, odin$fv)
   invisible(direct)
 }
 
