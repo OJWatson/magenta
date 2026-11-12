@@ -67,7 +67,7 @@ test_that("constructors return classed lists that still behave as lists", {
   expect_s3_class(hk, "list")
   expect_true(is.list(hk))
   expect_identical(hk$quiet_print, TRUE)
-  expect_output(print(hk), "magenta_housekeeping_list")
+  expect_output(print(hk), "<magenta_housekeeping_list> with 4 fields")
 
   dl <- drug_list_create()
   expect_s3_class(dl, "magenta_drug_list")

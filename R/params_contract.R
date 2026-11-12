@@ -245,7 +245,7 @@ check_class <- function(x, class, what) {
 # Stamp a parameter list with its class, keeping it a plain list underneath so
 # that the C++ side and existing code that treats it as a list are unaffected.
 new_param_list <- function(x, class) {
-  structure(x, class = c(class, "list"))
+  structure(x, class = c(class, "magenta_param_list", "list"))
 }
 
 #' @export
