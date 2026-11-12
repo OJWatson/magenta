@@ -5,7 +5,7 @@ run_saved_state_simulation <- function(saved_state_path = NULL, set_up_only = FA
     cluster = TRUE,
     clear_up = TRUE
   )
-  
+
   base_args <- list(
     EIR = 0.1,
     years = 1,
@@ -25,18 +25,17 @@ run_saved_state_simulation <- function(saved_state_path = NULL, set_up_only = FA
     saved_state_path = saved_state_path,
     set_up_only = set_up_only
   )
-  
+
   do.call(pipeline, base_args)
 }
 
 
-
 test_that("pipeline full saves contain restart metadata", {
   skip_on_cran()
-  
+
   full_run <- run_saved_state_simulation()
   expect_gt(length(full_run), 0)
-  
+
   final_state <- full_run[[length(full_run)]]
   expect_true(is.list(final_state$saved_inputs))
   expect_true(all(c(
@@ -53,21 +52,21 @@ test_that("pipeline full saves contain restart metadata", {
 
 test_that("saved state can be reloaded for continuation or inspection", {
   skip_on_cran()
-  
+
   full_run <- run_saved_state_simulation()
   final_state <- full_run[[length(full_run)]]
-  
+
   tf <- tempfile(fileext = ".rds")
   on.exit(unlink(tf), add = TRUE)
   saveRDS(final_state, tf)
-  
+
   resumed <- run_saved_state_simulation(saved_state_path = tf)
   meta <- attr(resumed, "meta")
   expect_true(is.list(meta))
   expect_equal(meta$seed, 42L)
   expect_equal(meta$call$saved_state_path, tf)
   expect_gt(length(resumed), 0)
-  
+
   setup_only <- run_saved_state_simulation(saved_state_path = tf, set_up_only = TRUE)
   expect_equal(setup_only$population_List, final_state$population_List)
   expect_equal(

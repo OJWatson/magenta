@@ -8,9 +8,8 @@
 #'
 #' @keywords internal
 equilibrium_ss_create <- function(eqInit) {
-  
   maternal <- which.max(eqInit$age >= 20)
-  
+
   ## create equilibrium state for return
   equilibrium_state <- list(
     "age_brackets" = eqInit$age_bounds,
@@ -33,10 +32,9 @@ equilibrium_ss_create <- function(eqInit) {
     "ICM_Init" = eqInit$ICM_init_eq,
     "theta" = seasonal_profile(eqInit$admin, eqInit$country)
   )
-  
+
   return(equilibrium_state)
 }
-
 
 
 #' Spatial Parameter List Creation
@@ -47,12 +45,12 @@ equilibrium_ss_create <- function(eqInit) {
 #' @param spatial_type Numeric for spatial type. Default = 0
 #' @param human_importation_rate_vector Vector of human importations into this
 #'   region. Default = NULL
-#' @param mosquito_imporation_rate_vector Vector of mosquito infection 
+#' @param mosquito_imporation_rate_vector Vector of mosquito infection
 #'   importations into this region. Default = NULL
-#' @param cotransmission_freq_vector Vector of size of cotransmissions. This is 
+#' @param cotransmission_freq_vector Vector of size of cotransmissions. This is
 #'   preallocated here and regenerated every simulation update length.
 #'   Default = rep(1, 10000)
-#' @param oocyst_freq_vector Vector of number of ooocysts. This is 
+#' @param oocyst_freq_vector Vector of number of ooocysts. This is
 #'   preallocated here and regenerated every simulation update length.
 #'   Default = rep(1, 10000)
 #' @param num_human_infs Number of human infections from last day. Required for
@@ -62,10 +60,10 @@ equilibrium_ss_create <- function(eqInit) {
 #' @param plaf Population Level Frequency. Default = rep(0.5, 24)
 #' @param island_imports_plaf_linked_flag Boolean. Whether imported barcodes for
 #'  island model are drawn dependent on other sites. Currently, if TRUE, imported
-#'  barcodes will either be all 0 or will be 1 at all loci where plaf > 0, 
-#'  if \code{rbinom(1, 1, plaf[plaf>0][1])} is TRUE. I.e. the first loci greater 
-#'  than 0 is used to determine if the incoming barcode is 1 at all sites where 
-#'  plaf is greater than 0. 
+#'  barcodes will either be all 0 or will be 1 at all loci where plaf > 0,
+#'  if \code{rbinom(1, 1, plaf[plaf>0][1])} is TRUE. I.e. the first loci greater
+#'  than 0 is used to determine if the incoming barcode is 1 at all sites where
+#'  plaf is greater than 0.
 #' @keywords internal
 spl_create <- function(spatial_type = 0,
                        human_importation_rate_vector = NULL,
@@ -76,7 +74,6 @@ spl_create <- function(spatial_type = 0,
                        num_mos_infs = 0,
                        plaf = rep(0.5, 24),
                        island_imports_plaf_linked_flag = FALSE) {
-  
   # if non spatial
   if (spatial_type == 0) {
     spatial_list <- list(
@@ -88,14 +85,13 @@ spl_create <- function(spatial_type = 0,
       "plaf" = plaf,
       "island_imports_plaf_linked_flag" = island_imports_plaf_linked_flag
     )
-    
+
     # if island spatial
   } else if (spatial_type == 1) {
-    
     # first work out how frequent importation is:
     hum_imp_rate <- sum(human_importation_rate_vector, na.rm = TRUE)
     mos_imp_rate <- sum(mosquito_imporation_rate_vector, na.rm = TRUE)
-    
+
     spatial_list <- list(
       "spatial_type" = spatial_type,
       "cotransmission_freq_vector" = cotransmission_freq_vector,
@@ -105,45 +101,44 @@ spl_create <- function(spatial_type = 0,
       "plaf" = plaf,
       "island_imports_plaf_linked_flag" = island_imports_plaf_linked_flag
     )
-    
+
     # if metapop sspatial - NOT FINISHED!
   } else {
-    
     # # first work out how frequent importation is:
     # hum_imp_rate <- human_importation_rate_vector[-which(is.na(human_importation_rate_vector))]
     # mos_imp_rate <- mosquito_imporation_rate_vector[-which(is.na(mosquito_imporation_rate_vector))]
-    # 
+    #
     # # therefore we frst want to work out the number of transmission events that are due to importation and how large
     # metapopulation_number <- which(is.na(human_importation_rate_vector))
     # other_metapopulations <- seq_len(length(human_importation_rate_vector))[-metapopulation_number]
-    # 
+    #
     # cotransmission_import_locations <- table(
     #   sample(other_metapopulations,
     #          size = num_human_infs * sum(human_importation_rate_vector, na.rm = TRUE),
     #          replace = TRUE, prob = hum_imp_rate
     #   ))
-    # 
-    # imported_cotransmission_frequences <- sapply(cotransmission_import_locations, 
+    #
+    # imported_cotransmission_frequences <- sapply(cotransmission_import_locations,
     #                                              function(x) {
     #                                                sample(cotransmission_vector, size = x)
     #                                              })
-    # 
+    #
     # ## push these freqs to redis as "Exported_Cotransmission_Frequencies_x->metapopulation_number"
-    # 
+    #
     # ## repeat for oocysts (with some doubling...)
-    # 
+    #
     # ## grab all the required exports that are coming out of this sim
-    # 
+    #
     # ## pass that in as an exported_co.... etc
-    # 
+    #
     # ## and grab all the imported barcodes/oocysts and their frequencies if this is not the initialisation step
-    # 
+    #
     # ## create spatial_list with 6 vectors
-    # 
-    # 
+    #
+    #
     # imported_cotransmission_events <- sapply(num_human_infs * hum_imp_rate, function(x) rep_len(cotransmission_freq_vector, x))
     # imported_oocyst_events <- rep_len(oocyst_freq_vector, num_mos_infs * mos_imp_rate)
-    # 
+    #
     # spatial_list <- list(
     #   "spatial_type" = spatial_type,
     #   "cotransmission_freq_vector" = cotransmission_freq_vector,
@@ -153,9 +148,6 @@ spl_create <- function(spatial_type = 0,
     # )
   }
 }
-
-
-
 
 
 #' Odin generator function
@@ -282,4 +274,3 @@ generate_default_model <- function(ft, age, dat, generator, dde = TRUE) {
     itn_loss = dat$itn_loss
   )
 }
-

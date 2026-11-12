@@ -1,4 +1,3 @@
-
 #---
 #' Create summary statistics df
 #'
@@ -6,21 +5,20 @@
 #' @param measurevar Character for measure variable
 #' @param groupvars Characters of grouping variables
 #' @param conf.interval numeric for CI
-#' 
+#'
 #' @keywords internal
-summarySE <- function(data=NULL, measurevar="COI", 
-                      groupvars=c("Age_Bin","State"),
-                      conf.interval=.95) {
-  
-  
-  res <- dplyr::group_by_at(data,dplyr::vars(dplyr::one_of(groupvars))) %>% 
-    dplyr::summarise(N=length(!!dplyr::sym(measurevar)),
-                     mean=mean(!!dplyr::sym(measurevar),na.rm=TRUE),
-                     sd = sd(!!dplyr::sym(measurevar),na.rm=TRUE),
-                     se = sd/sqrt(.data$N),
-                     ci = .data$se * suppressWarnings(qt(conf.interval/2 + .5, .data$N-1))
+summarySE <- function(data = NULL, measurevar = "COI",
+                      groupvars = c("Age_Bin", "State"),
+                      conf.interval = .95) {
+  res <- dplyr::group_by_at(data, dplyr::vars(dplyr::one_of(groupvars))) %>%
+    dplyr::summarise(
+      N = length(!!dplyr::sym(measurevar)),
+      mean = mean(!!dplyr::sym(measurevar), na.rm = TRUE),
+      sd = sd(!!dplyr::sym(measurevar), na.rm = TRUE),
+      se = sd / sqrt(.data$N),
+      ci = .data$se * suppressWarnings(qt(conf.interval / 2 + .5, .data$N - 1))
     )
-  
+
   return(as.data.frame(res))
 }
 
@@ -32,17 +30,18 @@ summarySE <- function(data=NULL, measurevar="COI",
 #' @param groupvars What are we summarise by
 #' @param mean_only Are we just calculating the mean. Default = TRUE
 #' @keywords internal
-summarySE_mean_only <- function(data=NULL, measurevar="COI", groupvars=c("Age_Bin","State"),mean_only=TRUE) {
-  
-  if(!mean_only) {
-    return(summarySE(data, measurevar,groupvars))
+summarySE_mean_only <- function(data = NULL, measurevar = "COI", groupvars = c("Age_Bin", "State"), mean_only = TRUE) {
+  if (!mean_only) {
+    return(summarySE(data, measurevar, groupvars))
   } else {
-    var <-  dplyr::sym(measurevar)
-    
-    res <- dplyr::group_by_at(data,groupvars) %>% 
-      dplyr::summarise(N=sum(!is.na(!!var)),
-                       mean=mean(!!var,na.rm=TRUE))
-    
+    var <- dplyr::sym(measurevar)
+
+    res <- dplyr::group_by_at(data, groupvars) %>%
+      dplyr::summarise(
+        N = sum(!is.na(!!var)),
+        mean = mean(!!var, na.rm = TRUE)
+      )
+
     return(as.data.frame(res))
   }
 }
@@ -54,140 +53,125 @@ summarySE_mean_only <- function(data=NULL, measurevar="COI", groupvars=c("Age_Bi
 #' @param measurevar Character for measure variable
 #' @param groupvars What are we summarise by
 #' @param mean_only Are we just calculating the mean. Default = TRUE
-#' @param max Maximum value that can be obsered in the data beign summarised. 
+#' @param max Maximum value that can be obsered in the data beign summarised.
 #'   If greater than zero, all values in data will be set to the max before
 #'   summarising. Default = 0.
 #' @keywords internal
-summarySE_mean_only_max_mean <- function(data=NULL, 
-                                         measurevar="COI", 
-                                         groupvars=c("Age_Bin","State"),
-                                         mean_only=TRUE, 
+summarySE_mean_only_max_mean <- function(data = NULL,
+                                         measurevar = "COI",
+                                         groupvars = c("Age_Bin", "State"),
+                                         mean_only = TRUE,
                                          max = 0) {
-  
   if (nrow(data) != 0) {
     if (max) {
-      data[measurevar][data[measurevar]>max] <- max
+      data[measurevar][data[measurevar] > max] <- max
     }
   }
-  if(!mean_only) {
-    return(summarySE(data, measurevar,groupvars))
+  if (!mean_only) {
+    return(summarySE(data, measurevar, groupvars))
   } else {
-    var <-  dplyr::sym(measurevar)
-    
-    res <- dplyr::group_by_at(data,groupvars) %>% 
-      dplyr::summarise(N=length(!!var),
-                       mean=mean(!!var,na.rm=TRUE))
-    
+    var <- dplyr::sym(measurevar)
+
+    res <- dplyr::group_by_at(data, groupvars) %>%
+      dplyr::summarise(
+        N = length(!!var),
+        mean = mean(!!var, na.rm = TRUE)
+      )
+
     return(as.data.frame(res))
   }
 }
 
 # zero truncated geometric integers
-ztrgeomintp <- function(n, mean, p){
-  
-  ngs <- rgeom(n*1.5,prob = 1/mean)
-  ngs <- round(ngs*p)
-  ngs <- ngs[ngs>0]
-  while(length(ngs) < n) {
-    ng2 <- rgeom(n*1.5,prob = 1/mean)
-    ngs <- c(ngs,round(ng2*p))
-    ngs <- ngs[ngs>0]
+ztrgeomintp <- function(n, mean, p) {
+  ngs <- rgeom(n * 1.5, prob = 1 / mean)
+  ngs <- round(ngs * p)
+  ngs <- ngs[ngs > 0]
+  while (length(ngs) < n) {
+    ng2 <- rgeom(n * 1.5, prob = 1 / mean)
+    ngs <- c(ngs, round(ng2 * p))
+    ngs <- ngs[ngs > 0]
   }
-  
-  ngs <- sample(ngs,size = n,replace=FALSE)
+
+  ngs <- sample(ngs, size = n, replace = FALSE)
   return(ngs)
-  
-  
 }
 
 # zero truncated negative binomial
-ztrnbinom <- function(n,mean,size) {
-  
-  
-  nbs <- rnbinom(n*1.2,size = size, mu = mean)
-  nbs <- nbs[nbs>0]
-  while(length(nbs) < n) {
-    nbs <- c(nbs,rnbinom(n*.5,size = size, mu = mean))
-    nbs <- nbs[nbs>0]
+ztrnbinom <- function(n, mean, size) {
+  nbs <- rnbinom(n * 1.2, size = size, mu = mean)
+  nbs <- nbs[nbs > 0]
+  while (length(nbs) < n) {
+    nbs <- c(nbs, rnbinom(n * .5, size = size, mu = mean))
+    nbs <- nbs[nbs > 0]
   }
-  
-  nbs <- sample(nbs,size = n,replace=FALSE)
+
+  nbs <- sample(nbs, size = n, replace = FALSE)
   return(nbs)
 }
 
 # get the clonality from a list of barcode numbers
-clonality_from_barcode_list <- function(barcode_list){
-  
-  tbl <- table(table(unlist(lapply(barcode_list,unique))))
-  
-  if ("1" %in% names(tbl)){
-    return(tbl[1]/sum(tbl*as.numeric(names(tbl))))
+clonality_from_barcode_list <- function(barcode_list) {
+  tbl <- table(table(unlist(lapply(barcode_list, unique))))
+
+  if ("1" %in% names(tbl)) {
+    return(tbl[1] / sum(tbl * as.numeric(names(tbl))))
   } else {
     return(0)
   }
-  
 }
 
 # get the cou from a list of barcode numbers
-cou_from_barcode_list <- function(barcode_list){
-  
-  tbl <- table(unlist(lapply(barcode_list,unique)))
+cou_from_barcode_list <- function(barcode_list) {
+  tbl <- table(unlist(lapply(barcode_list, unique)))
   samp_size <- sum(tbl)
-  z <- sum((tbl/samp_size)^2)
-  return((z - (1/samp_size))/(1-(1/samp_size)))
-  
+  z <- sum((tbl / samp_size)^2)
+  return((z - (1 / samp_size)) / (1 - (1 / samp_size)))
 }
 
 
 # convert ibd barcode of logicals to a vector of integers
-convert_ibd_barcode <- function(b, nl){
-  
-  ib <- length(b)/nl
-  
+convert_ibd_barcode <- function(b, nl) {
+  ib <- length(b) / nl
+
   br <- seq_len(ib)
-  ibd <- rep(0,nl)
-  for(i in seq_len(nl)){
-    ibd[i] <- bitsToInt(b[br+(ib*(i-1))])
-  }  
-  
+  ibd <- rep(0, nl)
+  for (i in seq_len(nl)) {
+    ibd[i] <- bitsToInt(b[br + (ib * (i - 1))])
+  }
+
   return(ibd)
-  
 }
 
 # convert population's ibd barcodes to list of int vectors
-population_ibd_barcodes <- function(barcode_vec,nl){
-  
-  n.strains <- lapply(barcode_vec,length) %>% unlist()
+population_ibd_barcodes <- function(barcode_vec, nl) {
+  n.strains <- lapply(barcode_vec, length) %>% unlist()
   lapply(
-    barcode_vec[which(n.strains>0)],
-    function(x){
-      lapply(tail(x,1),convert_ibd_barcode,nl) %>% unlist
+    barcode_vec[which(n.strains > 0)],
+    function(x) {
+      lapply(tail(x, 1), convert_ibd_barcode, nl) %>% unlist()
     }
   )
-  
 }
 
 # covert populations' ibd barcodes to list of int vectors using c++
-population_ibd_barcodes_c <- function(barcode_vec,bl,nl,ib){
-  
-  n.strains <- lapply(barcode_vec,length) %>% unlist()
+population_ibd_barcodes_c <- function(barcode_vec, bl, nl, ib) {
+  n.strains <- lapply(barcode_vec, length) %>% unlist()
   lapply(
-    barcode_vec[which(n.strains>0)],
-    function(x){
-      lapply(as.raw(tail(x[[1]],1)),test_ibd_conversion,bl,nl,ib) %>% unlist
+    barcode_vec[which(n.strains > 0)],
+    function(x) {
+      lapply(as.raw(tail(x[[1]], 1)), test_ibd_conversion, bl, nl, ib) %>% unlist()
     }
   )
-  
 }
 
 
 # get the pIBD from a list of barcode numbers
-pibd_from_barcode_list <- function(barcode_list, l_factor_i){
-  
+pibd_from_barcode_list <- function(barcode_list, l_factor_i) {
   t <- rbind_list_base(barcode_list)
-  if(nrow(t)>1){
-    z <- mean(apply(t,2,function(x) sum((tabulate(x,l_factor_i)/length(x))^2)))
-    return((z - (1/nrow(t)))/(1-(1/nrow(t))))
+  if (nrow(t) > 1) {
+    z <- mean(apply(t, 2, function(x) sum((tabulate(x, l_factor_i) / length(x))^2)))
+    return((z - (1 / nrow(t))) / (1 - (1 / nrow(t))))
   } else {
     return(NA)
   }
@@ -213,41 +197,40 @@ pibd_from_barcode_list <- function(barcode_list, l_factor_i){
 #'
 #' @export
 update_saved_state_barcode_plaf <- function(saved_state, target_plaf, seed = NULL) {
-  
   if (!is.list(saved_state)) {
     stop("`saved_state` must be a list produced by readRDS on a saved simulation state.")
   }
-  
+
   validate_plaf_vector(target_plaf)
-  
+
   if (!is.null(seed)) {
     set.seed(seed)
   }
-  
+
   list_paths <- list(
     c("populations_event_and_strains_List", "Strain_barcode_vectors"),
     c("populations_event_and_strains_List", "Infection_barcode_realisation_vectors"),
     c("scourge_List", "Mosquito_Oocyst_barcode_male_vectors"),
     c("scourge_List", "Mosquito_Oocyst_barcode_female_vectors")
   )
-  
+
   adjusted_matrices <- list()
-  
+
   for (path in list_paths) {
     if (!has_nested_element(saved_state, path)) {
       stop(sprintf("Saved state does not contain `%s`.", paste(path, collapse = "$")))
     }
-    
+
     barcode_list <- get_nested_element(saved_state, path)
     flattened <- flatten_barcode_vectors(barcode_list)
-    
+
     if (length(flattened$flat) == 0) {
       stop(sprintf(
         "Cannot adjust PLAF for `%s` because it does not contain any barcode vectors.",
         paste(path, collapse = "$")
       ))
     }
-    
+
     barcode_length <- length(flattened$flat[[1]])
     if (length(target_plaf) != barcode_length) {
       stop(sprintf(
@@ -255,16 +238,16 @@ update_saved_state_barcode_plaf <- function(saved_state, target_plaf, seed = NUL
         length(target_plaf), paste(path, collapse = "$"), barcode_length
       ))
     }
-    
+
     barcode_matrix <- flat_to_matrix(flattened$flat, barcode_length)
     adjusted_matrix <- adjust_matrix_to_plaf(barcode_matrix, target_plaf)
-    
+
     saved_state <- set_nested_element(
       saved_state,
       path,
       rebuild_barcode_vectors(adjusted_matrix, flattened$counts)
     )
-    
+
     adjusted_matrices[[paste(path, collapse = "$")]] <- adjusted_matrix
   }
 
@@ -308,7 +291,7 @@ set_nested_element <- function(x, path, value) {
     x[[path[[1]]]] <- value
     return(x)
   }
-  
+
   head_path <- path[[1]]
   x[[head_path]] <- set_nested_element(x[[head_path]], path[-1], value)
   x
@@ -318,19 +301,19 @@ flatten_barcode_vectors <- function(barcode_list) {
   counts <- integer(length(barcode_list))
   flat <- list()
   flat_idx <- 0L
-  
+
   for (i in seq_along(barcode_list)) {
     entry <- barcode_list[[i]]
     if (is.null(entry)) {
       entry <- list()
     }
-    
+
     if (!is.list(entry)) {
       entry <- list(entry)
     }
-    
+
     counts[i] <- length(entry)
-    
+
     if (counts[i] > 0) {
       for (j in seq_len(counts[i])) {
         flat_idx <- flat_idx + 1L
@@ -338,7 +321,7 @@ flatten_barcode_vectors <- function(barcode_list) {
       }
     }
   }
-  
+
   list(flat = flat, counts = counts)
 }
 
@@ -346,14 +329,14 @@ flat_to_matrix <- function(flat, barcode_length) {
   if (length(flat) == 0) {
     return(matrix(NA_real_, nrow = 0, ncol = barcode_length))
   }
-  
+
   mat <- t(vapply(flat, function(x) {
     if (length(x) != barcode_length) {
       stop("All barcode vectors must have the same length.")
     }
     as.integer(x)
   }, integer(barcode_length)))
-  
+
   storage.mode(mat) <- "integer"
   mat
 }
@@ -363,7 +346,7 @@ rebuild_barcode_vectors <- function(barcode_matrix, counts) {
   storage.mode(barcode_matrix) <- "integer"
   idx <- 0L
   res <- vector("list", length(counts))
-  
+
   for (i in seq_along(counts)) {
     n <- counts[i]
     if (n == 0L) {
@@ -377,7 +360,7 @@ rebuild_barcode_vectors <- function(barcode_matrix, counts) {
       res[[i]] <- res_i
     }
   }
-  
+
   res
 }
 
@@ -386,20 +369,20 @@ adjust_matrix_to_plaf <- function(barcode_matrix, target_plaf) {
   if (n == 0) {
     return(barcode_matrix)
   }
-  
+
   barcode_matrix <- as.matrix(barcode_matrix)
   storage.mode(barcode_matrix) <- "integer"
-  
+
   for (col_idx in seq_along(target_plaf)) {
     target_count <- round(target_plaf[col_idx] * n)
-    
+
     if (target_count < 0 || target_count > n) {
       stop("`target_plaf` results in impossible allele counts.")
     }
-    
+
     current_count <- sum(barcode_matrix[, col_idx])
     diff <- target_count - current_count
-    
+
     if (diff > 0) {
       zero_idx <- which(barcode_matrix[, col_idx] == 0L)
       if (length(zero_idx) < diff) {
@@ -424,7 +407,7 @@ adjust_matrix_to_plaf <- function(barcode_matrix, target_plaf) {
       }
     }
   }
-  
+
   validate_plaf(barcode_matrix, target_plaf, "barcode vectors")
   barcode_matrix
 }
@@ -433,15 +416,15 @@ validate_plaf <- function(barcode_matrix, target_plaf, context) {
   if (nrow(barcode_matrix) == 0) {
     return(invisible(NULL))
   }
-  
-  if (!identical(round(target_plaf*nrow(barcode_matrix)), colSums(barcode_matrix))) {
+
+  if (!identical(round(target_plaf * nrow(barcode_matrix)), colSums(barcode_matrix))) {
     stop(sprintf(
       "Failed to match target PLAF for %s. Expected %s but obtained %s.",
       context,
-      paste(paste(round(target_plaf*nrow(barcode_matrix)), collapse = ", "), "out of", nrow(barcode_matrix)),
+      paste(paste(round(target_plaf * nrow(barcode_matrix)), collapse = ", "), "out of", nrow(barcode_matrix)),
       paste(colSums(barcode_matrix), collapse = ", ")
     ))
   }
-  
+
   invisible(NULL)
 }
