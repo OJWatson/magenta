@@ -98,64 +98,6 @@ spl_grab <- function(country, admin, year_range) {
 }
 
 
-#' Spatial matrix grab
-#'
-#' Grabs spatial incidence and mosquitoFOI matrix from database
-#'
-#' @param matrix Spatial matrix for 2000 to 2017
-#' @param years Years desired
-#'
-#' @keywords internal
-spl_matrix_check <- function(matrix, years) {
-  if (is.matrix(matrix)) {
-    if (dim(matrix)[1] != ceiling(years)) {
-      matrix <- rbind(
-        matrix(rep(matrix[1, ], ceiling(years) - dim(matrix)[1]),
-          ncol = dim(matrix)[2],
-          byrow = TRUE
-        ),
-        matrix
-      )
-    }
-  }
-
-  if (is.vector(matrix)) {
-    if (length(matrix) != ceiling(years)) {
-      matrix <- c(rep(matrix[1], ceiling(years) - length(matrix)), matrix)
-    }
-    matrix <- as.matrix(matrix)
-  }
-
-  return(matrix)
-}
-
-#' plaf matrix check
-#'
-#' @details Checks length formatting etc of population level allele frequency matrix
-#'
-#' @param matrix plaf matrix
-#' @param years Years desired
-#' @keywords internal
-plaf_matrix_check <- function(matrix, years) {
-  if (is.matrix(matrix)) {
-    if (dim(matrix)[1] != ceiling(years)) {
-      matrix <- rbind(
-        matrix,
-        matrix(rep(matrix[2, ], ceiling(years) - dim(matrix)[1]),
-          ncol = dim(matrix)[2], byrow = TRUE
-        )
-      )
-    }
-  }
-
-  if (is.vector(matrix)) {
-    matrix <- c(rep(matrix, years - 1), matrix)
-    matrix <- matrix(matrix, nrow = ceiling(years), byrow = TRUE)
-  }
-
-  return(matrix)
-}
-
 #' Intervention grab
 #'
 #' @details Grabs ITN, IRS  ft from database
@@ -278,7 +220,7 @@ mu_fv_create <- function(eqInit,
                          int_times = NULL,
                          full = FALSE,
                          odin_model = system.file("extdata/odin_itn_irs.R", package = "magenta")) {
-  if (identical(irs_cov, 0) && identical(itn_cov, 0)) {
+  if (all(irs_cov == 0) && all(itn_cov == 0)) {
     out <- data.frame(
       "mu" = rep(0.132, length(seq_len(round(years * 365)) + 1)),
       "fv" = rep(0.333, length(seq_len(round(years * 365)) + 1))
@@ -286,28 +228,21 @@ mu_fv_create <- function(eqInit,
   } else {
     message("\nRunning Deterministic Model for ", years, " years")
 
-    length_check <- function(x) {
-      if (length(x) == 0) {
-        x <- rep(0, years)
-      }
-      if (length(x) < years) {
-        x <- rep(x, length.out = years)
-      }
-      if (length(x) > years) {
-        x <- tail(x, years)
-      }
-      return(c(x[1], x))
+    # the yearly vectors come padded from build_schedule(); the first value
+    # is repeated so that the model starts from the year-one coverage
+    n_years <- ceiling(years)
+    first_then <- function(x) {
+      x <- pad_annual(x, n_years, deparse(substitute(x)))
+      c(x[1], x)
     }
-
-    # check interventions parm lengths
-    eqInit$ft_vector <- length_check(ft)
-    eqInit$itn_vector <- length_check(itn_cov)
-    eqInit$irs_vector <- length_check(irs_cov)
+    eqInit$ft_vector <- first_then(ft)
+    eqInit$itn_vector <- first_then(itn_cov)
+    eqInit$irs_vector <- first_then(irs_cov)
 
 
     # set up the intervetnion times
     if (is.null(int_times)) {
-      int_times <- c(-25, seq(0, by = 365, length.out = years))
+      int_times <- c(-25, seq(0, by = 365, length.out = n_years))
     }
     eqInit$t_vector <- int_times
     eqInit$ITN_IRS_on <- 0
@@ -526,8 +461,7 @@ update_saves <- function(res, i, sim.out, sample_states,
       )
       human_vars <- c("Infection_States", "Zetas", "Ages", "ID")
 
-      pl3 <- param_list_simulation_get_create(statePtr = sim.out$Ptr)
-      sim_save <- simulation_R(pl3, seed = seed)
+      sim_save <- sim_get_state(sim.out$Ptr, seed)
 
       if (full_update_save) {
         res[[i]] <- sim_save
