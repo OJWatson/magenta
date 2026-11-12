@@ -178,7 +178,7 @@ std::vector<boost::dynamic_bitset<>> Person::sample_two_barcodes(const Parameter
       // ammend contribuution to onwards infectiousness if the person is treated and the strain is not artemisinin resistant
       if(parameters.g_gametocyte_sterilisation_flag){
         if(m_infection_state == TREATED || (m_infection_state == ASYMPTOMATIC && m_treatment_outcome == LPF && m_day_last_treated > parameters.g_current_time - 10)){
-          if(Strain::all_at_positions(m_active_strains[m_gametocytogenic_strains[n]].get_m_barcode(),parameters.g_artemisinin_loci)){
+          if(!Strain::all_at_positions(m_active_strains[m_gametocytogenic_strains[n]].get_m_barcode(),parameters.g_artemisinin_loci)){
             m_active_strain_contribution.back() *= parameters.g_gametocyte_sterilisation;
           }
         }
@@ -985,7 +985,11 @@ void Person::late_paristological_failure(const Parameters &parameters) {
 bool Person::late_paristological_failure_boolean(const Parameters &parameters){
   
   // set up defaults
-  int time_ago = 0;
+  // fraction of the strain's course that has elapsed, in [0, 1]
+  double time_ago = 0.0;
+  // the historic truncated value. The gate further down keys off this so that
+  // which strains survive an LPF is unchanged by the move to real arithmetic.
+  int time_ago_trunc = 0;
   int strain_elapsed = 0;
   int strain_window = 0;
   double prob_of_lpf = 0.0;
@@ -1005,23 +1009,29 @@ bool Person::late_paristological_failure_boolean(const Parameters &parameters){
     // what's the probability of failure if the strain was in state T/D
     temp_prob_lpf =  m_active_strains[ts].late_paristological_failure_prob(parameters, m_drug_choice);
     
-    // how far through the infection is the strain
-    // N.B. this is deliberately integer division, which preserves the
-    // historic behaviour of this function. The window is guarded because a
-    // strain whose status change day equals its acquisition day would
-    // otherwise divide by zero and raise SIGFPE.
+    // how far through the infection is the strain. The window is guarded
+    // because a strain whose status change day equals its acquisition day
+    // would otherwise divide by zero and raise SIGFPE.
     strain_elapsed = parameters.g_current_time - m_active_strains[ts].get_m_day_of_strain_acquisition();
     strain_window = m_active_strains[ts].get_m_day_of_strain_infection_status_change() - 
       m_active_strains[ts].get_m_day_of_strain_acquisition();
     
     if (strain_window > 0) {
-      time_ago = strain_elapsed / strain_window;
+      time_ago = static_cast<double>(strain_elapsed) / static_cast<double>(strain_window);
     } else {
       // zero or negative length window, i.e. the strain is due to change
       // status today. Treat it as freshly acquired if it was acquired today
       // and as fully elapsed otherwise.
-      time_ago = (strain_elapsed > 0) ? 1 : 0;
+      time_ago = (strain_elapsed > 0) ? 1.0 : 0.0;
     }
+    
+    // clamp so that a strain already past its status change day cannot give a
+    // negative probability below
+    if (time_ago < 0.0) time_ago = 0.0;
+    if (time_ago > 1.0) time_ago = 1.0;
+    
+    // reproduces the value the previous integer division left behind
+    time_ago_trunc = static_cast<int>(time_ago);
     
     // if the strain is asymptomatic then alter the prop of lpf given the strain's age
     if (m_active_strains[ts].get_m_strain_infection_status() == Strain::ASYMPTOMATIC) {
@@ -1062,7 +1072,7 @@ bool Person::late_paristological_failure_boolean(const Parameters &parameters){
       } 
       else 
       {
-        if( time_ago > 0 ) {
+        if( time_ago_trunc > 0 ) {
           if(rbernoulli1(temp_prob_lpf)) {
             m_post_treatment_strains.emplace_back(m_active_strains[ts]);
           }

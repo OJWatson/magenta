@@ -422,3 +422,60 @@ for(i in ranges) {
 expect_true(mean(varses) > mean(varno))
 
 })
+test_that("Gametocyte sterilisation favours the artemisinin resistant strain", {
+
+  # Artemisinin sterilises the gametocytes of parasites that are sensitive to
+  # it, so switching sterilisation on should give the resistant parasite a
+  # transmission advantage and push its frequency up, not down.
+
+  nl <- 6
+  art_locus <- 4          # kelch13 580Y, zero indexed
+  art_col <- art_locus + 1
+
+  drug_list <-
+    magenta:::drug_list_create(
+      resistance_flag = TRUE,
+      number_of_resistance_loci = nl,
+      artemisinin_loci = art_locus,
+      cost_of_resistance = rep(1, nl),
+      drugs = list(magenta:::drug_create_al()),
+      number_of_drugs = 1,
+      partner_drug_ratios = 1
+    )
+
+  final_art_freq <- function(sterilisation, seed) {
+
+    vector_adaptation_list <- if (sterilisation) {
+      magenta:::vector_adaptation_list_create(
+        vector_adaptation_loci = art_locus,
+        gametocyte_sterilisation_flag = TRUE,
+        gametocyte_sterilisation = 0.01,
+        oocyst_reduction_by_artemisinin = 1
+      )
+    } else {
+      magenta:::vector_adaptation_list_create(vector_adaptation_loci = art_locus)
+    }
+
+    out <- magenta::pipeline(
+      EIR = 20, N = 2000, years = 12, ft = 0.8,
+      num_loci = nl, plaf = rep(0.15, nl),
+      update_length = 30, update_save = TRUE,
+      human_update_save = TRUE, summary_saves_only = TRUE,
+      genetics_df_without_summarising = TRUE,
+      drug_list = drug_list,
+      vector_adaptation_list = vector_adaptation_list,
+      seed = seed
+    )
+
+    pos <- seq_len(length(out) - 1)
+    af <- do.call(rbind, lapply(out[pos], "[[", "af"))
+    af[nrow(af), art_col]
+  }
+
+  seeds <- 1:5
+  off <- vapply(seeds, function(s) final_art_freq(FALSE, s), numeric(1))
+  on <- vapply(seeds, function(s) final_art_freq(TRUE, s), numeric(1))
+
+  expect_true(mean(on) > mean(off))
+
+})
