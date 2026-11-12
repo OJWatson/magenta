@@ -323,7 +323,7 @@ drug_list_update <- function(drug_list, year, tf) {
 
 # convert allele frequencies
 pop_alf <- function(nums, nl, weighted = FALSE) {
-  if (class(nums %>% unlist()) == "raw") {
+  if (is.raw(unlist(nums))) {
     if (weighted) {
       res <- colSums(do.call(rbind, lapply(nums, function(x) {
         colMeans(matrix(as.numeric(x), ncol = nl))
@@ -340,7 +340,7 @@ pop_alf <- function(nums, nl, weighted = FALSE) {
 
 # convert to lineages frequencies
 lineages <- function(nums, nl) {
-  if (class(nums %>% unlist()) == "raw") {
+  if (is.raw(unlist(nums))) {
     res <- table(
       factor(
         apply(matrix(as.numeric(do.call(rbind, nums)), ncol = nl), 1, bitsToInt),

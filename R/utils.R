@@ -1,12 +1,6 @@
-#' Pipe operator
-#'
-#' See \code{\link[magrittr:pipe]{\%>\%}} for more details.
-#'
-#' @name %>%
-#' @rdname pipe
-#' @keywords internal
+# The magrittr pipe is used internally and no longer re-exported.
 #' @importFrom magrittr %>%
-#' @usage lhs \%>\% rhs
+#' @noRd
 NULL
 
 progress_logging <- function(housekeeping_list, res, progress_bar,
