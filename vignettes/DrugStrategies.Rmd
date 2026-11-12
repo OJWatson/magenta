@@ -209,9 +209,9 @@ Three things about sequential cycling are easy to trip over.
 
 1. The switch is evaluated in R **between periods**, inside `pipeline()`:
    every `update_length` days with `update_save = TRUE`, otherwise once a
-   year. Sequential cycling reads the treatment failure the saver recorded,
-   so it needs `update_save = TRUE` with `save_summary()`; temporal cycling
-   needs neither.
+   year. The treatment failure it watches is the mean over the last two
+   periods, read from the loggers every period returns, so it works with
+   any saver and without periodic saving.
 2. It only happens when `resistance_flag` is `TRUE` for that year. If you stage
    resistance so that it is inactive during a burn-in, cycling is inactive then
    too.
