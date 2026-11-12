@@ -199,3 +199,57 @@ test_that("misspelt pipeline() arguments are reported as such", {
     "unknown argument\\(s\\) to pipeline\\(\\): update_lenght"
   )
 })
+
+test_that("a resumed island run keeps its importation rates and spatial settings", {
+  skip_on_cran()
+  cc <- "Democratic Republic of the Congo"
+  spl <- suppressMessages(spl_grab(cc, "Kinshasa", 2012:2013))
+  first <- suppressMessages(pipeline(
+    EIR = 1, years = 2, N = 60, seed = 36L, num_loci = 2,
+    country = cc, admin = "Kinshasa", spatial_type = "island",
+    spatial_incidence_matrix = spl$incidence,
+    spatial_mosquitoFOI_matrix = spl$mosquitoFOI,
+    output = save_loggers(final = "full"),
+    housekeeping_list = quiet_housekeeping_test()
+  ))
+  expect_equal(first$output$saved_inputs$spatial_settings$spatial_type, "island")
+  path <- tempfile(fileext = ".rds")
+  on.exit(unlink(path), add = TRUE)
+  sim_save(first, path)
+
+  # no matrices given: the saved run's last importation vectors carry on
+  resumed <- suppressMessages(pipeline(
+    EIR = 1, years = 1, N = 60, country = cc, admin = "Kinshasa",
+    saved_state_path = path, housekeeping_list = quiet_housekeeping_test()
+  ))
+  expect_equal(resumed$params$spatial$spatial_type, 1)
+  expect_equal(
+    resumed$schedule$importation_human[[1]],
+    first$output$saved_inputs$spatial_list$human_importation_rate_vector
+  )
+  expect_equal(
+    resumed$schedule$importation_mosquito[[1]],
+    first$output$saved_inputs$spatial_list$mosquito_imporation_rate_vector
+  )
+  expect_error(
+    suppressMessages(pipeline(
+      EIR = 1, years = 1, N = 60, saved_state_path = path, spatial_type = NULL,
+      housekeeping_list = quiet_housekeeping_test()
+    )),
+    "`spatial_type` differs from the saved value"
+  )
+  # historic interventions on resume supply the matrices for the new years
+  historic <- suppressMessages(pipeline(
+    EIR = 1, years = 2014:2015, N = 60, country = cc, admin = "Kinshasa",
+    use_historic_interventions = TRUE, saved_state_path = path,
+    housekeeping_list = quiet_housekeeping_test()
+  ))
+  spl2 <- suppressMessages(spl_grab(cc, "Kinshasa", 2014:2015))
+  expect_equal(historic$schedule$importation_human[[1]], spl2$incidence[1, ])
+})
+
+test_that("spl_grab gives all-zero rows for a range that ends before 2000", {
+  early <- suppressMessages(spl_grab("Democratic Republic of the Congo", "Kinshasa", 1996:1999))
+  expect_equal(dim(early$incidence), c(4, 593))
+  expect_true(all(early$incidence == 0))
+})

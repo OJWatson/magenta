@@ -725,12 +725,30 @@ line coverage 86.9% -> 98.7% over this step; 47.6% at Phase 0), an example
 on every export, `R CMD check --as-cran` clean (one pre-existing NOTE).
 `drug_list_create(number_of_resistance_loci = 1)` no longer crashes (a
 `drop = FALSE`; the table for two or more loci is unchanged).
-`generate_default_model()` is deleted. The odin model in
-`inst/extdata/odin_itn_irs.R` is written against odin 1 and is an early copy
-of the Imperial deterministic malaria model, used only for the mosquito
-biting and death rates under ITN/IRS; it is not to be migrated here and is a
-candidate for replacement by the current MRC-IDE packages (under review
-separately).
+`generate_default_model()` is deleted.
+
+*The deterministic model.* The pipeline only ever read `mu` and `fv` from
+the odin run, and both are closed-form in `t` (the intervention block of
+`inst/extdata/odin_itn_irs.R`: ITN/IRS decay, the per-category feeding and
+repellency probabilities, `zbar`, `wbar`, `p1`); no state feeds into them.
+`R/mu_fv.R` evaluates that block directly in the generated C's order of
+operations, and `tests/testthat/test-mu-fv.R` shows it bit-identical to the
+model (`expect_identical`) for ITN only, IRS only, both, a five-year ramp, a
+part year, off-anniversary change times and the Kinshasa 2012-2013 seasonal
+run; the characterisation snapshots did not move. The `t < ITN_IRS_on`
+branch is implemented but cannot be reached from the pipeline, which fixes
+`ITN_IRS_on = 0` and starts output on day 1, so it is not covered by the
+comparison. The rates for that seasonal run take 0.5 ms instead of 2.0 s.
+The model stays in the package: `run_deterministic_model()` (exported) runs
+it from equilibrium for an EIR, treatment rate, age and heterogeneity setup
+and returns every output, which is how to check the individual-based
+simulation against it (prevalence and incidence for a large population with
+no resistance; its example shows the comparison). `R/odin.R` was generated
+with odin 1.5.10 (r-universe) while CRAN odin is 1.2.7; regenerate with a
+pinned version later, not now, and do not migrate to odin2. The model is
+written against odin 1, is an early copy of the Imperial deterministic
+malaria model, and is a candidate for replacement by the current MRC-IDE
+packages (under review separately).
 
 Still open: the Phase 4 decisions above, and the remaining Phase 5 items
 (pkgdown reference regrouping is done; coverage gate in CI is not).

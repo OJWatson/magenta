@@ -24,3 +24,4 @@ todo.txt
 inst/odin
 # testthat failure reproductions
 tests/testthat/_problems
+tests/testthat/testthat-problems.rds

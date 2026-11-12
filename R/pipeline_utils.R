@@ -203,22 +203,28 @@ intervention_grab <- function(country, admin, year_range,
   ))
 }
 
-#' Create mosquito death and feeding vector
+#' Mosquito death and feeding rates for a run
 #'
-#' Grabs spatial incidence and mosquitoFOI vector from database
+#' The daily mosquito death rate \code{mu} and feeding rate \code{fv} under
+#' the run's bed net and spraying coverage, which the simulation reads day by
+#' day. Both come from the intervention block of the deterministic model and
+#' depend on nothing but the coverage and the parameters, so they are
+#' evaluated directly by \code{\link{mu_fv_from_coverage}}; with
+#' \code{full = TRUE} the deterministic model itself is run instead and its
+#' whole output returned (see \code{\link{run_deterministic_model}}).
 #'
-#' @param eqInit Equilibrium Inititial Conditions
-#' @param ft Annual Treatment Coverage vector
-#' @param itn_cov Annual ITN Coverage vector
-#' @param irs_cov Annual IRS Coverage vector
-#' @param int_times Timing of intervention changes. Default = NULL, which will
-#'   assume they are 365 days apart
-#' @param full Boolean to return the whole deterministic output or just mosquito
-#'   death rate and anthrophagy. Default = FALSE
-#' @param odin_model File path to odin model file. Default is the itns and irs
-#'   model included with magenta.
-#' @param years Numeric for total years
-#'
+#' @param eqInit Output of \code{\link{equilibrium_init_create}}.
+#' @param ft Treatment seeking, one value per year.
+#' @param itn_cov,irs_cov Bed net and spraying coverage, one value per year.
+#' @param years Length of the simulation in years.
+#' @param int_times Days at which the yearly values start; see
+#'   \code{\link{mu_fv_from_coverage}}.
+#' @param full Run the deterministic model and return all of its output.
+#'   Default = FALSE
+#' @param odin_model Unused; kept for compatibility.
+#' @return With \code{full = FALSE}, a data frame with a row per day and
+#'   columns \code{mu} and \code{fv}; otherwise the list of model outputs
+#'   from \code{\link{run_deterministic_model}}.
 #' @keywords internal
 mu_fv_create <- function(eqInit,
                          ft,
@@ -227,72 +233,127 @@ mu_fv_create <- function(eqInit,
                          years,
                          int_times = NULL,
                          full = FALSE,
-                         odin_model = system.file("extdata/odin_itn_irs.R", package = "magenta")) {
+                         odin_model = NULL) {
   if (all(irs_cov == 0) && all(itn_cov == 0)) {
     out <- data.frame(
       "mu" = rep(0.132, length(seq_len(round(years * 365)) + 1)),
       "fv" = rep(0.333, length(seq_len(round(years * 365)) + 1))
     )
+  } else if (full) {
+    out <- run_odin_model(eqInit, ft, itn_cov, irs_cov, years, int_times)
   } else {
-    message("\nRunning Deterministic Model for ", years, " years")
+    out <- mu_fv_from_coverage(eqInit, ft, itn_cov, irs_cov, years, int_times)
+  }
+  out
+}
 
-    # the yearly vectors come padded from build_schedule(); the first value
-    # is repeated so that the model starts from the year-one coverage
-    n_years <- ceiling(years)
-    first_then <- function(x) {
-      x <- pad_annual(x, n_years, deparse(substitute(x)))
-      c(x[1], x)
-    }
-    eqInit$ft_vector <- first_then(ft)
-    eqInit$itn_vector <- first_then(itn_cov)
-    eqInit$irs_vector <- first_then(irs_cov)
+# Run the deterministic model over the simulation and return every output
+# (transformed variables, including t, mu and fv), as the pipeline did
+# before the closed form.
+run_odin_model <- function(eqInit, ft, itn_cov, irs_cov, years, int_times = NULL) {
+  message("\nRunning Deterministic Model for ", years, " years")
 
+  # the yearly vectors come padded from build_schedule(); the first value
+  # is repeated so that the model starts from the year-one coverage
+  n_years <- ceiling(years)
+  first_then <- function(x) {
+    x <- pad_annual(x, n_years, deparse(substitute(x)))
+    c(x[1], x)
+  }
+  eqInit$ft_vector <- first_then(ft)
+  eqInit$itn_vector <- first_then(itn_cov)
+  eqInit$irs_vector <- first_then(irs_cov)
 
-    # set up the intervetnion times
-    if (is.null(int_times)) {
-      int_times <- c(-25, seq(0, by = 365, length.out = n_years))
-    }
-    eqInit$t_vector <- int_times
-    eqInit$ITN_IRS_on <- 0
+  # set up the intervetnion times
+  if (is.null(int_times)) {
+    int_times <- c(-25, seq(0, by = 365, length.out = n_years))
+  }
+  eqInit$t_vector <- int_times
+  eqInit$ITN_IRS_on <- 0
 
+  # split pop accordingly
+  eqInit$pop_split <- rep(1 / eqInit$num_int, eqInit$num_int)
 
-    # split pop accordingly
-    eqInit$pop_split <- rep(1 / eqInit$num_int, eqInit$num_int)
-
-    extensions <- which(unlist(lapply(eqInit, function(x) {
-      (length(dim(x)) == 3)
-    })))
-    mat <- matrix(0, eqInit$na, eqInit$nh)
-    for (e in names(extensions)) {
-      if (grepl("_I", e)) {
-        eqInit[[e]] <- array(eqInit[[e]][, , 1], c(eqInit$na, eqInit$nh, eqInit$num_int))
-      } else {
-        eqInit[[e]] <- vapply(rep(1 / eqInit$num_int, eqInit$num_int),
-          FUN = function(x) {
-            x * eqInit[[e]][, , 1]
-          }, mat
-        )
-      }
-    }
-
-    # build model
-    state <- eqInit[names(eqInit) %in% odin_itn_irs$private_fields$user]
-
-    # weird catach for when init_ICM values fall below 5e-32 that must catch
-    state$init_ICM
-    model <- odin_itn_irs$new(user = state, use_dde = TRUE)
-
-    # create model and simulate
-    tt <- seq(1, round(years * 365), 1)
-    mod_run <- model$run(t = tt, n_history = 1000, step_size_max = 10)
-    out <- model$transform_variables(mod_run)
-
-    if (!full) {
-      out <- data.frame("mu" = out$mu, "fv" = out$fv)
+  extensions <- which(unlist(lapply(eqInit, function(x) {
+    (length(dim(x)) == 3)
+  })))
+  mat <- matrix(0, eqInit$na, eqInit$nh)
+  for (e in names(extensions)) {
+    if (grepl("_I", e)) {
+      eqInit[[e]] <- array(eqInit[[e]][, , 1], c(eqInit$na, eqInit$nh, eqInit$num_int))
+    } else {
+      eqInit[[e]] <- vapply(rep(1 / eqInit$num_int, eqInit$num_int),
+        FUN = function(x) {
+          x * eqInit[[e]][, , 1]
+        }, mat
+      )
     }
   }
 
-  return(out)
+  # build model
+  state <- eqInit[names(eqInit) %in% odin_itn_irs$private_fields$user]
+
+  # weird catach for when init_ICM values fall below 5e-32 that must catch
+  state$init_ICM
+  model <- odin_itn_irs$new(user = state, use_dde = TRUE)
+
+  # create model and simulate
+  tt <- seq(1, round(years * 365), 1)
+  mod_run <- model$run(t = tt, n_history = 1000, step_size_max = 10)
+  model$transform_variables(mod_run)
+}
+
+#' Run the deterministic model
+#'
+#' Runs the deterministic transmission model that \code{magenta} carries
+#' (\code{inst/extdata/odin_itn_irs.R}, an early copy of the Imperial
+#' malaria model with ITN and IRS) from its equilibrium for a given setting,
+#' and returns every model output through time. The simulation itself only
+#' takes its mosquito death and feeding rates from this model (see
+#' \code{\link{mu_fv_create}}); the full run is for checking the
+#' individual-based simulation against the deterministic one, for example
+#' that the prevalence and incidence a large population settles at for an
+#' \code{EIR} match.
+#'
+#' @inheritParams equilibrium_init_create
+#' @param years Length of the run in years.
+#' @param itn_cov,irs_cov Bed net and spraying coverage, one value per year.
+#'   Default = 0
+#' @param int_times Days at which the yearly values start; see
+#'   \code{\link{mu_fv_from_coverage}}.
+#' @return List of the model's outputs, one vector (or array) per output with
+#'   a value per day: \code{t}, the compartment totals (\code{Sout},
+#'   \code{Tout}, ...), prevalence and incidence, and the mosquito rates
+#'   \code{mu} and \code{fv}, among others.
+#' @export
+#' @examples
+#' \donttest{
+#' # the deterministic model and the simulation at the same EIR, no resistance
+#' det <- run_deterministic_model(EIR = 10, ft = 0.4, years = 2, itn_cov = 0.3)
+#' # daily prevalence and clinical incidence from the deterministic model
+#' det$prev[c(1, 365, 730)]
+#' det$inc[c(1, 365, 730)]
+#'
+#' # the simulation's incidence over the same two years, per 365-day period
+#' sim <- pipeline(
+#'   EIR = 10, ft = 0.4, years = 2, N = 10000, itn_cov = 0.3,
+#'   update_save = TRUE, update_length = 365, output = save_loggers()
+#' )
+#' sapply(sim$output, function(x) x$Loggers$Incidence)
+#' }
+run_deterministic_model <- function(EIR, ft, years,
+                                    itn_cov = 0, irs_cov = 0,
+                                    age_vector = age_brackets(100, 40, TRUE),
+                                    het_brackets = 5,
+                                    model_param_list = model_param_list_create(),
+                                    country = NULL, admin = NULL,
+                                    int_times = NULL, quiet = FALSE) {
+  eq_init <- equilibrium_init_create(
+    age_vector = age_vector, het_brackets = het_brackets, ft = ft[1],
+    EIR = EIR, model_param_list = model_param_list, country = country,
+    admin = admin, quiet = quiet
+  )
+  run_odin_model(eq_init, ft, itn_cov, irs_cov, years, int_times)
 }
 
 

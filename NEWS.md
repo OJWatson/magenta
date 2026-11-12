@@ -126,6 +126,16 @@ rewritten, and the changes that move results are listed first.
 
 ## Smaller changes
 
+* The mosquito death and feeding rates under ITN/IRS are evaluated in closed
+  form by `mu_fv_from_coverage()` instead of by running the deterministic
+  model: they depend only on the coverage and the parameters, and the
+  closed form is bit-identical to the model's output (tested against it).
+  A two-year seasonal run's rates take under a millisecond rather than two
+  seconds. The deterministic model is still in the package;
+  `run_deterministic_model()` runs it and returns all of its outputs, for
+  checking the simulation against it, and `mu_fv_create(full = TRUE)` does
+  the same.
+
 * An argument in `...` that `model_param_list_create()` does not take is
   reported as an unknown `pipeline()` argument, which is what a misspelt
   argument almost always is.

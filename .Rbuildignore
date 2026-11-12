@@ -35,3 +35,4 @@ submission_data
 ^R_CODE_REVIEW\.md$
 ^\.lintr$
 ^\.git$
+^tests/testthat/testthat-problems\.rds$
