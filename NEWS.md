@@ -168,8 +168,12 @@ rewritten, and the changes that move results are listed first.
 * Asking for `spatial_type = "metapop"` now stops with a clear message
   instead of failing inside the C++ initialisation. Metapopulation
   simulations were never implemented.
-* Sequential drug cycling no longer errors when the saver records no
-  treatment failure (`if (NA)`); it does not switch instead.
+* Sequential drug cycling reads the treatment failure from the loggers every
+  period returns, so it works with every saver and without periodic saving.
+  It used to see it only through `save_summary()` with `update_save = TRUE`,
+  never switching otherwise (and erroring on the missing value in some
+  configurations). Runs that used `save_summary()` with periodic saving
+  switch at the same times as before.
 * `drug_list_create(number_of_resistance_loci = 1)` works; it previously
   failed building the resistance cost table because the one-column matrix
   of resistance barcodes was dropped to a vector. The table for two or more

@@ -130,7 +130,7 @@ test_that("intervention_grab extends, truncates and overrides the historic serie
   expect_equal(none$itn_cov, rep(0, 6))
 })
 
-test_that("the schedule helpers read a period and recent treatment failure", {
+test_that("the schedule helpers read a period and a period's treatment failure", {
   s <- build_schedule(years = 1, update_length = 100, ft = 0.3, plaf = c(0.1, 0.2))
   p <- magenta:::schedule_period(s, 2)
   expect_equal(p$i, 2)
@@ -140,10 +140,14 @@ test_that("the schedule helpers read a period and recent treatment failure", {
   expect_equal(p$plaf, c(0.1, 0.2))
   expect_null(p$importation_human)
 
-  res <- list(list(overall_treatment_failure = 0.2), list(overall_treatment_failure = 0.4))
-  expect_equal(magenta:::recent_treatment_failure(res, 1), 0.2)
-  expect_equal(magenta:::recent_treatment_failure(res, 2), 0.3)
-  expect_true(is.na(magenta:::recent_treatment_failure(list(list(a = 1)), 1)))
+  loggers <- list(Loggers = list(Treatments = list(
+    Successful_Treatments = c(3, 5), Unsuccesful_Treatments_LPF = c(1, 1)
+  )))
+  expect_equal(magenta:::period_treatment_failure(loggers), 0.2)
+  nobody <- list(Loggers = list(Treatments = list(
+    Successful_Treatments = 0, Unsuccesful_Treatments_LPF = 0
+  )))
+  expect_equal(magenta:::period_treatment_failure(nobody), 0)
 
   expect_equal(magenta:::spatial_type_code(NULL), 0)
   expect_equal(magenta:::spatial_type_code("island"), 1)

@@ -106,13 +106,42 @@ test_that("temporal drug cycling happens without periodic saving", {
     housekeeping_list = quiet_housekeeping_test()
   ))
   expect_equal(out$schedule$drug_choice, c(0, 0, 1, 1, 0))
-  # sequential cycling needs the summary saver's treatment failure; without
-  # it the rule sees NA and does not switch
-  dl_seq <- drug_list_create(
-    resistance_flag = TRUE, number_of_drugs = 2, sequential_cycling = 0.1,
-    drugs = list(drug_create_al(), drug_create_dhappq()), partner_drug_ratios = c(0.5, 0.5)
+})
+
+test_that("sequential drug cycling reads the loggers, so it works with every saver", {
+  skip_on_cran()
+  # a resistant population and a drug that fails on resistant parasites, so
+  # that treatment failure crosses the threshold in the first year
+  dl <- drug_list_create(
+    resistance_flag = TRUE, number_of_resistance_loci = 2, number_of_drugs = 2,
+    cost_of_resistance = c(1, 1),
+    drugs = list(
+      drug_create(prob_of_lpf = c(1, 0.4, 0.4, 0.1), barcode_res_pos = 0:1, prophylactic_pos = 1),
+      drug_create(prob_of_lpf = c(1, 1, 1, 1), barcode_res_pos = 0:1, prophylactic_pos = 1)
+    ),
+    sequential_cycling = 0.1, sequential_update = 1, partner_drug_ratios = c(1, 0)
   )
-  expect_equal(magenta:::drug_list_update(dl_seq, 2, NA_real_)$drug_choice, 0)
+  run <- function(...) {
+    suppressMessages(pipeline(
+      EIR = 5, years = 5, N = 150, seed = 41L, num_loci = 2, plaf = c(0.8, 0.8), ft = 0.6,
+      drug_list = dl, housekeeping_list = quiet_housekeeping_test(), ...
+    ))
+  }
+  # the summary saver path: the same switch times as before the loggers were
+  # read directly (pinned)
+  summary_run <- run(
+    update_save = TRUE, update_length = 365, output = save_summary(genetics = "allele_freqs")
+  )
+  expect_equal(summary_run$schedule$drug_choice, c(0, 1, 1, 1, 1))
+  expect_gt(summary_run$output[[1]]$overall_treatment_failure, 0.1)
+
+  # the loggers saver and no periodic saving see the same failure and switch
+  # the same way (and, drawing no extra random numbers, give the same run)
+  loggers_run <- run(update_save = TRUE, update_length = 365, output = save_loggers())
+  no_saves <- run()
+  expect_equal(loggers_run$schedule$drug_choice[1:2], c(0, 1))
+  expect_equal(no_saves$schedule$drug_choice, loggers_run$schedule$drug_choice)
+  expect_identical(no_saves$output$Loggers, loggers_run$output[[5]]$Loggers)
 })
 
 test_that("a resumed run continues with the saved run's parameter lists", {

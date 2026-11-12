@@ -176,11 +176,7 @@ treatment_and_prevalence_summary <- function(sim_out, mpl) {
   res$mutations <- loggers$daily_mutations_per_loci
 
   res$treatment_failure[is.na(res$treatment_failure)] <- 0
-  res$overall_treatment_failure <- sum(res$unsuccesful_treatments_lpf) /
-    (sum(res$unsuccesful_treatments_lpf + res$succesfull_treatments))
-  if (is.na(res$overall_treatment_failure)) {
-    res$overall_treatment_failure <- 0
-  }
+  res$overall_treatment_failure <- period_treatment_failure(sim_out)
 
   # prevalence measures
   two_ten <- loggers$Ages < 3650 & loggers$Ages > 720
@@ -195,6 +191,16 @@ treatment_and_prevalence_summary <- function(sim_out, mpl) {
   res$dat <- sum(unlist(loggers[c("D", "A", "T")]))
   res$micro_2_10 <- dt_10 + a_10
   res
+}
+
+# The proportion of treatments in a period that failed (late parasitological
+# failure), from the loggers every update returns; 0 when nobody was treated.
+# The sequential cycling rule in drug_list_update() reads this.
+period_treatment_failure <- function(sim_out) {
+  t <- sim_out$Loggers$Treatments
+  tf <- sum(t$Unsuccesful_Treatments_LPF) /
+    sum(t$Unsuccesful_Treatments_LPF + t$Successful_Treatments)
+  if (is.na(tf)) 0 else tf
 }
 
 # Wrap a function written for the old update_save_func argument,

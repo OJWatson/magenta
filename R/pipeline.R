@@ -629,11 +629,14 @@ run_period <- function(state, days, ft, mu_fv) {
 # Step through the schedule one period at a time, calling the saver after
 # every period but the last when save_periods is TRUE. The last period is run
 # without a save so that the caller can decide what to put in the final slot.
-# The schedule is returned with the drug used in each period filled in.
+# The drug cycling rules run between periods on the treatment failure the
+# loggers report, whatever the saver. The schedule is returned with the drug
+# used in each period filled in.
 run_schedule <- function(state, schedule, mu_fv, saver, params, years, save_periods) {
   n_periods <- nrow(schedule)
   res <- vector("list", n_periods)
   comp_times <- rep(0, max(n_periods - 1, 0))
+  treatment_failure <- rep(NA_real_, n_periods)
 
   if (n_periods > 1) {
     message("Starting Stochastic Simulation for ", years, " years")
@@ -660,13 +663,16 @@ run_schedule <- function(state, schedule, mu_fv, saver, params, years, save_peri
 
     days <- seq(schedule$day_start[i], schedule$day_end[i])
     state <- run_period(state, days, schedule$ft[i], mu_fv)
+    treatment_failure[i] <- period_treatment_failure(state$sim)
 
     if (!last) {
       if (save_periods) {
         res[i] <- list(saver$fun(state, schedule_period(schedule, i), params))
       }
+      # sequential cycling looks at the failure over the last two periods
       state$drug_list <- drug_list_update(
-        state$drug_list, schedule$year[i], recent_treatment_failure(res, i)
+        state$drug_list, schedule$year[i],
+        mean(treatment_failure[seq(max(1, i - 1), i)])
       )
     }
   }
@@ -679,18 +685,6 @@ run_schedule <- function(state, schedule, mu_fv, saver, params, years, save_peri
 schedule_period <- function(schedule, i) {
   row <- lapply(unclass(schedule), function(col) col[[i]])
   c(list(i = i, n = nrow(schedule)), row)
-}
-
-# Treatment failure over the last two saved periods, used by the sequential
-# cycling rule in drug_list_update(). Only the summary savers record it; for
-# the others it is NA.
-recent_treatment_failure <- function(res, i) {
-  recent <- res[seq(max(1, i - 1), i)]
-  tf <- unlist(lapply(recent, function(x) x$overall_treatment_failure))
-  if (is.null(tf)) {
-    return(NA_real_)
-  }
-  mean(tf)
 }
 
 # Copy the full model state back to R and attach the R-side parameter lists

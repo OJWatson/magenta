@@ -718,7 +718,15 @@ solve); a resumed run continues with all of the saved run's lists and errors
 on a differing explicit argument; `spl_grab()` keeps the year 2000. Every
 stochastic characterisation snapshot moved with the seed change and was
 accepted deliberately; the equilibrium snapshot did not.
-`tests/testthat/test-findings.R` now tests the fixes. The other 4.6 items are done (Phase 0, or absorbed in
+`tests/testthat/test-findings.R` now tests the fixes. Sequential drug
+cycling reads the per-period loggers (`period_treatment_failure()`), so it
+works with every saver and without periodic saving; the `save_summary()`
+path switches at the same times as before (pinned).
+
+Deferred, to take with the next snapshot-moving change: the no-intervention
+shortcut in `mu_fv_create()` uses `fv = 0.333`, `mu = 0.132` where the
+closed form gives `1/(tau1 + tau2)` and `-fv * log(p10 * p2)` exactly;
+removing it moves every no-intervention run by a rounding error. The other 4.6 items are done (Phase 0, or absorbed in
 Phases 2-3 as noted above). Phase 5: unit tests for every `sim_*`, parameter,
 schedule, saver and `magenta_sim` function and for the utilities (R-side
 line coverage 86.9% -> 98.7% over this step; 47.6% at Phase 0), an example
@@ -750,8 +758,8 @@ written against odin 1, is an early copy of the Imperial deterministic
 malaria model, and is a candidate for replacement by the current MRC-IDE
 packages (under review separately).
 
-Still open: the Phase 4 decisions above, and the remaining Phase 5 items
-(pkgdown reference regrouping is done; coverage gate in CI is not).
+Still open: the deferred `mu_fv_create()` shortcut above, and a coverage
+gate in CI (the pkgdown reference regrouping is done).
 The two commits on `docs-revamp` after the Phase 0 base (the asymptomatic
 discount and the sterilisation direction) change C++ results and are not on
 this branch; merging them will move the snapshots and needs a deliberate
