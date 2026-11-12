@@ -236,166 +236,48 @@ param_list_simulation_saved_init_create <- function(savedState) {
 
 
 #------------------------------------------------
-#' simulation_R function
+#' Deprecated dispatcher for the simulation bindings
 #'
-#' This function triggers the main magenta simulation from the R side
+#' \code{simulation_R} used to inspect the shape of \code{param_list} to decide
+#' which C++ entry point to call. It is kept for one release so that scripts
+#' which call it directly keep working, and now forwards to the plainly named
+#' bindings \code{sim_init()}, \code{sim_update()}, \code{sim_get_state()},
+#' \code{sim_free()} and \code{sim_init_saved()}.
 #'
 #' @param param_list paramlist passed from
 #'   \code{param_list_simulation_init_create} or from
 #'   \code{param_list_simulation_update_create}
 #' @param seed Seed for the simulation
+#' @keywords internal
 #' @export
-
-# The following commands are needed to ensure that the roxygen2
-# package, which deals with documenting the package, does not conflict
-# with the Rcpp package. Do not alter!
-#' @useDynLib magenta
-#' @importFrom Rcpp evalCpp
-
 simulation_R <- function(param_list, seed) {
-  # check that this function is working
-  # print("R function is working!")
+  .Deprecated(
+    msg = paste(
+      "simulation_R() is deprecated and will be removed in a future release;",
+      "pipeline() now calls the sim_init(), sim_update(), sim_get_state(),",
+      "sim_free() and sim_init_saved() bindings directly."
+    )
+  )
   stopifnot(is.list(param_list))
+  if (length(param_list) == 1 && is.list(param_list[[1]]) &&
+    !is.null(param_list[[1]]$eqSS)) {
+    param_list <- param_list[[1]]
+  }
 
-  ## Decide whether the param_list is from initialisation,
-  ## memory-continutation or continuation
-
-  ## -----------------------------------
-  ## 1. From initialisation
-  ## -----------------------------------
   if (!is.null(param_list$eqSS)) {
-    ## Check if paramlist is correct length and has right variable names
-    stopifnot(is.list(param_list))
-
-    # if it is length one it may be an unpacked
-    # list in which case unpack and check
-    # this might happen in the future when
-    # a list of param_lists is fed directly to this
-    # fucntion in a cluster way
-    if (length(param_list) == 1) {
-      param_list <- param_list[[1]]
-    }
-
-    if (length(param_list) != 9) {
-      stop("param_list not correct length")
-    }
-    stopifnot(identical(
-      names(param_list),
-      c(
-        "N", "eqSS", "barcode_list", "spatial_list",
-        "housekeeping_list", "drug_list",
-        "nmf_list", "vector_adaptation_list",
-        "core_parameter_list"
-      )
-    ))
-
-    # ---------------------- RUN C CODE ------------------------------------- #
-
-    # call Rcpp command with input list
-    set.seed(seed)
-    rawOutput <- Simulation_Init_cpp(param_list)
-
-    # ----------------------------------------------------------------------- #
+    return(sim_init(param_list, seed))
   }
-
-  ## -----------------------------------
-  ## 2. From memory-continutation
-  ## -----------------------------------
-  if (!is.null(param_list$years) && !is.null(param_list$statePtr)) {
-    ## Check if paramlist is correct length and has right variable names
-    stopifnot(is.list(param_list))
-    if (length(param_list) == 8) {
-      stopifnot(identical(
-        names(param_list),
-        c(
-          "years", "ft", "mu_vec", "fv_vec", "statePtr",
-          "spatial_list", "drug_list", "barcode_list"
-        )
-      ))
-    } else {
-      stop("param_list not correct length")
-    }
-
-    # ---------------------- RUN C CODE ------------------------------------- #
-
-    # call Rcpp command with input list
-    set.seed(seed)
-    rawOutput <- Simulation_Update_cpp(param_list)
-
-    # ----------------------------------------------------------------------- #
-  }
-
-  ## -----------------------------------
-  ## 3. From memory-continutation to saving
-  ## -----------------------------------
-  if (is.null(param_list$finalizer) &&
-    is.null(param_list$years) &&
-    !is.null(param_list$statePtr)) {
-    ## Check if paramlist is correct length and has right variable names
-    stopifnot(is.list(param_list))
-    if (length(param_list) == 1) {
-      stopifnot(identical(names(param_list), c("statePtr")))
-    } else {
-      stop("param_list not correct length")
-    }
-
-    # ---------------------- RUN C CODE ------------------------------------- #
-
-    # call Rcpp command with input list
-    set.seed(seed)
-    rawOutput <- Simulation_Get_cpp(param_list)
-
-    # ----------------------------------------------------------------------- #
-  }
-
-  ## -----------------------------------
-  ## 4. From saved state
-  ## -----------------------------------
   if (!is.null(param_list$savedState)) {
-    ## Check if paramlist is correct length and has right variable names
-    stopifnot(is.list(param_list))
-    if (length(param_list) == 1) {
-      stopifnot(identical(names(param_list), c("savedState")))
-    } else {
-      stop("param_list not correct length")
-    }
-
-    # ---------------------- RUN C CODE ------------------------------------- #
-
-    # call Rcpp command with input list
-    set.seed(seed)
-    rawOutput <- Simulation_Saved_Init_cpp(param_list)
-
-    # ----------------------------------------------------------------------- #
+    return(sim_init_saved(param_list$savedState, seed))
   }
-
-  ## -----------------------------------
-  ## 5. Finalizer
-  ## -----------------------------------
   if (!is.null(param_list$finalizer)) {
-    ## Check if paramlist is correct length and has right variable names
-    stopifnot(is.list(param_list))
-    if (length(param_list) == 2) {
-      stopifnot(identical(names(param_list), c("statePtr", "finalizer")))
-    } else {
-      stop("param_list not correct length")
-    }
-
-
-    # ---------------------- RUN C CODE ------------------------------------- #
-
-    # call Rcpp command with input list
-    set.seed(seed)
-    rawOutput <- Simulation_Finalizer_cpp(param_list)
-
-    # ----------------------------------------------------------------------- #
+    return(sim_free(param_list$statePtr, seed))
   }
-
-  ## Catch if parameter list not matched well
-  if (is.null(rawOutput)) {
-    stop("No matching parameter list handler found within simulation_R")
+  if (!is.null(param_list$years) && !is.null(param_list$statePtr)) {
+    return(sim_update(param_list, seed))
   }
-
-  # return rawOutput
-  return(rawOutput)
+  if (!is.null(param_list$statePtr)) {
+    return(sim_get_state(param_list$statePtr, seed))
+  }
+  stop("No matching parameter list handler found within simulation_R")
 }
