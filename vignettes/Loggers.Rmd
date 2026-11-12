@@ -1,7 +1,7 @@
 ---
 title: "Model output, loggers and saved state"
 author: "OJ Watson"
-date: "2026-11-11"
+date: "2026-11-12"
 output:
   rmarkdown::html_vignette:
     fig_width: 7
@@ -23,8 +23,13 @@ into R is whatever you ask `pipeline()` to extract, and the choice matters: a
 full population dump at monthly intervals over 40 years is large enough to be
 awkward, while the default summary may not contain what you need.
 
-This vignette describes what each saving option returns, what the individual
-loggers mean, and how to save a simulation to disk and restart it later.
+This vignette describes what each saver returns, what the individual loggers
+mean, and how to save a simulation to disk and restart it later.
+
+Every run returns a `magenta_sim` with four elements: `output` (what the saver
+kept), `params` (the inputs the run was created with), `schedule` (the
+per-period table of inputs the run followed) and `meta` (call, seed, version,
+timings).
 
 
 ``` r
@@ -35,15 +40,23 @@ library(magenta)
 
 ## The default: loggers only
 
-With no saving options, `pipeline()` runs to the end and returns a single list
-containing `Loggers`, a snapshot of the population at the final time step.
+With no saving options, `pipeline()` runs to the end and its `output` is a
+single list containing `Loggers`, a snapshot of the population at the final
+time step.
 
 
 ``` r
 out <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L)
 ## Seed set to 1
-## magenta v1.3.7
-names(out$Loggers)
+## magenta v1.4.0
+out
+## <magenta_sim>
+##   call:     pipeline(EIR = 5, ft = 0.4, N = 1000, years = 3, seed = 1L)
+##   N: 1000   years: 3   EIR: 5
+##   output:   loggers, 1 period(s), final = loggers
+##   seed:     1   version: 1.4.0
+##   elapsed:  0.8 secs
+names(out$output$Loggers)
 ##  [1] "Log_Counter"              "Incidence"               
 ##  [3] "Incidence_05"             "Treatments"              
 ##  [5] "daily_mutations_per_loci" "InfectionStates"         
@@ -64,7 +77,7 @@ subpatent, treated and prophylactic.
 
 
 ``` r
-as.data.frame(out$Loggers[c("S", "D", "A", "U", "T", "P")])
+as.data.frame(out$output$Loggers[c("S", "D", "A", "U", "T", "P")])
 ##           S           D         A         U           T          P
 ## 1 0.6158804 0.003590868 0.2853543 0.0826347 0.002294064 0.01024566
 ```
@@ -77,7 +90,7 @@ microscopy, and is needed by `convert_barcode_vectors()`.
 
 
 ``` r
-sapply(out$Loggers[c("Ages", "InfectionStates", "IB", "ICA", "ICM", "ID")], length)
+sapply(out$output$Loggers[c("Ages", "InfectionStates", "IB", "ICA", "ICM", "ID")], length)
 ##            Ages InfectionStates              IB             ICA             ICM 
 ##            1000            1000            1000            1000            1000 
 ##              ID 
@@ -93,7 +106,7 @@ rates. `daily_mutations_per_loci` counts mutations at each barcode locus.
 
 
 ``` r
-str(out$Loggers$Treatments)
+str(out$output$Loggers$Treatments)
 ## List of 5
 ##  $ Successful_Treatments         : num 448
 ##  $ Unsuccesful_Treatments_LPF    : num 0
@@ -118,9 +131,9 @@ the simulation is run with update saves:
 out_u <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   update_save = TRUE, update_length = 90)
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.4.0
 ## Starting Stochastic Simulation for 3 years
-str(out_u[[1]]$Mosquitoes)
+str(out_u$output[[1]]$Mosquitoes)
 ## List of 3
 ##  $ Mos_S: num 2775
 ##  $ Mos_E: num 91.3
@@ -132,44 +145,98 @@ str(out_u[[1]]$Mosquitoes)
 ## Saving through time
 
 `update_save = TRUE` stops the simulation every `update_length` days, extracts
-a summary, and carries on. The result is a list with one element per interval.
+what the saver asks for, and carries on. `output` is then a list with one
+element per interval, and `schedule` has one row per interval.
 
 
 ``` r
-length(out_u)
+length(out_u$output)
 ## [1] 12
 3 * 365 / 90
 ## [1] 12.16667
+head(out_u$schedule)
+## <magenta_schedule> 6 period(s) over 540 days
+##   period day_start day_end year  ft itn_cov irs_cov resistance_flag
+## 1      1         1      90    1 0.4       0       0           FALSE
+## 2      2        91     180    1 0.4       0       0           FALSE
+## 3      3       181     270    1 0.4       0       0           FALSE
+## 4      4       271     360    1 0.4       0       0           FALSE
+## 5      5       361     450    1 0.4       0       0           FALSE
+## 6      6       451     540    2 0.4       0       0           FALSE
+##   mutation_flag drug_choice
+## 1         FALSE           0
+## 2         FALSE           0
+## 3         FALSE           0
+## 4         FALSE           0
+## 5         FALSE           0
+## 6         FALSE           0
 ```
 
-The **final element is not a summary**. It holds the simulation object itself,
-so that the run can be continued or interrogated. Every piece of code that
-loops over the output therefore needs to drop it:
+The **final element is not a summary**. It holds the loggers at the end of the
+run (or the full state, see below), so that the run can be continued or
+interrogated. Every piece of code that loops over the output therefore needs to
+drop it:
 
 
 ``` r
-pos <- seq_len(length(out_u) - 1)
-prev <- unlist(lapply(out_u[pos], function(x) sum(unlist(x[c("D", "A", "U", "T")]))))
-time <- unlist(lapply(out_u[pos], "[[", "Time"))
+pos <- seq_len(length(out_u$output) - 1)
+prev <- unlist(lapply(out_u$output[pos], function(x) sum(unlist(x[c("D", "A", "U", "T")]))))
+time <- unlist(lapply(out_u$output[pos], "[[", "Time"))
 plot(time / 365, prev, type = "l", lwd = 2, col = "steelblue",
      xlab = "Years", ylab = "PCR prevalence", ylim = c(0, max(prev)))
 ```
 
 ![](Loggers_files/figure-html/drop-last-1.png)<!-- -->
 
+For the loggers, `as.data.frame()` does this for you, one row per period with
+every scalar logger as a column:
+
+
+``` r
+head(as.data.frame(out_u))
+##   period day_end year Log_Counter Incidence Incidence_05 Successful_Treatments
+## 1      1      90    1          90 0.9333333    0.2555556                    35
+## 2      2     180    1          90 0.6888889    0.2111111                    25
+## 3      3     270    1          90 1.0111111    0.2444444                    35
+## 4      4     360    1          90 1.0888889    0.3111111                    31
+## 5      5     450    1          90 1.1888889    0.3555556                    36
+## 6      6     540    2          90 1.1000000    0.3000000                    39
+##   Unsuccesful_Treatments_LPF Not_Treated daily_bite_counters
+## 1                          0          51               79898
+## 2                          0          36               79899
+## 3                          0          56               79927
+## 4                          0          63               79929
+## 5                          0          75               79942
+## 6                          0          58               79922
+##   daily_infectious_bite_counters    Mos_S     Mos_E    Mos_I Time         S
+## 1                            840 2774.511  91.28889 34.20000   91 0.6035556
+## 2                            674 2798.311  73.78889 27.90000  181 0.6282222
+## 3                            748 2782.156  86.67778 31.16667  271 0.6429222
+## 4                            833 2773.122  93.10000 33.77778  361 0.6336444
+## 5                            857 2766.833  98.15556 35.01111  451 0.5979556
+## 6                            992 2757.833 100.84444 41.32222  541 0.5804889
+##             D         A          U           T           P
+## 1 0.003800000 0.2716000 0.10931111 0.002077778 0.009655556
+## 2 0.001955556 0.2492111 0.11082222 0.001511111 0.008277778
+## 3 0.003733333 0.2494000 0.09356667 0.002244444 0.008133333
+## 4 0.003677778 0.2706778 0.08080000 0.002255556 0.008944444
+## 5 0.004388889 0.3039444 0.08367778 0.001977778 0.008055556
+## 6 0.005022222 0.3158556 0.08584444 0.002366667 0.010422222
+```
+
 ### Reproducibility metadata
 
-Every returned object carries a `meta` attribute holding the call, the seed and
-the package version. Keep this: it is the record of how a simulation was
+Every returned object carries `meta`, holding the call, the seed, the package
+version and the time taken. Keep this: it is the record of how a simulation was
 produced.
 
 
 ``` r
-meta <- attr(out_u, "meta")
+meta <- out_u$meta
 meta$seed
 ## [1] 1
 meta$version
-## [1] '1.3.7'
+## [1] '1.4.0'
 meta$call
 ## pipeline(EIR = 5, ft = 0.4, N = 1000, years = 3, update_length = 90, 
 ##     update_save = TRUE, seed = 1L)
@@ -179,23 +246,20 @@ meta$call
 
 ## Genetic summaries
 
-Adding `human_update_save = TRUE` makes the model sample the human population's
-parasites at each interval. What it does with that sample depends on two
-further arguments.
-
-With `summary_saves_only = TRUE`, the genetics are condensed into summary
-tables:
+The `output` argument of `pipeline()` takes a *saver* that decides what is
+kept after each interval. The default is `save_loggers()`. `save_summary()`
+makes the model sample the human population's parasites at each interval and
+condense them into summary tables:
 
 
 ``` r
 out_s <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   update_save = TRUE, update_length = 90,
-                  human_update_save = TRUE, summary_saves_only = TRUE,
-                  full_save = TRUE)
+                  output = save_summary(final = "full"))
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.4.0
 ## Starting Stochastic Simulation for 3 years
-names(out_s[[1]])
+names(out_s$output[[1]])
 ##  [1] "summary_coi"                "summary_coi_detected"      
 ##  [3] "summary_moi_detected"       "summary_polygenom"         
 ##  [5] "summary_ages"               "summary_unique"            
@@ -220,7 +284,7 @@ names(out_s[[1]])
 
 
 ``` r
-head(out_s[[1]]$summary_coi)
+head(out_s$output[[1]]$summary_coi)
 ##      age_bin     clinical   N     mean
 ## 1 (-0.001,5] Asymptomatic  44 1.818182
 ## 2 (-0.001,5]     Clinical   1 1.000000
@@ -235,8 +299,8 @@ Age bins come from `age_breaks` and the infection states included come from
 control.
 
 For resistance work the full genetic summary is usually more than is needed.
-Setting `genetics_df_without_summarising = TRUE` replaces it with allele
-frequencies plus the treatment and prevalence summaries described in the
+`save_summary(genetics = "allele_freqs")` replaces it with allele frequencies
+plus the treatment and prevalence summaries described in the
 [resistance vignette](Resistance.html):
 
 
@@ -244,50 +308,49 @@ frequencies plus the treatment and prevalence summaries described in the
 out_af <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                    num_loci = 6, plaf = rep(0.2, 6),
                    update_save = TRUE, update_length = 90,
-                   human_update_save = TRUE, summary_saves_only = TRUE,
-                   genetics_df_without_summarising = TRUE)
+                   output = save_summary(genetics = "allele_freqs"))
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.4.0
 ## Starting Stochastic Simulation for 3 years
-names(out_af[[1]])
+names(out_af$output[[1]])
 ##  [1] "af"                         "succesfull_treatments"     
 ##  [3] "unsuccesful_treatments_lpf" "not_treated"               
 ##  [5] "treatment_failure"          "daily_pop_eir"             
 ##  [7] "mutations"                  "overall_treatment_failure" 
 ##  [9] "pcr_prev"                   "dat"                       
 ## [11] "micro_2_10"
-round(out_af[[1]]$af, 3)
+round(out_af$output[[1]]$af, 3)
 ## [1] 0.201 0.223 0.218 0.187 0.201 0.221
 ```
 
-Setting `only_allele_freqs = FALSE` alongside it returns the whole sampled data
-frame from `pop_strains_df()` instead, which is the most detailed option and
-correspondingly the largest.
+`genetics = "df"` returns the whole sampled data frame from `pop_strains_df()`
+instead, which is the most detailed option and correspondingly the largest.
 
 ### Controlling the sample
 
-`sample_size` limits how many individuals are sampled at each interval
-(`Inf`, the default, takes everybody), `sample_reps` repeats the sampling, and
-`sample_states` restricts which infection states are eligible. Using
-`sample_states = 1:4` samples only infected people, which is usually what a
-genetic survey would do.
+The remaining arguments of `save_summary()` control the sample. `sample_size`
+limits how many individuals are sampled at each interval (`Inf`, the default,
+takes everybody), `sample_reps` repeats the sampling, and `sample_states`
+restricts which infection states are eligible. Using `sample_states = 1:4`
+samples only infected people, which is usually what a genetic survey would do.
 
 ---
 
 ## Full population saves
 
-`human_only_full_save = TRUE` returns the human population and its parasites
-rather than a summary:
+Every saver takes a `final` argument saying what the last element of the
+output holds. `final = "humans"` puts the human population and its parasites
+there rather than the loggers:
 
 
 ``` r
 out_h <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   update_save = TRUE, update_length = 365,
-                  human_only_full_save = TRUE)
+                  output = save_loggers(final = "humans"))
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.4.0
 ## Starting Stochastic Simulation for 3 years
-names(out_h[[length(out_h)]])
+names(out_h$output[[length(out_h$output)]])
 ## [1] "Infection_States"                            
 ## [2] "Zetas"                                       
 ## [3] "Ages"                                        
@@ -297,20 +360,23 @@ names(out_h[[length(out_h)]])
 ## [7] "Strain_barcode_vectors"
 ```
 
-`full_save = TRUE` goes further and returns everything needed to reconstruct the
+`final = "full"` goes further and keeps everything needed to reconstruct the
 simulation:
 
 
 ``` r
 out_f <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
-                  full_save = TRUE)
+                  output = save_loggers(final = "full"))
 ## Seed set to 1
-## magenta v1.3.7
-names(out_f)
+## magenta v1.4.0
+names(out_f$output)
 ## [1] "population_List"                    "populations_event_and_strains_List"
 ## [3] "scourge_List"                       "parameters_List"                   
 ## [5] "parameter_housekeeping_List"        "saved_inputs"
 ```
+
+`save_humans()` and `save_full()` keep the same two things after *every*
+interval rather than only at the end.
 
 * `population_List` the human population's demography and immunity
 * `populations_event_and_strains_List` event timings and parasite strains
@@ -322,31 +388,37 @@ names(out_f)
 
 ## Saving and restarting
 
-A full save can be written to disk and used to continue the run later, which is
-how long simulations are split across cluster jobs.
+A run that kept its full state can be written to disk with `sim_save()` and
+used to continue the run later, which is how long simulations are split across
+cluster jobs. The file holds the model state together with the parameters,
+schedule and metadata of the run that produced it, and a format version.
 
 
 ``` r
 state_file <- file.path(tempdir(), "magenta_state.rds")
-saveRDS(out_f, state_file)
+sim_save(out_f, state_file)
+sim_restore(state_file)
+## <magenta_saved_state> format 1, magenta 1.4.0
+##   N: 1000   day: 1096
+##   from:     pipeline(EIR = 5, ft = 0.4, N = 1000, years = 3, output = save_logg...
 
 out_cont <- pipeline(EIR = 5, N = 1000, years = 2, ft = 0.4, seed = 2L,
                      saved_state_path = state_file,
                      update_save = TRUE, update_length = 365)
 ## Seed set to 2
-## magenta v1.3.7
+## magenta v1.4.0
 ## Starting Stochastic Simulation for 2 years
 
 # the clock carries on from where the saved state stopped
-out_cont[[length(out_cont)]]$Loggers$Time
+out_cont$output[[length(out_cont$output)]]$Loggers$Time
 ## [1] 1826
 ```
 
 Three days of work are saved by knowing the following.
 
-1. The saved state must have been produced with `full_save = TRUE`. A state
-   without `saved_inputs` cannot be restarted, and `pipeline()` stops with a
-   message saying so.
+1. The saved state must have been produced with a saver whose
+   `final = "full"` (or with `save_full()`). A run that only kept the loggers
+   cannot be saved, and `sim_save()` stops with a message saying so.
 2. The **saved parameter lists win**. `barcode_list`, `spatial_list`,
    `drug_list`, `vector_adaptation_list` and `nmf_list` are all taken from the
    file, so passing a different `drug_list` to the restarting call has no
@@ -360,37 +432,39 @@ Three days of work are saved by knowing the following.
 
 ## Writing your own summary
 
-If none of the built-in options extract what you need, `update_save_func` takes
-a function that is called at each interval with the current simulation. It
-receives the results list, the interval index, the simulation object, the model
-parameter list and the number of loci.
+If none of the built-in savers extract what you need, `output` also accepts a
+function of your own. It is called at each interval with the current
+simulation state (its `sim$Loggers` and `sim$Ptr` are the parts of interest),
+the schedule row for the period (with its index `i` and the number of periods
+`n`) and the `params` recorded with the run, and returns what to keep.
 
 
 ``` r
-my_saves <- function(res, i, sim.out, mpl, num_loci) {
-  res[[i]] <- list(
-    time = sim.out$Loggers$Time,
-    prevalence = sum(unlist(sim.out$Loggers[c("D", "A", "U", "T")])),
-    treated = sum(unlist(sim.out$Loggers$Treatments$Successful_Treatments))
+my_saves <- function(state, period, params) {
+  list(
+    period = period$i,
+    time = state$sim$Loggers$Time,
+    prevalence = sum(unlist(state$sim$Loggers[c("D", "A", "U", "T")])),
+    treated = sum(unlist(state$sim$Loggers$Treatments$Successful_Treatments))
   )
-  res
 }
 
 out_custom <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                        update_save = TRUE, update_length = 90,
-                       update_save_func = my_saves)
+                       output = my_saves)
 ## Seed set to 1
-## magenta v1.3.7
+## magenta v1.4.0
 ## Starting Stochastic Simulation for 3 years
-str(out_custom[[1]])
-## List of 3
+str(out_custom$output[[1]])
+## List of 4
+##  $ period    : int 1
 ##  $ time      : int 91
 ##  $ prevalence: num 0.387
 ##  $ treated   : num 35
 ```
 
-The source of `magenta:::update_saves()` is the reference implementation and is
-worth reading before writing your own, since it shows how the sampling and
+The source of `save_summary()` is the reference implementation and is worth
+reading before writing your own, since it shows how the sampling and
 summarising helpers are intended to be called.
 
 ---
