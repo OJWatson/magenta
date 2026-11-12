@@ -208,3 +208,21 @@ savedState is provided then this state is loaded and continued.
 \details{
 # Main Params
 }
+\examples{
+\donttest{
+# a small, fast run: 100 people for one year, loggers only
+out <- pipeline(
+  EIR = 2, years = 1, N = 100, seed = 1L,
+  housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+)
+out
+out$output$Loggers$S
+
+# monthly saves of the loggers, as a data frame
+out_m <- pipeline(
+  EIR = 2, years = 1, N = 100, seed = 1L, update_save = TRUE, update_length = 30,
+  housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+)
+head(as.data.frame(out_m))
+}
+}

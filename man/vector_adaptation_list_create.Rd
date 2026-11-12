@@ -44,3 +44,10 @@ A \code{magenta_vector_adaptation_list}: a list with the fields the
 \description{
 List for vector adaptations relating to oocyst success
 }
+\examples{
+va <- vector_adaptation_list_create(
+  vector_adaptation_loci = 5, vector_adaptation_flag = TRUE,
+  local_oocyst_advantage = 0.6
+)
+va$vector_adaptation_flag
+}

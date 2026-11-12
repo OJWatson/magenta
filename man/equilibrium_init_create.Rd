@@ -43,3 +43,12 @@ returned country and admin are printed.}
 \code{equilibrium_init_create} creates an equilibrium initialisation state to be
 used within later model runs
 }
+\examples{
+mpl <- model_param_list_create()
+eq <- equilibrium_init_create(
+  age_vector = c(0, 1, 5, 15, 50, 100), het_brackets = 3,
+  ft = 0.4, EIR = 10, model_param_list = mpl, quiet = TRUE
+)
+eq$mv0
+dim(eq$init_S)
+}

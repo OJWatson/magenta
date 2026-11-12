@@ -33,3 +33,16 @@ Default = TRUE}
 \code{convert_barcode_vectors} converts human barcode vectors to nums and
   calculated COIs.
 }
+\examples{
+\donttest{
+out <- pipeline(
+  EIR = 2, years = 1, N = 200, num_loci = 4, seed = 1L,
+  update_save = TRUE, update_length = 365,
+  output = save_loggers(final = "humans"),
+  housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+)
+humans <- out$output[[length(out$output)]]
+coi <- convert_barcode_vectors(humans, humans$ID, nl = 4)
+table(coi$COI)
+}
+}

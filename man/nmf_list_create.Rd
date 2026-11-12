@@ -36,3 +36,7 @@ A \code{magenta_nmf_list}: a list with the fields the simulation
 \description{
 List for simulating non malarial fever
 }
+\examples{
+nmf <- nmf_list_create(nmf_flag = TRUE, prob_of_testing_nmf = 0.5)
+nmf$nmf_flag
+}

@@ -72,3 +72,9 @@ A \code{magenta_drug}: a list describing one therapy, see
 \description{
 Create list describing parameters for drug efficacy and prophlyaxis
 }
+\examples{
+# a two-locus drug with 28 day failure rates for each resistance genotype
+d <- drug_create(prob_of_lpf = c(1, 0.9, 0.8, 0.5), barcode_res_pos = c(0, 1))
+names(d)
+d$hill_n
+}

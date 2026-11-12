@@ -163,6 +163,15 @@ convert_ibd_barcode <- function(b, nl) {
 #'   that their PLAF equals `target_plaf` (within numerical tolerance).
 #'
 #' @export
+#' @examples
+#' \donttest{
+#' state <- pipeline(
+#'   EIR = 1, years = 1, N = 100, num_loci = 2, set_up_only = TRUE, seed = 1L,
+#'   housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+#' )
+#' state <- update_saved_state_barcode_plaf(state, target_plaf = c(0.9, 0.1), seed = 1L)
+#' }
+
 update_saved_state_barcode_plaf <- function(saved_state, target_plaf, seed = NULL) {
   if (!is.list(saved_state)) {
     stop("`saved_state` must be a list produced by readRDS on a saved simulation state.")

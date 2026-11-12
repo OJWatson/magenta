@@ -239,3 +239,9 @@ A \code{magenta_core_params}: a list with the fields the
 \code{model_param_list_create} creates list of model parameters to be used
 within \code{equilibrium_init_create}
 }
+\examples{
+mpl <- model_param_list_create(itn_cov = 0.3)
+mpl$cov
+mpl$itn_loss
+validate_model_param_list(mpl)
+}

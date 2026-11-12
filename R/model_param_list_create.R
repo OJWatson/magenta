@@ -83,7 +83,11 @@
 #' @return A \code{magenta_core_params}: a list with the fields the
 #'   simulation and the equilibrium solution read, see \code{\link{cpp_contract}}.
 #' @export
-
+#' @examples
+#' mpl <- model_param_list_create(itn_cov = 0.3)
+#' mpl$cov
+#' mpl$itn_loss
+#' validate_model_param_list(mpl)
 
 model_param_list_create <- function(
   # age, heterogeneity in exposure,

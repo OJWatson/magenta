@@ -9,7 +9,7 @@ quiet_housekeeping_test <- function() {
 tiny_state <- function(seed = 1L, N = 50, years = 1, update_length = 365,
                        drug_list = drug_list_create(), spatial_type = NULL,
                        spatial_incidence = NULL, spatial_mosquitoFOI = NULL,
-                       plaf = rep(0.5, 2), saved_state = NULL) {
+                       plaf = rep(0.5, 2), ibd_length = 1, saved_state = NULL) {
   schedule <- build_schedule(
     years = years, update_length = update_length, ft = 0.4, plaf = plaf,
     resistance_flag = drug_list$resistance_flag,
@@ -22,7 +22,8 @@ tiny_state <- function(seed = 1L, N = 50, years = 1, update_length = 365,
     N = N, EIR = 1, country = NULL, admin = NULL,
     mpl = model_param_list_create(), schedule = schedule,
     barcode = list(
-      num_loci = length(plaf), ibd_length = 1, prob_crossover = rep(0.5, length(plaf)),
+      num_loci = length(plaf), ibd_length = ibd_length,
+      prob_crossover = rep(0.5, length(plaf)),
       starting_ibd = 0, mutation_rate = rep(1e-7, length(plaf)),
       mutation_treated_modifier = 1
     ),

@@ -115,6 +115,23 @@
 #'
 #' @export
 #' @inheritParams spl_create
+#' @examples
+#' \donttest{
+#' # a small, fast run: 100 people for one year, loggers only
+#' out <- pipeline(
+#'   EIR = 2, years = 1, N = 100, seed = 1L,
+#'   housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+#' )
+#' out
+#' out$output$Loggers$S
+#'
+#' # monthly saves of the loggers, as a data frame
+#' out_m <- pipeline(
+#'   EIR = 2, years = 1, N = 100, seed = 1L, update_save = TRUE, update_length = 30,
+#'   housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+#' )
+#' head(as.data.frame(out_m))
+#' }
 
 pipeline <- function(EIR = 120,
                      ft = 0.4,

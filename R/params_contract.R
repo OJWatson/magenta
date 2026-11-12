@@ -25,6 +25,10 @@
 #'   \code{core} are lists with \code{fields} and \code{cpp}.
 #' @keywords internal
 #' @name cpp_contract
+#' @examples
+#' magenta:::cpp_contract$drug$cpp
+#' setequal(names(drug_list_create()), magenta:::cpp_contract$drug$fields)
+
 NULL
 
 cpp_contract <- list(

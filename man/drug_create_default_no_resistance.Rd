@@ -15,3 +15,6 @@ Perfect Drug Create
 \note{
 Perfect Efficacy Drug. Used as default to match deterministic model easily
 }
+\examples{
+drug_create_default_no_resistance()$lpf
+}

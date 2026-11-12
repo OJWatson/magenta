@@ -19,3 +19,6 @@ At the moment we will say that any loci associated with lumefantrine resistance
 yield the resistant curve but it may be better to have a distinct curve for each
 lumefantrine resistant genotype with the T0.5 aligned to the prob of lpf.
 }
+\examples{
+drug_create_al()$lpf
+}

@@ -33,3 +33,8 @@ A \code{magenta_housekeeping_list}: a list with the fields the
 \description{
 List for simulation housekeeping vars, e.g. quiet prints,
 }
+\examples{
+hk <- housekeeping_list_create(quiet = TRUE, cluster = FALSE)
+hk
+validate_housekeeping_list(hk)
+}

@@ -59,3 +59,8 @@ A \code{magenta_barcode_list}: a list with the fields the
 \code{barcode_list_create} creates list detialing the barcode/genetic
   parameters for the model
 }
+\examples{
+bl <- barcode_list_create(num_loci = 6, plaf = rep(0.2, 6), mutation_flag = TRUE)
+bl$num_loci
+validate_barcode_list(bl)
+}

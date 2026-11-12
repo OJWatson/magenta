@@ -29,6 +29,9 @@ age_brackets <- function(max_age = 100,
 #' @param year_range Year range
 #'
 #' @export
+#' @examples
+#' spl <- spl_grab("Democratic Republic of the Congo", "Kinshasa", 2010:2012)
+#' dim(spl$incidence)
 
 spl_grab <- function(country, admin, year_range) {
   importations <- magenta::importations
@@ -112,6 +115,11 @@ spl_grab <- function(country, admin, year_range) {
 #' @param final_ft Final treatment coverage
 #'
 #' @export
+#' @examples
+#' ints <- intervention_grab(
+#'   "Democratic Republic of the Congo", "Kinshasa", year_range = 2010:2015
+#' )
+#' ints$itn_cov
 
 intervention_grab <- function(country, admin, year_range,
                               final_itn_cov = NULL,

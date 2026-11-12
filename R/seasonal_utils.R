@@ -74,10 +74,12 @@ admin_match <- function(admin = NULL, country = NULL, quiet = FALSE) {
       admin_matches <- country_matches[admin_sub_matches]
     }
 
-    message(
-      "Requested: ", admin, ", ", country,
-      "\nReturned: ", ads$admin1[admin_matches], ", ", ads$country[admin_matches]
-    )
+    if (!quiet) {
+      message(
+        "Requested: ", admin, ", ", country,
+        "\nReturned: ", ads$admin1[admin_matches], ", ", ads$country[admin_matches]
+      )
+    }
   }
 
   return(admin_matches)

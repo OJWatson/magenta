@@ -9,6 +9,10 @@
 #'   simulation. Default = TRUE
 #' @return A \code{magenta_housekeeping_list}: a list with the fields the
 #'   simulation reads, see \code{\link{cpp_contract}}.
+#' @examples
+#' hk <- housekeeping_list_create(quiet = TRUE, cluster = FALSE)
+#' hk
+#' validate_housekeeping_list(hk)
 #' @export
 housekeeping_list_create <- function(quiet = TRUE,
                                      quiet_test = TRUE,
@@ -65,6 +69,18 @@ validate_housekeeping_list <- function(x) {
 #' @param partner_drug_ratios Numeric vector for ratio of first line drugs used
 #' @return A \code{magenta_drug_list}: a list with the fields the simulation
 #'   reads, see \code{\link{cpp_contract}}.
+#' @examples
+#' # a single, fully effective drug with no resistance (the default)
+#' drug_list_create()
+#'
+#' # artemether-lumefantrine with resistance at six loci and a fitness cost
+#' dl <- drug_list_create(
+#'   resistance_flag = TRUE, number_of_resistance_loci = 6,
+#'   cost_of_resistance = rep(0.99, 6), drugs = list(drug_create_al()),
+#'   number_of_drugs = 1, partner_drug_ratios = 1
+#' )
+#' dl$resistance_loci
+#' validate_drug_list(dl)
 #' @export
 drug_list_create <- function(resistance_flag = FALSE,
                              number_of_resistance_loci = 2,
@@ -231,6 +247,11 @@ validate_drug_list <- function(x) {
 #'   time = 0 days.
 #' @return A \code{magenta_drug}: a list describing one therapy, see
 #'   \code{\link{cpp_contract}}.
+#' @examples
+#' # a two-locus drug with 28 day failure rates for each resistance genotype
+#' d <- drug_create(prob_of_lpf = c(1, 0.9, 0.8, 0.5), barcode_res_pos = c(0, 1))
+#' names(d)
+#' d$hill_n
 #' @importFrom stats pgamma dexp optim
 #' @export
 drug_create <- function(prob_of_lpf = c(1.0, 0.97, 0.80, 0.55),
@@ -329,6 +350,8 @@ validate_drug <- function(x, what = "drug") {
 
 #' DHA-PPQ Drug Create
 #' @return A \code{magenta_drug}, see \code{\link{drug_create}}.
+#' @examples
+#' drug_create_dhappq()$lpf
 #' @export
 drug_create_dhappq <- function() {
   drug_table <- magenta::drug_table
@@ -366,6 +389,8 @@ drug_create_dhappq <- function() {
 #' yield the resistant curve but it may be better to have a distinct curve for each
 #' lumefantrine resistant genotype with the T0.5 aligned to the prob of lpf.
 #' @return A \code{magenta_drug}, see \code{\link{drug_create}}.
+#' @examples
+#' drug_create_al()$lpf
 #' @export
 drug_create_al <- function() {
   drug_table <- magenta::drug_table
@@ -401,6 +426,8 @@ drug_create_al <- function() {
 #' yield the resistant curve but it may be better to have a distinct curve for each
 #' AQ resistant genotype with the T0.5 aligned to the prob of lpf.
 #' @return A \code{magenta_drug}, see \code{\link{drug_create}}.
+#' @examples
+#' drug_create_asaq()$lpf
 #' @export
 drug_create_asaq <- function() {
   drug_table <- magenta::drug_table
@@ -430,6 +457,8 @@ drug_create_asaq <- function() {
 #' @note
 #' Perfect Efficacy Drug. Used as default to match deterministic model easily
 #' @return A \code{magenta_drug}, see \code{\link{drug_create}}.
+#' @examples
+#' drug_create_default_no_resistance()$lpf
 #' @export
 drug_create_default_no_resistance <- function() {
   drug <- list(
@@ -465,6 +494,12 @@ drug_create_default_no_resistance <- function() {
 #'   under artemisinin drug pressure. default = 0.2
 #' @return A \code{magenta_vector_adaptation_list}: a list with the fields the
 #'   simulation reads, see \code{\link{cpp_contract}}.
+#' @examples
+#' va <- vector_adaptation_list_create(
+#'   vector_adaptation_loci = 5, vector_adaptation_flag = TRUE,
+#'   local_oocyst_advantage = 0.6
+#' )
+#' va$vector_adaptation_flag
 #' @export
 vector_adaptation_list_create <- function(vector_adaptation_loci,
                                           vector_adaptation_flag = FALSE,
@@ -523,6 +558,9 @@ validate_vector_adaptation_list <- function(x) {
 #'   RDT before being treated with antimalarials.
 #' @return A \code{magenta_nmf_list}: a list with the fields the simulation
 #'   reads, see \code{\link{cpp_contract}}.
+#' @examples
+#' nmf <- nmf_list_create(nmf_flag = TRUE, prob_of_testing_nmf = 0.5)
+#' nmf$nmf_flag
 #' @export
 nmf_list_create <- function(nmf_flag = FALSE,
                             mean_nmf_frequency = c(
@@ -595,6 +633,10 @@ validate_nmf_list <- function(x) {
 #'   no difference
 #' @return A \code{magenta_barcode_list}: a list with the fields the
 #'   simulation reads, see \code{\link{cpp_contract}}.
+#' @examples
+#' bl <- barcode_list_create(num_loci = 6, plaf = rep(0.2, 6), mutation_flag = TRUE)
+#' bl$num_loci
+#' validate_barcode_list(bl)
 #' @export
 barcode_list_create <- function(num_loci = 24,
                                 ibd_length = 1,

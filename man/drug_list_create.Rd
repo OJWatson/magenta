@@ -70,3 +70,16 @@ A \code{magenta_drug_list}: a list with the fields the simulation
 \description{
 List for simulating drug usage for resistance/mft variables
 }
+\examples{
+# a single, fully effective drug with no resistance (the default)
+drug_list_create()
+
+# artemether-lumefantrine with resistance at six loci and a fitness cost
+dl <- drug_list_create(
+  resistance_flag = TRUE, number_of_resistance_loci = 6,
+  cost_of_resistance = rep(0.99, 6), drugs = list(drug_create_al()),
+  number_of_drugs = 1, partner_drug_ratios = 1
+)
+dl$resistance_loci
+validate_drug_list(dl)
+}
