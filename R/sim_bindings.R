@@ -1,55 +1,47 @@
 # Thin R bindings over the five Rcpp entry points.
 #
-# Each binding seeds R's random number generator immediately before calling
-# into C++, exactly as the old simulation_R() dispatcher did. The simulation
-# draws its random numbers from R's generator, so the seed call is part of the
-# model's behaviour and must stay in place until the seed handling is reworked
-# (see Phase 4 of R_CODE_REVIEW.md).
+# The simulation draws its random numbers from R's generator. The bindings do
+# not seed it: pipeline() seeds once at the start of a run (or restores the
+# generator state a saved run stopped at) and every call continues from
+# wherever the generator is.
 
 #' Initialise a simulation from an equilibrium parameter list
 #'
 #' @param param_list List created by \code{param_list_simulation_init_create}.
-#' @param seed Integer seed set immediately before the C++ call.
 #' @return List with the state pointer (\code{Ptr}) and the \code{Loggers}.
 #' @keywords internal
 #' @useDynLib magenta
 #' @importFrom Rcpp evalCpp
-sim_init <- function(param_list, seed) {
-  set.seed(seed)
+sim_init <- function(param_list) {
   Simulation_Init_cpp(param_list)
 }
 
 #' Continue a simulation held in memory
 #'
 #' @param param_list List created by \code{param_list_simulation_update_create}.
-#' @inheritParams sim_init
 #' @return List with the state pointer (\code{Ptr}) and the \code{Loggers}.
 #' @keywords internal
-sim_update <- function(param_list, seed) {
-  set.seed(seed)
+sim_update <- function(param_list) {
   Simulation_Update_cpp(param_list)
 }
 
 #' Copy the full model state back to R
 #'
 #' @param ptr External pointer to the simulation state.
-#' @inheritParams sim_init
 #' @return List of the population, strain, mosquito and parameter lists.
 #' @keywords internal
-sim_get_state <- function(ptr, seed) {
+sim_get_state <- function(ptr) {
   assert_state_ptr(ptr)
-  set.seed(seed)
   Simulation_Get_cpp(list(statePtr = ptr))
 }
 
 #' Free the memory held by a simulation
 #'
-#' @inheritParams sim_get_state
+#' @param ptr External pointer to the simulation state.
 #' @return Invisibly, the list returned by the finaliser.
 #' @keywords internal
-sim_free <- function(ptr, seed) {
+sim_free <- function(ptr) {
   assert_state_ptr(ptr)
-  set.seed(seed)
   invisible(Simulation_Finalizer_cpp(list(statePtr = ptr, finalizer = TRUE)))
 }
 
@@ -57,12 +49,10 @@ sim_free <- function(ptr, seed) {
 #'
 #' @param saved_state List as returned by \code{\link{sim_get_state}}, without
 #'   the R-side \code{saved_inputs} element.
-#' @inheritParams sim_init
 #' @return List with the state pointer (\code{Ptr}) and the \code{Loggers}.
 #' @keywords internal
-sim_init_saved <- function(saved_state, seed) {
+sim_init_saved <- function(saved_state) {
   assert_saved_state(saved_state)
-  set.seed(seed)
   Simulation_Saved_Init_cpp(list(savedState = saved_state))
 }
 

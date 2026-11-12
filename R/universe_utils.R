@@ -6,8 +6,6 @@
 #'   The resulting data frame is then passed to \code{\link{COI_df_create}}.
 #'
 #' @param statePtr Universe state pointer
-#' @param seed The random seed. Probably not needed but was here for debugging
-#'   radnomness.
 #' @param sample_size Number of indiviudals to sample. Default = 0, which
 #'   samples everyone.
 #' @param sample_states Numeric vector for which sample states are to be sampled
@@ -15,17 +13,15 @@
 #' @param ibd Boolean for whether the siulation is an IBD one.
 #'
 #' @keywords internal
-pop_strains_df <- function(statePtr, seed, sample_size = 0, sample_states = 0:5, ibd = FALSE) {
+pop_strains_df <- function(statePtr, sample_size = 0, sample_states = 0:5, ibd = FALSE) {
   param_list <- list(statePtr = statePtr, sample_size = sample_size, sample_states = sample_states)
   # message('pop_strains\n')
   if (!ibd) {
     # Get the info
-    set.seed(seed)
     list <- population_get_genetics_df_n(param_list)
     df <- as.data.frame.list(list[1:4])
   } else {
     # Get the info
-    set.seed(seed)
     list <- population_get_genetics_ibd_df_n(param_list)
     df <- as.data.frame.list(list[1:6])
   }

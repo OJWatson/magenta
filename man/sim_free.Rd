@@ -4,12 +4,10 @@
 \alias{sim_free}
 \title{Free the memory held by a simulation}
 \usage{
-sim_free(ptr, seed)
+sim_free(ptr)
 }
 \arguments{
 \item{ptr}{External pointer to the simulation state.}
-
-\item{seed}{Integer seed set immediately before the C++ call.}
 }
 \value{
 Invisibly, the list returned by the finaliser.

@@ -148,7 +148,7 @@ test_that("characterisation: set_up_only state and full save inputs", {
     final$saved_inputs,
     c(
       "barcode_list", "spatial_list", "housekeeping_list", "drug_list",
-      "vector_adaptation_list", "nmf_list", "core_parameter_list"
+      "vector_adaptation_list", "nmf_list", "core_parameter_list", "spatial_settings"
     )
   )
   expect_snapshot_value(snapshot_summary(final), style = "deparse", tolerance = 1e-6)

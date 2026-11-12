@@ -85,8 +85,8 @@ Default = 0.2}
 
 \item{years}{Lenth of simulation. Default = 20}
 
-\item{update_length}{How long each update is run for in days.
-Default = 365}
+\item{update_length}{How long each update is run for in days when
+\code{update_save = TRUE}. Default = 365}
 
 \item{output}{What to keep after each update period and at the end: a
 saver from \code{\link{save_loggers}}, \code{\link{save_summary}},
@@ -161,7 +161,9 @@ no difference}
 
 \item{update_save}{Boolean detailing whether the simulation stops every
 \code{update_length} days to extract the saver's output. Default = FALSE,
-which runs to the end and returns the final slot alone.}
+which runs year by year, so that the yearly inputs (\code{ft},
+\code{plaf}, the flags, the importation matrices) still change when they
+should, and returns the final slot alone.}
 
 \item{update_save_func}{Deprecated: pass the function as \code{output}.
 
@@ -178,14 +180,24 @@ simulation state, as a full save, without running it. Default = FALSE}
 \item{saved_state_path}{Full file path to a saved model state to be
   loaded and continued (as written by \code{\link{sim_save}} or kept by a
   saver with \code{final = "full"}), or the object itself. Default = NULL,
-  which will trigger initialisation
+  which will trigger initialisation. A resumed run continues with the
+  parameter lists the saved run was using (core, drug, housekeeping, nmf,
+  vector adaptation, barcode and spatial settings): passing a different
+  one is an error. The yearly inputs (\code{ft}, \code{itn_cov},
+  \code{irs_cov}, \code{plaf}, \code{mutation_flag} and the importation
+  matrices) are for the new years and may be given; \code{plaf},
+  \code{mutation_flag} and the importation vectors default to the saved
+  run's last values.
 
 # Deprecated output flags
 
 These arguments are kept for one release and map onto a saver with a
 warning saying which: pass \code{output = } instead.}
 
-\item{seed}{Random seed. Default is Random}
+\item{seed}{Random seed, set once at the start of the run. Default is
+random. A resumed run restores the generator state the saved run stopped
+at (kept in \code{meta$rng_state} and in the saved state) unless
+\code{seed} is given.}
 
 \item{housekeeping_list}{List created by  \code{\link{housekeeping_list_create}}}
 

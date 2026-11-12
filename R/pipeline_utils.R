@@ -70,9 +70,9 @@ spl_grab <- function(country, admin, year_range) {
     extra <- length(tail(years, 1):end_year) - 1
     incidence <- rbind(incidence, t(replicate(extra, incidence[18, ])))
     mosquitoFOI <- rbind(mosquitoFOI, t(replicate(extra, mosquitoFOI[18, ])))
-  } else if (end_year <= 2017 && end_year > 2000) {
-    incidence <- incidence[1:(end_year - 1999), ]
-    mosquitoFOI <- mosquitoFOI[1:(end_year - 1999), ]
+  } else if (end_year <= 2017 && end_year >= 2000) {
+    incidence <- incidence[1:(end_year - 1999), , drop = FALSE]
+    mosquitoFOI <- mosquitoFOI[1:(end_year - 1999), , drop = FALSE]
   } else {
     incidence <- NULL
     mosquitoFOI <- NULL
@@ -89,8 +89,8 @@ spl_grab <- function(country, admin, year_range) {
       mosquitoFOI
     )
   } else {
-    incidence <- incidence[which(years == start_year):dim(incidence)[1], ]
-    mosquitoFOI <- mosquitoFOI[which(years == start_year):dim(mosquitoFOI)[1], ]
+    incidence <- incidence[which(years == start_year):dim(incidence)[1], , drop = FALSE]
+    mosquitoFOI <- mosquitoFOI[which(years == start_year):dim(mosquitoFOI)[1], , drop = FALSE]
   }
 
 
@@ -301,7 +301,8 @@ drug_list_update <- function(drug_list, year, tf) {
     if (!drug_list$mft_flag) {
       # if sequential cycling
       if (drug_list$sequential_cycling > 0) {
-        if (tf > drug_list$sequential_cycling && year > drug_list$next_temporal_cycle) {
+        if (!is.na(tf) && tf > drug_list$sequential_cycling &&
+          year > drug_list$next_temporal_cycle) {
           drug_list$drug_choice <- drug_list$drug_choice + 1
           drug_list$next_temporal_cycle <- year + drug_list$sequential_update
           if (drug_list$drug_choice == (drug_list$number_of_drugs)) {

@@ -4,12 +4,10 @@
 \alias{sim_update}
 \title{Continue a simulation held in memory}
 \usage{
-sim_update(param_list, seed)
+sim_update(param_list)
 }
 \arguments{
 \item{param_list}{List created by \code{param_list_simulation_update_create}.}
-
-\item{seed}{Integer seed set immediately before the C++ call.}
 }
 \value{
 List with the state pointer (\code{Ptr}) and the \code{Loggers}.

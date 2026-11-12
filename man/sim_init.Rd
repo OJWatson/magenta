@@ -4,12 +4,10 @@
 \alias{sim_init}
 \title{Initialise a simulation from an equilibrium parameter list}
 \usage{
-sim_init(param_list, seed)
+sim_init(param_list)
 }
 \arguments{
 \item{param_list}{List created by \code{param_list_simulation_init_create}.}
-
-\item{seed}{Integer seed set immediately before the C++ call.}
 }
 \value{
 List with the state pointer (\code{Ptr}) and the \code{Loggers}.

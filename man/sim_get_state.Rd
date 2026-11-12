@@ -4,12 +4,10 @@
 \alias{sim_get_state}
 \title{Copy the full model state back to R}
 \usage{
-sim_get_state(ptr, seed)
+sim_get_state(ptr)
 }
 \arguments{
 \item{ptr}{External pointer to the simulation state.}
-
-\item{seed}{Integer seed set immediately before the C++ call.}
 }
 \value{
 List of the population, strain, mosquito and parameter lists.

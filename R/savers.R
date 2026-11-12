@@ -109,7 +109,7 @@ save_summary <- function(sample_size = Inf, sample_states = 0:5, sample_reps = 1
     # sample the population's strains
     df <- pop_strains_df(sim_out$Ptr,
       sample_size = if (length(sample_size) > 1) 0 else sample_size * sample_reps,
-      sample_states = sample_states, ibd = ibd, seed = params$seed
+      sample_states = sample_states, ibd = ibd
     )
 
     res <- switch(genetics,
@@ -139,7 +139,7 @@ save_humans <- function(final = c("loggers", "full", "humans")) {
   final <- match.arg(final)
   new_saver(
     function(state, period, params) {
-      collect_output(sim_get_state(state$sim$Ptr, params$seed), human_only = TRUE)
+      collect_output(sim_get_state(state$sim$Ptr), human_only = TRUE)
     },
     name = "humans", final = final
   )
@@ -150,7 +150,7 @@ save_humans <- function(final = c("loggers", "full", "humans")) {
 save_full <- function(final = c("full", "loggers", "humans")) {
   final <- match.arg(final)
   new_saver(
-    function(state, period, params) prepare_state_save(state, params$seed),
+    function(state, period, params) prepare_state_save(state),
     name = "full", final = final
   )
 }

@@ -1,9 +1,49 @@
 # magenta 1.4.0
 
 Restructuring of the R layer (see `R_CODE_REVIEW.md` in the repository for
-the review and plan). Simulation results are unchanged for every
-configuration covered by the characterisation tests; the few inputs whose
-handling has changed are listed under "Schedule" below.
+the review and plan). The model is the same; the R side around it is
+rewritten, and the changes that move results are listed first.
+
+## Results change
+
+* **One seed per run.** `pipeline()` seeds R's random number generator once,
+  at the start, and every C++ call continues from wherever the generator
+  is. Previously every call into the simulation (initialisation, each
+  update, each state copy, each genetics sample) re-seeded with the same
+  seed, so every update period replayed the same random stream. Every
+  stochastic run with a given seed therefore gives different numbers from
+  1.3.x: runs with periodic saves because the periods no longer repeat the
+  stream, and single-period runs because the initialisation no longer
+  re-seeds after the importation vectors have been drawn. The equilibrium
+  initialisation is unchanged. Two different seeds now give different
+  results, and the same seed the same, which the tests check.
+* The generator state at the end of a run is kept in `meta$rng_state` and in
+  every full state save. A run resumed with `saved_state_path =` restores it
+  and so continues exactly where the saved run stopped; passing `seed`
+  explicitly reseeds instead. Saves made before 1.4.0 have no generator
+  state and are reseeded.
+* **Yearly inputs apply year by year even without periodic saving.** With
+  `update_save = FALSE` a multi-year run used to be one C++ call at the
+  smallest non-zero `ft` for the whole run (and `Inf`, with a warning, when
+  every `ft` was 0); `plaf`, `resistance_flag`, `mutation_flag` and the
+  importation matrices beyond year one were never applied, and temporal
+  drug cycling never happened. The run is now split into one period per
+  year, each with that year's inputs; only the final slot is returned.
+  `itn_cov` and `irs_cov` were already time-varying (they go through the
+  deterministic mosquito model, which is solved over the whole run) and
+  are unaffected. One-year runs are unchanged by this.
+* **A resumed run continues with the saved run's parameter lists.** The
+  core, drug, housekeeping, nmf, vector adaptation and barcode lists and
+  the spatial settings (`spatial_type`, `island_imports_plaf_linked_flag`,
+  `survival_percentage`, `oocyst_mean`, `oocyst_shape`) are taken from the
+  save; the barcode and spatial settings used to be rebuilt from the
+  resuming call. Supplying one of them that differs from the saved value is
+  an error rather than a silent override. The yearly inputs are for the new
+  years and may be given; `plaf`, `mutation_flag` and the importation
+  vectors default to the saved run's last values.
+* `spl_grab()` keeps the year 2000 when a year range ends there: 1995:2000
+  gives six rows rather than five all-zero rows, and 2000:2000 works. A
+  range ending in any other year is unchanged.
 
 ## Parameter lists
 
@@ -118,12 +158,17 @@ handling has changed are listed under "Schedule" below.
 * Asking for `spatial_type = "metapop"` now stops with a clear message
   instead of failing inside the C++ initialisation. Metapopulation
   simulations were never implemented.
+* Sequential drug cycling no longer errors when the saver records no
+  treatment failure (`if (NA)`); it does not switch instead.
 * `drug_list_create(number_of_resistance_loci = 1)` works; it previously
   failed building the resistance cost table because the one-column matrix
   of resistance barcodes was dropped to a vector. The table for two or more
   loci is unchanged.
 
 ## Removed
+
+* `generate_default_model()`, which nothing called (the deterministic model
+  is driven from `mu_fv_create()`).
 
 * The research-era analysis code (`bootstrap()`, `kl()`, `pool_res()`,
   `create_res_list()`, the `plot_*()` functions, `heatmap_ordered_binary_plot()`,

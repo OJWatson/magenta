@@ -4,19 +4,10 @@
 \alias{pop_strains_df}
 \title{Get ppopulation strain information}
 \usage{
-pop_strains_df(
-  statePtr,
-  seed,
-  sample_size = 0,
-  sample_states = 0:5,
-  ibd = FALSE
-)
+pop_strains_df(statePtr, sample_size = 0, sample_states = 0:5, ibd = FALSE)
 }
 \arguments{
 \item{statePtr}{Universe state pointer}
-
-\item{seed}{The random seed. Probably not needed but was here for debugging
-radnomness.}
 
 \item{sample_size}{Number of indiviudals to sample. Default = 0, which
 samples everyone.}

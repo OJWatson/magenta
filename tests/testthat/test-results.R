@@ -20,7 +20,7 @@ test_that("save_humans and save_full keep the population after every period", {
   expect_true(magenta:::is_full_state(f$output[[2]]))
   expect_named(f$output[[1]]$saved_inputs, c(
     "barcode_list", "spatial_list", "housekeeping_list", "drug_list",
-    "vector_adaptation_list", "nmf_list", "core_parameter_list"
+    "vector_adaptation_list", "nmf_list", "core_parameter_list", "spatial_settings"
   ))
   expect_equal(f$meta$saver, "full")
 
@@ -74,9 +74,9 @@ test_that("clear_up = FALSE leaves the pointer for the caller to free", {
   ))
   expect_type(out$meta$Ptr, "externalptr")
   expect_type(out$output$Ptr, "externalptr")
-  state <- magenta:::sim_get_state(out$meta$Ptr, 34L)
+  state <- magenta:::sim_get_state(out$meta$Ptr)
   expect_equal(state$parameters_List$g_current_time, 366)
-  magenta:::sim_free(out$meta$Ptr, 34L)
+  magenta:::sim_free(out$meta$Ptr)
 })
 
 test_that("a calendar year range with historic interventions runs", {

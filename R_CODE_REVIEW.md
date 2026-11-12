@@ -710,19 +710,27 @@ and where it departs from the plan above:
   `set_up_only` too. The vignette sources are rewritten against the new
   interface.
 
-Phase 4 is pinned, not applied: `tests/testthat/test-findings.R` records what
-the code does today for the three items whose fix changes results (seed
-replay; `min(ft[ft > 0])` for a single period; a resumed run rebuilding the
-barcode and spatial lists from the new call; `spl_grab()` dropping the year
-2000 from a range that ends there) and says what the fix would make each
-test expect. The other 4.6 items are done (Phase 0, or absorbed in
+Phase 4 is applied, after OJ's review of each item: one seed per run with
+the generator state kept in `meta$rng_state` and in full saves and restored
+on resume; one period per year when `update_save = FALSE` so that every
+yearly input applies (`itn_cov`/`irs_cov` already did, through the odin
+solve); a resumed run continues with all of the saved run's lists and errors
+on a differing explicit argument; `spl_grab()` keeps the year 2000. Every
+stochastic characterisation snapshot moved with the seed change and was
+accepted deliberately; the equilibrium snapshot did not.
+`tests/testthat/test-findings.R` now tests the fixes. The other 4.6 items are done (Phase 0, or absorbed in
 Phases 2-3 as noted above). Phase 5: unit tests for every `sim_*`, parameter,
 schedule, saver and `magenta_sim` function and for the utilities (R-side
 line coverage 86.9% -> 98.7% over this step; 47.6% at Phase 0), an example
 on every export, `R CMD check --as-cran` clean (one pre-existing NOTE).
 `drug_list_create(number_of_resistance_loci = 1)` no longer crashes (a
 `drop = FALSE`; the table for two or more loci is unchanged).
-`generate_default_model()` is still unreferenced and untested.
+`generate_default_model()` is deleted. The odin model in
+`inst/extdata/odin_itn_irs.R` is written against odin 1 and is an early copy
+of the Imperial deterministic malaria model, used only for the mosquito
+biting and death rates under ITN/IRS; it is not to be migrated here and is a
+candidate for replacement by the current MRC-IDE packages (under review
+separately).
 
 Still open: the Phase 4 decisions above, and the remaining Phase 5 items
 (pkgdown reference regrouping is done; coverage gate in CI is not).

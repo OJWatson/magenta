@@ -149,7 +149,7 @@ test_that("sim_save writes a versioned state that sim_restore reads back", {
   expect_true(all(magenta:::cpp_contract$saved_state %in% names(saved)))
   expect_named(saved$saved_inputs, c(
     "barcode_list", "spatial_list", "housekeeping_list", "drug_list",
-    "vector_adaptation_list", "nmf_list", "core_parameter_list"
+    "vector_adaptation_list", "nmf_list", "core_parameter_list", "spatial_settings"
   ))
   expect_s3_class(saved$params, "magenta_params")
   expect_s3_class(saved$schedule, "magenta_schedule")

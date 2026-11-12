@@ -34,7 +34,7 @@ tiny_state <- function(seed = 1L, N = 50, years = 1, update_length = 365,
     housekeeping_list = quiet_housekeeping_test(), drug_list = drug_list,
     nmf_list = nmf_list_create(),
     vector_adaptation_list = vector_adaptation_list_create(length(plaf)),
-    saved_state = saved_state, seed = seed
+    saved_state = saved_state
   )
 }
 

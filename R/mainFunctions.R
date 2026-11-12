@@ -127,25 +127,27 @@ simulation_R <- function(param_list, seed) {
     )
   )
   stopifnot(is.list(param_list))
+  # the old dispatcher seeded before every call; kept here, and only here
+  set.seed(seed)
   if (length(param_list) == 1 && is.list(param_list[[1]]) &&
     !is.null(param_list[[1]]$eqSS)) {
     param_list <- param_list[[1]]
   }
 
   if (!is.null(param_list$eqSS)) {
-    return(sim_init(param_list, seed))
+    return(sim_init(param_list))
   }
   if (!is.null(param_list$savedState)) {
-    return(sim_init_saved(param_list$savedState, seed))
+    return(sim_init_saved(param_list$savedState))
   }
   if (!is.null(param_list$finalizer)) {
-    return(sim_free(param_list$statePtr, seed))
+    return(sim_free(param_list$statePtr))
   }
   if (!is.null(param_list$years) && !is.null(param_list$statePtr)) {
-    return(sim_update(param_list, seed))
+    return(sim_update(param_list))
   }
   if (!is.null(param_list$statePtr)) {
-    return(sim_get_state(param_list$statePtr, seed))
+    return(sim_get_state(param_list$statePtr))
   }
   stop("No matching parameter list handler found within simulation_R")
 }

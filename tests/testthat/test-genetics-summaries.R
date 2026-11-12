@@ -3,11 +3,11 @@
 strains_df <- function(seed = 21L, ibd_length = 1, days = 60) {
   state <- get("tiny_state")(seed = seed, N = 80, ibd_length = ibd_length)
   mu_fv <- get("constant_mu_fv")(365)
-  state <- magenta:::run_period(state, seq_len(days), 0.4, mu_fv, seed = seed)
+  state <- magenta:::run_period(state, seq_len(days), 0.4, mu_fv)
   df <- magenta:::pop_strains_df(state$sim$Ptr,
-    seed = seed, sample_size = 0, sample_states = 0:5, ibd = ibd_length > 1
+    sample_size = 0, sample_states = 0:5, ibd = ibd_length > 1
   )
-  magenta:::sim_free(state$sim$Ptr, seed)
+  magenta:::sim_free(state$sim$Ptr)
   df
 }
 
@@ -24,11 +24,11 @@ test_that("pop_strains_df returns one row per sampled individual", {
   expect_true(all(vapply(df$nums[infected], ncol, integer(1)) == 2))
 
   state <- tiny_state(seed = 22L, N = 80)
-  state <- magenta:::run_period(state, 1:60, 0.4, constant_mu_fv(365), seed = 22L)
-  some <- magenta:::pop_strains_df(state$sim$Ptr, seed = 22L, sample_size = 10, sample_states = 1:4)
+  state <- magenta:::run_period(state, 1:60, 0.4, constant_mu_fv(365))
+  some <- magenta:::pop_strains_df(state$sim$Ptr, sample_size = 10, sample_states = 1:4)
   expect_lte(nrow(some), 10)
   expect_true(all(some$state %in% 1:4))
-  magenta:::sim_free(state$sim$Ptr, 22L)
+  magenta:::sim_free(state$sim$Ptr)
 })
 
 test_that("COI_df_create summarises everyone, subsamples, and tables barcodes", {
@@ -76,10 +76,10 @@ test_that("COI_df_create summarises IBD simulations", {
 test_that("pop_strains_df returns an empty frame when no one is in the sampled states", {
   skip_on_cran()
   state <- tiny_state(seed = 24L, N = 30)
-  none <- magenta:::pop_strains_df(state$sim$Ptr, seed = 24L, sample_size = 0, sample_states = 5)
+  none <- magenta:::pop_strains_df(state$sim$Ptr, sample_size = 0, sample_states = 5)
   expect_equal(nrow(none), 0)
   expect_true("nums" %in% names(none))
-  magenta:::sim_free(state$sim$Ptr, 24L)
+  magenta:::sim_free(state$sim$Ptr)
 })
 
 test_that("COI_df_create samples with or without replacement as the sizes require", {

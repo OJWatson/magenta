@@ -4,13 +4,11 @@
 \alias{sim_init_saved}
 \title{Initialise a simulation from a saved model state}
 \usage{
-sim_init_saved(saved_state, seed)
+sim_init_saved(saved_state)
 }
 \arguments{
 \item{saved_state}{List as returned by \code{\link{sim_get_state}}, without
 the R-side \code{saved_inputs} element.}
-
-\item{seed}{Integer seed set immediately before the C++ call.}
 }
 \value{
 List with the state pointer (\code{Ptr}) and the \code{Loggers}.

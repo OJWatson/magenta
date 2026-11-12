@@ -254,7 +254,7 @@ state_file <- file.path(tempdir(), "magenta_state.rds")
 sim_save(out_f, state_file)
 sim_restore(state_file)
 
-out_cont <- pipeline(EIR = 5, N = 1000, years = 2, ft = 0.4, seed = 2L,
+out_cont <- pipeline(EIR = 5, N = 1000, years = 2, ft = 0.4,
                      saved_state_path = state_file,
                      update_save = TRUE, update_length = 365)
 
@@ -267,11 +267,14 @@ Three days of work are saved by knowing the following.
 1. The saved state must have been produced with a saver whose
    `final = "full"` (or with `save_full()`). A run that only kept the loggers
    cannot be saved, and `sim_save()` stops with a message saying so.
-2. The **saved parameter lists win**. `barcode_list`, `spatial_list`,
-   `drug_list`, `vector_adaptation_list` and `nmf_list` are all taken from the
-   file, so passing a different `drug_list` to the restarting call has no
-   effect. To change a drug policy partway through a run, do it with the yearly
-   vectors (`resistance_flag`, `ft`) rather than by restarting.
+2. The **saved parameter lists win**. The core, drug, housekeeping, nmf,
+   vector adaptation and barcode lists and the spatial settings are all taken
+   from the file; passing a different one to the restarting call is an error.
+   The yearly inputs (`ft`, `plaf`, `resistance_flag`, the importation
+   matrices) are for the new years and may be given. To change a drug policy
+   partway through a run, do it with the yearly vectors rather than by
+   restarting. The random number generator carries on from where the saved
+   run stopped unless you pass `seed`.
 3. `update_saved_state_barcode_plaf()` exists to edit the barcodes inside a
    saved state, which is the supported way to introduce a new allele into a
    population you have already burned in.

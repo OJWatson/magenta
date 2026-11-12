@@ -1,624 +1,627 @@
 # characterisation: default single-run loggers
 
-    list(Loggers = list(Log_Counter = 365, Incidence = 0.057534, 
-        Incidence_05 = 0.005479, Treatments = list(Successful_Treatments = 8, 
-            Unsuccesful_Treatments_LPF = 0, Not_Treated = 13, daily_bite_counters = 21273, 
-            daily_infectious_bite_counters = 98), daily_mutations_per_loci = list(
+    list(Loggers = list(Log_Counter = 365, Incidence = 0.043836, 
+        Incidence_05 = 0.008219, Treatments = list(Successful_Treatments = 7, 
+            Unsuccesful_Treatments_LPF = 0, Not_Treated = 9, daily_bite_counters = 21276, 
+            daily_infectious_bite_counters = 51), daily_mutations_per_loci = list(
             length = 24L, n_na = 0L, sum = 0, quantiles = c(0, 0, 
             0, 0, 0)), InfectionStates = list(length = 200L, n_na = 0L, 
-            sum = 50, quantiles = c(0, 0, 0, 0, 3)), Ages = list(
-            length = 200L, n_na = 0L, sum = 1493499, quantiles = c(89, 
-            2105.75, 5972.5, 10803, 29520)), IB = list(length = 200L, 
-            n_na = 0L, sum = 898.974317, quantiles = c(0, 0.365058, 
-            1.476669, 3.89968, 64.904033)), ICA = list(length = 200L, 
-            n_na = 0L, sum = 951.85301, quantiles = c(0, 0.258606, 
-            1.177923, 4.352457, 48.094826)), ICM = list(length = 200L, 
-            n_na = 0L, sum = 5.183538, quantiles = c(0, 0, 0, 0, 
-            4.132039)), ID = list(length = 200L, n_na = 0L, sum = 499.29653, 
-            quantiles = c(0, 0.191377, 0.979239, 2.243833, 30.001297
-            )), Mosquitoes = list(Mos_S = 188.260274, Mos_E = 2.786301, 
-            Mos_I = 0.953425), Time = 366, S = 0.84937, D = 0.000781, 
-        A = 0.105411, U = 0.041795, T = 0.000452, P = 0.002192))
+            sum = 42, quantiles = c(0, 0, 0, 0, 3)), Ages = list(
+            length = 200L, n_na = 0L, sum = 1380094, quantiles = c(32, 
+            1839.75, 5047.5, 9830.75, 31566)), IB = list(length = 200L, 
+            n_na = 0L, sum = 709.937643, quantiles = c(0, 0.484318, 
+            1.587536, 3.475015, 47.309623)), ICA = list(length = 200L, 
+            n_na = 0L, sum = 748.346311, quantiles = c(0, 0.379567, 
+            1.355151, 3.874259, 35.880896)), ICM = list(length = 200L, 
+            n_na = 0L, sum = 5.436285, quantiles = c(0, 0, 0, 0, 
+            2.610949)), ID = list(length = 200L, n_na = 0L, sum = 407.232668, 
+            quantiles = c(0, 0.280705, 0.973882, 2.050072, 24.917976
+            )), Mosquitoes = list(Mos_S = 190.172603, Mos_E = 1.347945, 
+            Mos_I = 0.479452), Time = 366, S = 0.86789, D = 0.000726, 
+        A = 0.070425, U = 0.057247, T = 0.000658, P = 0.003055))
 
 # characterisation: update_save loggers over monthly periods
 
-    list(list(Log_Counter = 30, Incidence = 0.066667, Incidence_05 = 0.033333, 
+    list(list(Log_Counter = 30, Incidence = 0.033333, Incidence_05 = 0, 
         Treatments = list(Successful_Treatments = 0, Unsuccesful_Treatments_LPF = 0, 
-            Not_Treated = 2, daily_bite_counters = 2786, daily_infectious_bite_counters = 30), 
+            Not_Treated = 1, daily_bite_counters = 2785, daily_infectious_bite_counters = 31), 
         daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
             sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-            length = 200L, n_na = 0L, sum = 113, quantiles = c(0, 
-            0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, sum = 1373714, 
-            quantiles = c(30, 1872, 4920.5, 9811.75, 32750)), IB = list(
-            length = 200L, n_na = 0L, sum = 2239.370921, quantiles = c(0.007965, 
-            0.829219, 3.592816, 8.100995, 194.322162)), ICA = list(
-            length = 200L, n_na = 0L, sum = 2134.31288, quantiles = c(0.004791, 
-            0.598512, 2.78494, 9.896999, 187.783007)), ICM = list(
-            length = 200L, n_na = 0L, sum = 18.285471, quantiles = c(0, 
-            0, 0, 0, 13.13983)), ID = list(length = 200L, n_na = 0L, 
-            sum = 1132.031217, quantiles = c(0.0047, 0.48962, 2.127609, 
-            4.744354, 78.865674)), Mosquitoes = list(Mos_S = 299.933333, 
-            Mos_E = 7.766667, Mos_I = 3.3), Time = 31, S = 0.761, 
-        D = 0.002833, A = 0.1635, U = 0.064667, T = 0, P = 0.008), 
-        list(Log_Counter = 30, Incidence = 0.1, Incidence_05 = 0.033333, 
-            Treatments = list(Successful_Treatments = 2, Unsuccesful_Treatments_LPF = 0, 
-                Not_Treated = 0, daily_bite_counters = 2774, daily_infectious_bite_counters = 10), 
+            length = 200L, n_na = 0L, sum = 119, quantiles = c(0, 
+            0, 0, 0, 5)), Ages = list(length = 200L, n_na = 0L, sum = 1536764, 
+            quantiles = c(20, 2279.5, 5353.5, 11077.25, 35536)), 
+        IB = list(length = 200L, n_na = 0L, sum = 1786.853353, quantiles = c(0, 
+        1.029752, 4.270223, 8.100995, 170.312701)), ICA = list(length = 200L, 
+            n_na = 0L, sum = 1718.376644, quantiles = c(0, 0.720856, 
+            3.429358, 9.896999, 138.809768)), ICM = list(length = 200L, 
+            n_na = 0L, sum = 8.176624, quantiles = c(0, 0, 0, 0, 
+            3.928687)), ID = list(length = 200L, n_na = 0L, sum = 937.377368, 
+            quantiles = c(0, 0.578875, 2.410812, 4.744354, 70.117661
+            )), Mosquitoes = list(Mos_S = 302.666667, Mos_E = 4.9, 
+            Mos_I = 3.433333), Time = 31, S = 0.748, D = 0.000167, 
+        A = 0.160333, U = 0.074833, T = 0, P = 0.016667), list(Log_Counter = 30, 
+        Incidence = 0.033333, Incidence_05 = 0, Treatments = list(
+            Successful_Treatments = 1, Unsuccesful_Treatments_LPF = 0, 
+            Not_Treated = 0, daily_bite_counters = 2775, daily_infectious_bite_counters = 8), 
+        daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
+            sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
+            length = 200L, n_na = 0L, sum = 102, quantiles = c(0, 
+            0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, sum = 1517020, 
+            quantiles = c(26, 2296, 5293.5, 10777.5, 35566)), IB = list(
+            length = 200L, n_na = 0L, sum = 1770.917646, quantiles = c(0, 
+            1.021323, 4.048245, 8.034684, 168.918608)), ICA = list(
+            length = 200L, n_na = 0L, sum = 1704.362191, quantiles = c(0, 
+            0.718884, 3.419975, 9.869921, 138.429987)), ICM = list(
+            length = 200L, n_na = 0L, sum = 8.249004, quantiles = c(0, 
+            0, 0, 0, 2.99959)), ID = list(length = 200L, n_na = 0L, 
+            sum = 927.845566, quantiles = c(0, 0.574137, 2.391078, 
+            4.705519, 69.543714)), Mosquitoes = list(Mos_S = 305.8, 
+            Mos_E = 4.033333, Mos_I = 1.166667), Time = 61, S = 0.7705, 
+        D = 0, A = 0.147, U = 0.073167, T = 0.001833, P = 0.0075), 
+        list(Log_Counter = 30, Incidence = 0.066667, Incidence_05 = 0, 
+            Treatments = list(Successful_Treatments = 1, Unsuccesful_Treatments_LPF = 0, 
+                Not_Treated = 1, daily_bite_counters = 2776, daily_infectious_bite_counters = 10), 
             daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
                 sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 112, quantiles = c(0, 
-                0, 0, 0, 5)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1379714, quantiles = c(60, 1902, 4950.5, 9841.75, 
-                32780)), IB = list(length = 200L, n_na = 0L, sum = 2229.985411, 
-                quantiles = c(0.0079, 0.832355, 3.563407, 8.034684, 
-                192.731539)), ICA = list(length = 200L, n_na = 0L, 
-                sum = 2135.458672, quantiles = c(0.004778, 0.680618, 
-                2.77732, 9.869921, 187.269237)), ICM = list(length = 200L, 
-                n_na = 0L, sum = 11.73932, quantiles = c(0, 0, 0, 
-                0, 8.435805)), ID = list(length = 200L, n_na = 0L, 
-                sum = 1129.72075, quantiles = c(0.004662, 0.492794, 
-                2.110193, 4.705519, 78.22012)), Mosquitoes = list(
-                Mos_S = 302.1, Mos_E = 7.666667, Mos_I = 1.233333), 
-            Time = 61, S = 0.767833, D = 0.003833, A = 0.143, U = 0.079667, 
-            T = 0.003333, P = 0.002333), list(Log_Counter = 30, Incidence = 0.1, 
-            Incidence_05 = 0, Treatments = list(Successful_Treatments = 2, 
-                Unsuccesful_Treatments_LPF = 0, Not_Treated = 1, 
-                daily_bite_counters = 2781, daily_infectious_bite_counters = 12), 
-            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
-                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 94, quantiles = c(0, 
-                0, 0, 0, 5)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1349114, quantiles = c(11, 1875.5, 4941.5, 
-                9533.25, 31887)), IB = list(length = 200L, n_na = 0L, 
-                sum = 2199.701516, quantiles = c(0, 0.8157, 3.534238, 
-                7.802033, 192.149562)), ICA = list(length = 200L, 
-                n_na = 0L, sum = 2112.636482, quantiles = c(0, 0.595241, 
-                2.769722, 9.119524, 186.756872)), ICM = list(length = 200L, 
-                n_na = 0L, sum = 19.338775, quantiles = c(0, 0, 0, 
-                0, 9.246337)), ID = list(length = 200L, n_na = 0L, 
-                sum = 1115.469478, quantiles = c(0, 0.481637, 2.092921, 
-                4.667002, 77.579849)), Mosquitoes = list(Mos_S = 303.233333, 
-                Mos_E = 6.3, Mos_I = 1.466667), Time = 91, S = 0.792833, 
-            D = 0.000333, A = 0.137667, U = 0.061167, T = 0.001667, 
-            P = 0.006333), list(Log_Counter = 30, Incidence = 0, 
-            Incidence_05 = 0, Treatments = list(Successful_Treatments = 1, 
-                Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
-                daily_bite_counters = 2778, daily_infectious_bite_counters = 9), 
-            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
-                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 87, quantiles = c(0, 
+                length = 200L, n_na = 0L, sum = 98, quantiles = c(0, 
                 0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1355114, quantiles = c(41, 1905.5, 4971.5, 
-                9563.25, 31917)), IB = list(length = 200L, n_na = 0L, 
-                sum = 2190.672898, quantiles = c(0, 0.898519, 3.505309, 
-                7.73817, 191.575902)), ICA = list(length = 200L, 
-                n_na = 0L, sum = 2109.854715, quantiles = c(0, 0.593613, 
-                2.762144, 9.119965, 187.245636)), ICM = list(length = 200L, 
-                n_na = 0L, sum = 12.415544, quantiles = c(0, 0, 0, 
-                0, 5.936173)), ID = list(length = 200L, n_na = 0L, 
-                sum = 1109.333883, quantiles = c(0, 0.477694, 2.075789, 
-                4.6288, 77.943999)), Mosquitoes = list(Mos_S = 302.233333, 
-                Mos_E = 7.333333, Mos_I = 1.433333), Time = 121, 
-            S = 0.802333, D = 0.001, A = 0.133667, U = 0.055833, 
-            T = 0.000833, P = 0.006333), list(Log_Counter = 30, Incidence = 0.066667, 
+                sum = 1517962, quantiles = c(12, 2323.25, 5323.5, 
+                10807.5, 35596)), IB = list(length = 200L, n_na = 0L, 
+                sum = 1743.491405, quantiles = c(0, 0.963902, 4.015108, 
+                7.968916, 167.535926)), ICA = list(length = 200L, 
+                n_na = 0L, sum = 1687.459421, quantiles = c(0, 0.691945, 
+                3.253695, 9.128996, 138.051246)), ICM = list(length = 200L, 
+                n_na = 0L, sum = 14.857564, quantiles = c(0, 0, 0, 
+                0, 9.561682)), ID = list(length = 200L, n_na = 0L, 
+                sum = 913.831222, quantiles = c(0, 0.482142, 2.371506, 
+                4.667002, 68.974464)), Mosquitoes = list(Mos_S = 304.833333, 
+                Mos_E = 4.566667, Mos_I = 1.6), Time = 91, S = 0.786167, 
+            D = 0.000333, A = 0.132833, U = 0.079333, T = 0.000667, 
+            P = 0.000667), list(Log_Counter = 30, Incidence = 0.133333, 
+            Incidence_05 = 0, Treatments = list(Successful_Treatments = 1, 
+                Unsuccesful_Treatments_LPF = 0, Not_Treated = 3, 
+                daily_bite_counters = 2779, daily_infectious_bite_counters = 11), 
+            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
+                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
+                length = 200L, n_na = 0L, sum = 96, quantiles = c(0, 
+                0, 0, 0, 5)), Ages = list(length = 200L, n_na = 0L, 
+                sum = 1510952, quantiles = c(18, 2303.25, 5205, 10837.5, 
+                35626)), IB = list(length = 200L, n_na = 0L, sum = 1709.789467, 
+                quantiles = c(0, 0.810036, 3.807954, 7.903687, 166.164562
+                )), ICA = list(length = 200L, n_na = 0L, sum = 1661.541473, 
+                quantiles = c(0, 0.593613, 2.827534, 8.85725, 137.673541
+                )), ICM = list(length = 200L, n_na = 0L, sum = 30.274188, 
+                quantiles = c(0, 0, 0, 0, 16.595573)), ID = list(
+                length = 200L, n_na = 0L, sum = 894.267196, quantiles = c(0, 
+                0.46009, 2.254192, 4.6288, 68.409874)), Mosquitoes = list(
+                Mos_S = 305.8, Mos_E = 3.933333, Mos_I = 1.266667), 
+            Time = 121, S = 0.796, D = 0.001, A = 0.1205, U = 0.078667, 
+            T = 0.001, P = 0.002833), list(Log_Counter = 30, Incidence = 0, 
+            Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
+                Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
+                daily_bite_counters = 2784, daily_infectious_bite_counters = 10), 
+            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
+                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
+                length = 200L, n_na = 0L, sum = 80, quantiles = c(0, 
+                0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
+                sum = 1516325, quantiles = c(12, 2333.25, 5235, 10867.5, 
+                35656)), IB = list(length = 200L, n_na = 0L, sum = 1703.243934, 
+                quantiles = c(0, 0.802401, 3.776784, 7.838991, 165.802233
+                )), ICA = list(length = 200L, n_na = 0L, sum = 1658.012715, 
+                quantiles = c(0, 0.591988, 2.819798, 8.833017, 137.29687
+                )), ICM = list(length = 200L, n_na = 0L, sum = 26.484468, 
+                quantiles = c(0, 0, 0, 0, 10.654402)), ID = list(
+                length = 200L, n_na = 0L, sum = 888.037054, quantiles = c(0, 
+                0.408412, 2.235741, 4.590911, 67.849905)), Mosquitoes = list(
+                Mos_S = 303.733333, Mos_E = 5.9, Mos_I = 1.366667), 
+            Time = 151, S = 0.814333, D = 0, A = 0.1175, U = 0.067333, 
+            T = 0, P = 0.000833), list(Log_Counter = 30, Incidence = 0, 
+            Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
+                Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
+                daily_bite_counters = 2787, daily_infectious_bite_counters = 9), 
+            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
+                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
+                length = 200L, n_na = 0L, sum = 78, quantiles = c(0, 
+                0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
+                sum = 1522325, quantiles = c(42, 2363.25, 5265, 10897.5, 
+                35686)), IB = list(length = 200L, n_na = 0L, sum = 1698.249616, 
+                quantiles = c(0, 0.795833, 3.74587, 7.774825, 165.437147
+                )), ICA = list(length = 200L, n_na = 0L, sum = 1655.474151, 
+                quantiles = c(0, 0.590369, 2.970739, 8.80885, 136.921229
+                )), ICM = list(length = 200L, n_na = 0L, sum = 17.003098, 
+                quantiles = c(0, 0, 0, 0, 6.840154)), ID = list(length = 200L, 
+                n_na = 0L, sum = 882.761203, quantiles = c(0, 0.405069, 
+                2.21744, 4.553332, 67.294521)), Mosquitoes = list(
+                Mos_S = 303.966667, Mos_E = 5.866667, Mos_I = 1.166667), 
+            Time = 181, S = 0.827833, D = 0, A = 0.123833, U = 0.048333, 
+            T = 0, P = 0), list(Log_Counter = 30, Incidence = 0.2, 
+            Incidence_05 = 0, Treatments = list(Successful_Treatments = 2, 
+                Unsuccesful_Treatments_LPF = 0, Not_Treated = 4, 
+                daily_bite_counters = 2781, daily_infectious_bite_counters = 31), 
+            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
+                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
+                length = 200L, n_na = 0L, sum = 86, quantiles = c(0, 
+                0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
+                sum = 1528325, quantiles = c(72, 2393.25, 5295, 10927.5, 
+                35716)), IB = list(length = 200L, n_na = 0L, sum = 1712.214743, 
+                quantiles = c(0, 0.790306, 3.715208, 7.728358, 164.082962
+                )), ICA = list(length = 200L, n_na = 0L, sum = 1662.922006, 
+                quantiles = c(0, 0.588754, 2.962611, 9.735639, 136.546615
+                )), ICM = list(length = 200L, n_na = 0L, sum = 10.916034, 
+                quantiles = c(0, 0, 0, 0, 4.391397)), ID = list(length = 200L, 
+                n_na = 0L, sum = 887.467091, quantiles = c(0, 0.401753, 
+                2.199289, 4.516061, 66.743682)), Mosquitoes = list(
+                Mos_S = 302.3, Mos_E = 4.9, Mos_I = 3.8), Time = 211, 
+            S = 0.820333, D = 0.002, A = 0.117167, U = 0.057667, 
+            T = 0.001333, P = 0.0015), list(Log_Counter = 30, Incidence = 0.066667, 
             Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
                 Unsuccesful_Treatments_LPF = 0, Not_Treated = 2, 
-                daily_bite_counters = 2785, daily_infectious_bite_counters = 9), 
+                daily_bite_counters = 2781, daily_infectious_bite_counters = 7), 
             daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
                 sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 90, quantiles = c(0, 
+                length = 200L, n_na = 0L, sum = 84, quantiles = c(0, 
                 0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1361114, quantiles = c(71, 1935.5, 5001.5, 
-                9593.25, 31947)), IB = list(length = 200L, n_na = 0L, 
-                sum = 2179.712472, quantiles = c(0, 0.891164, 3.476616, 
-                7.838991, 190.007759)), ICA = list(length = 200L, 
-                n_na = 0L, sum = 2106.078279, quantiles = c(0, 0.591988, 
-                2.754587, 9.095013, 186.733337)), ICM = list(length = 200L, 
-                n_na = 0L, sum = 7.970812, quantiles = c(0, 0, 0, 
-                0, 3.811038)), ID = list(length = 200L, n_na = 0L, 
-                sum = 1102.241694, quantiles = c(0, 0.473784, 2.058798, 
-                4.590911, 77.305988)), Mosquitoes = list(Mos_S = 304.3, 
-                Mos_E = 5.533333, Mos_I = 1.166667), Time = 151, 
-            S = 0.816, D = 0.001667, A = 0.11, U = 0.072333, T = 0, 
-            P = 0), list(Log_Counter = 30, Incidence = 0.1, Incidence_05 = 0, 
+                sum = 1534325, quantiles = c(102, 2423.25, 5325, 
+                10957.5, 35746)), IB = list(length = 200L, n_na = 0L, 
+                sum = 1705.181118, quantiles = c(0, 0.783837, 3.684797, 
+                7.665098, 163.739314)), ICA = list(length = 200L, 
+                n_na = 0L, sum = 1660.367547, quantiles = c(0, 0.587143, 
+                2.954506, 9.709002, 136.173027)), ICM = list(length = 200L, 
+                n_na = 0L, sum = 7.008122, quantiles = c(0, 0, 0, 
+                0, 2.819288)), ID = list(length = 200L, n_na = 0L, 
+                sum = 882.18854, quantiles = c(0, 0.398464, 2.181287, 
+                4.479095, 66.197352)), Mosquitoes = list(Mos_S = 304.466667, 
+                Mos_E = 5.633333, Mos_I = 0.9), Time = 241, S = 0.812833, 
+            D = 0.002167, A = 0.115, U = 0.07, T = 0, P = 0), list(
+            Log_Counter = 30, Incidence = 0.1, Incidence_05 = 0, 
             Treatments = list(Successful_Treatments = 2, Unsuccesful_Treatments_LPF = 0, 
-                Not_Treated = 1, daily_bite_counters = 2784, daily_infectious_bite_counters = 21), 
+                Not_Treated = 1, daily_bite_counters = 2783, daily_infectious_bite_counters = 19), 
             daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
                 sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 90, quantiles = c(0, 
+                length = 200L, n_na = 0L, sum = 88, quantiles = c(0, 
                 0, 0, 0, 5)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1351891, quantiles = c(26, 1916.75, 5011, 9479.75, 
-                31977)), IB = list(length = 200L, n_na = 0L, sum = 2175.213006, 
-                quantiles = c(0, 0.805435, 3.448158, 7.774825, 189.44835
-                )), ICA = list(length = 200L, n_na = 0L, sum = 2104.532583, 
-                quantiles = c(0, 0.590369, 2.74705, 9.044876, 186.222439
-                )), ICM = list(length = 200L, n_na = 0L, sum = 10.042608, 
-                quantiles = c(0, 0, 0, 0, 4.925326)), ID = list(length = 200L, 
-                n_na = 0L, sum = 1102.7248, quantiles = c(0, 0.468428, 
-                2.041945, 4.585815, 76.673201)), Mosquitoes = list(
-                Mos_S = 304.2, Mos_E = 4.366667, Mos_I = 2.433333), 
-            Time = 181, S = 0.819667, D = 0.000167, A = 0.1065, U = 0.070667, 
-            T = 0.002, P = 0.001), list(Log_Counter = 30, Incidence = 0.033333, 
-            Incidence_05 = 0.033333, Treatments = list(Successful_Treatments = 1, 
-                Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
-                daily_bite_counters = 2780, daily_infectious_bite_counters = 7), 
+                sum = 1503539, quantiles = c(2, 2257.5, 5259.5, 10592.25, 
+                35776)), IB = list(length = 200L, n_na = 0L, sum = 1660.503093, 
+                quantiles = c(0, 0.669463, 3.337647, 7.699939, 163.396838
+                )), ICA = list(length = 200L, n_na = 0L, sum = 1604.025911, 
+                quantiles = c(0, 0.475121, 2.728065, 8.970839, 136.799731
+                )), ICM = list(length = 200L, n_na = 0L, sum = 16.518569, 
+                quantiles = c(0, 0, 0, 0, 7.131052)), ID = list(length = 200L, 
+                n_na = 0L, sum = 860.33955, quantiles = c(0, 0.366341, 
+                2.064268, 4.442431, 66.653304)), Mosquitoes = list(
+                Mos_S = 303.3, Mos_E = 5.066667, Mos_I = 2.633333), 
+            Time = 271, S = 0.830333, D = 0.000333, A = 0.099667, 
+            U = 0.0665, T = 0.000667, P = 0.0025), list(Log_Counter = 30, 
+            Incidence = 0.066667, Incidence_05 = 0, Treatments = list(
+                Successful_Treatments = 0, Unsuccesful_Treatments_LPF = 0, 
+                Not_Treated = 2, daily_bite_counters = 2785, daily_infectious_bite_counters = 7), 
             daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
                 sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 83, quantiles = c(0, 
+                length = 200L, n_na = 0L, sum = 82, quantiles = c(0, 
                 0, 0, 0, 5)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1357891, quantiles = c(56, 1946.75, 5041, 9509.75, 
-                32007)), IB = list(length = 200L, n_na = 0L, sum = 2164.377226, 
-                quantiles = c(0, 0.798842, 3.64228, 7.711185, 187.897622
-                )), ICA = list(length = 200L, n_na = 0L, sum = 2099.771896, 
-                quantiles = c(0, 0.588754, 2.739534, 9.020129, 185.712938
-                )), ICM = list(length = 200L, n_na = 0L, sum = 6.447381, 
-                quantiles = c(0, 0, 0, 0, 3.162072)), ID = list(length = 200L, 
-                n_na = 0L, sum = 1094.690268, quantiles = c(0, 0.464594, 
-                2.025231, 4.651487, 76.045593)), Mosquitoes = list(
-                Mos_S = 304.333333, Mos_E = 5.9, Mos_I = 0.766667), 
-            Time = 211, S = 0.8195, D = 0, A = 0.116833, U = 0.0555, 
-            T = 0.000333, P = 0.007833), list(Log_Counter = 30, Incidence = 0, 
-            Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
+                sum = 1496146, quantiles = c(8, 2255, 5169, 10504, 
+                35806)), IB = list(length = 200L, n_na = 0L, sum = 1646.65356, 
+                quantiles = c(0, 0.663983, 2.973364, 7.685047, 162.059354
+                )), ICA = list(length = 200L, n_na = 0L, sum = 1593.786648, 
+                quantiles = c(0, 0.460926, 2.703427, 8.946295, 136.42545
+                )), ICM = list(length = 200L, n_na = 0L, sum = 15.208429, 
+                quantiles = c(0, 0, 0, 0, 4.578154)), ID = list(length = 200L, 
+                n_na = 0L, sum = 852.038987, quantiles = c(0, 0.363343, 
+                2.029116, 4.406068, 66.107714)), Mosquitoes = list(
+                Mos_S = 305.033333, Mos_E = 5, Mos_I = 0.966667), 
+            Time = 301, S = 0.8255, D = 0.0025, A = 0.104333, U = 0.057667, 
+            T = 0, P = 0.01), list(Log_Counter = 30, Incidence = 0.033333, 
+            Incidence_05 = 0, Treatments = list(Successful_Treatments = 1, 
                 Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
-                daily_bite_counters = 2786, daily_infectious_bite_counters = 14), 
+                daily_bite_counters = 2787, daily_infectious_bite_counters = 9), 
             daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
                 sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 89, quantiles = c(0, 
+                length = 200L, n_na = 0L, sum = 86, quantiles = c(0, 
                 0, 0, 0, 5)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1358829, quantiles = c(3, 1914, 5036, 9539.75, 
-                32037)), IB = list(length = 200L, n_na = 0L, sum = 2135.632802, 
-                quantiles = c(0, 0.792303, 3.39194, 7.648065, 186.359588
-                )), ICA = list(length = 200L, n_na = 0L, sum = 2080.05128, 
-                quantiles = c(0, 0.587143, 2.573649, 8.7576, 185.204832
-                )), ICM = list(length = 200L, n_na = 0L, sum = 52.544556, 
-                quantiles = c(0, 0, 0, 0, 48.405321)), ID = list(
-                length = 200L, n_na = 0L, sum = 1077.856852, quantiles = c(0, 
-                0.445209, 1.930755, 4.613413, 75.423122)), Mosquitoes = list(
-                Mos_S = 304.166667, Mos_E = 5.1, Mos_I = 1.733333), 
-            Time = 241, S = 0.823, D = 0, A = 0.1075, U = 0.0645, 
-            T = 0, P = 0.005), list(Log_Counter = 30, Incidence = 0, 
-            Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
-                Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
-                daily_bite_counters = 2787, daily_infectious_bite_counters = 8), 
-            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
-                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 75, quantiles = c(0, 
-                0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1364829, quantiles = c(33, 1944, 5066, 9569.75, 
-                32067)), IB = list(length = 200L, n_na = 0L, sum = 2125.125635, 
-                quantiles = c(0, 0.862342, 3.364175, 7.585462, 185.829768
-                )), ICA = list(length = 200L, n_na = 0L, sum = 2076.359943, 
-                quantiles = c(0, 0.585536, 2.566608, 8.733639, 184.698116
-                )), ICM = list(length = 200L, n_na = 0L, sum = 33.733743, 
-                quantiles = c(0, 0, 0, 0, 31.076343)), ID = list(
-                length = 200L, n_na = 0L, sum = 1071.032967, quantiles = c(0, 
-                0.441565, 1.992212, 4.575649, 74.805747)), Mosquitoes = list(
-                Mos_S = 304.9, Mos_E = 4.866667, Mos_I = 1.233333), 
-            Time = 271, S = 0.828, D = 0, A = 0.108, U = 0.062, T = 0, 
-            P = 0.002), list(Log_Counter = 30, Incidence = 0.066667, 
-            Incidence_05 = 0.066667, Treatments = list(Successful_Treatments = 1, 
-                Unsuccesful_Treatments_LPF = 0, Not_Treated = 1, 
-                daily_bite_counters = 2788, daily_infectious_bite_counters = 4), 
-            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
-                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 70, quantiles = c(0, 
-                0, 0, 0, 5)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1354700, quantiles = c(5, 1955.75, 5030, 9549.25, 
-                32097)), IB = list(length = 200L, n_na = 0L, sum = 2071.608574, 
-                quantiles = c(0, 0.852507, 3.214456, 7.523371, 184.30866
-                )), ICA = list(length = 200L, n_na = 0L, sum = 2026.32143, 
-                quantiles = c(0, 0.571683, 2.302813, 8.709744, 184.192786
-                )), ICM = list(length = 200L, n_na = 0L, sum = 40.315349, 
-                quantiles = c(0, 0, 0, 0, 19.951094)), ID = list(
-                length = 200L, n_na = 0L, sum = 1043.475516, quantiles = c(0, 
-                0.391968, 1.899276, 4.4375, 74.193425)), Mosquitoes = list(
-                Mos_S = 307.333333, Mos_E = 3.166667, Mos_I = 0.5), 
-            Time = 301, S = 0.8475, D = 0.000667, A = 0.1015, U = 0.046833, 
-            T = 5e-04, P = 0.003), list(Log_Counter = 30, Incidence = 0, 
-            Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
-                Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
-                daily_bite_counters = 2788, daily_infectious_bite_counters = 8), 
-            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
-                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 58, quantiles = c(0, 
-                0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1354751, quantiles = c(22, 1891, 5021.5, 9579.25, 
-                32127)), IB = list(length = 200L, n_na = 0L, sum = 2031.291872, 
-                quantiles = c(0, 0.76379, 3.060899, 7.305525, 182.800003
-                )), ICA = list(length = 200L, n_na = 0L, sum = 1999.53925, 
-                quantiles = c(0, 0.533466, 2.296512, 8.685915, 183.688839
-                )), ICM = list(length = 200L, n_na = 0L, sum = 72.700177, 
-                quantiles = c(0, 0, 0, 0, 46.817616)), ID = list(
-                length = 200L, n_na = 0L, sum = 1021.977126, quantiles = c(0, 
-                0.388759, 1.88373, 4.370002, 73.586115)), Mosquitoes = list(
-                Mos_S = 308.366667, Mos_E = 1.8, Mos_I = 0.833333), 
-            Time = 331, S = 0.865333, D = 0, A = 0.089667, U = 0.044333, 
-            T = 0, P = 0.000667), list(Loggers = list(Log_Counter = 30, 
+                sum = 1502146, quantiles = c(38, 2285, 5199, 10534, 
+                35836)), IB = list(length = 200L, n_na = 0L, sum = 1640.133662, 
+                quantiles = c(0, 0.658548, 2.949026, 7.622141, 160.732819
+                )), ICA = list(length = 200L, n_na = 0L, sum = 1594.417237, 
+                quantiles = c(0, 0.459665, 2.696031, 8.921818, 136.052193
+                )), ICM = list(length = 200L, n_na = 0L, sum = 9.763851, 
+                quantiles = c(0, 0, 0, 0, 2.939187)), ID = list(length = 200L, 
+                n_na = 0L, sum = 850.03814, quantiles = c(0, 0.360369, 
+                2.012507, 4.370002, 65.56659)), Mosquitoes = list(
+                Mos_S = 304.9, Mos_E = 5.166667, Mos_I = 0.933333), 
+            Time = 331, S = 0.830167, D = 0, A = 0.109667, U = 0.0505, 
+            T = 0.000167, P = 0.0095), list(Loggers = list(Log_Counter = 30, 
             Incidence = 0, Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
                 Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
-                daily_bite_counters = 2788, daily_infectious_bite_counters = 12), 
+                daily_bite_counters = 2784, daily_infectious_bite_counters = 19), 
             daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
                 sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 62, quantiles = c(0, 
+                length = 200L, n_na = 0L, sum = 78, quantiles = c(0, 
                 0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1349384, quantiles = c(13, 1726.5, 4997.5, 
-                9346.25, 32157)), IB = list(length = 200L, n_na = 0L, 
-                sum = 1987.689486, quantiles = c(0, 0.754694, 2.955073, 
-                7.194065, 183.295223)), ICA = list(length = 200L, 
-                n_na = 0L, sum = 1961.232992, quantiles = c(0, 0.525366, 
-                2.182413, 8.66215, 184.185449)), ICM = list(length = 200L, 
-                n_na = 0L, sum = 59.092522, quantiles = c(0, 0, 0, 
-                0, 30.057033)), ID = list(length = 200L, n_na = 0L, 
-                sum = 999.984134, quantiles = c(0, 0.385577, 1.715332, 
-                4.334231, 73.981314)), Mosquitoes = list(Mos_S = 306.666667, 
-                Mos_E = 2.733333, Mos_I = 1.6), Time = 361, S = 0.874833, 
-            D = 0, A = 0.071167, U = 0.054, T = 0, P = 0)))
+                sum = 1508146, quantiles = c(68, 2315, 5229, 10564, 
+                35866)), IB = list(length = 200L, n_na = 0L, sum = 1643.616037, 
+                quantiles = c(0, 0.653157, 2.924887, 7.55975, 159.417141
+                )), ICA = list(length = 200L, n_na = 0L, sum = 1599.040716, 
+                quantiles = c(0, 0.458407, 2.688654, 8.897408, 135.679957
+                )), ICM = list(length = 200L, n_na = 0L, sum = 6.268418, 
+                quantiles = c(0, 0, 0, 0, 1.886966)), ID = list(length = 200L, 
+                n_na = 0L, sum = 852.037537, quantiles = c(0, 0.357419, 
+                2.013991, 4.334231, 65.029895)), Mosquitoes = list(
+                Mos_S = 302.033333, Mos_E = 6.8, Mos_I = 2.166667), 
+            Time = 361, S = 0.8345, D = 0, A = 0.1145, U = 0.0485, 
+            T = 0, P = 0.0025)))
 
 # characterisation: summary saves with COI summaries
 
     list(list(summary_coi = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-    "(5,15]", "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-    "S", "Asymptomatic", "S", "Asymptomatic", "S"), N = c(9, 36, 
-    26, 66, 73, 90), mean = c(1.777778, 0, 2.038462, 0, 2.027397, 
-    0)), summary_coi_detected = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-    "(5,15]", "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-    "S", "Asymptomatic", "S", "Asymptomatic", "S"), N = c(9, 36, 
-    26, 66, 73, 90), mean = c(1.222222, 0, 1.307692, 0, 1.520548, 
-    0)), summary_moi_detected = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-    "(5,15]", "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-    "S", "Asymptomatic", "S", "Asymptomatic", "S"), N = c(9, 36, 
-    26, 66, 73, 90), mean = c(1.222222, 0, 1.307692, 0, 1.287671, 
-    0)), summary_polygenom = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-    "(5,15]", "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-    "S", "Asymptomatic", "S", "Asymptomatic", "S"), N = c(9, 36, 
-    26, 66, 73, 90), mean = c(0.555556, 0, 0.538462, 0, 0.452055, 
-    0)), summary_ages = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-    "(5,15]", "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-    "S", "Asymptomatic", "S", "Asymptomatic", "S"), N = c(9, 36, 
-    26, 66, 73, 90), mean = c(1206.111111, 892.222222, 3598.307692, 
-    3639.106061, 12804.739726, 12612.577778)), summary_unique = list(
-        age_bin = c("(-0.001,5]", "(5,15]", "(15,100]", NA, NA, NA
-        ), N = c(45, 92, 163, 108, 192, 300), age = c(955, 3627.576087, 
-        12698.638037, 9621.824074, 7330.380208, 8155.3), mean = c("1" = 0.875, 
-        "1" = 0.603774, "1" = 0.101351, "1" = 0.023041, 0, "1" = 0.023041
-        ), clinical = c(NA, NA, NA, "Asymptomatic", "S", NA)), summary_cou = list(
-        age_bin = c("(-0.001,5]", "(5,15]", "(15,100]", NA, NA, NA
-        ), N = c(45, 92, 163, 108, 192, 300), age = c(955, 3627.576087, 
-        12698.638037, 9621.824074, 7330.380208, 8155.3), mean = c(0.008333, 
-        0.008708, 0.017007, 0.015574, NaN, 0.015574), clinical = c(NA, 
-        NA, NA, "Asymptomatic", "S", NA)), clonality = list(names = c("1", 
-    "2", "3", "4", "5", "6", "7", "8", "10"), counts = c(5L, 20L, 
-    10L, 12L, 5L, 4L, 5L, 1L, 1L)), coi_table = list(names = c("0", 
-    "1", "2", "3", "4", "5", "7", "24"), counts = c(192L, 56L, 30L, 
-    13L, 4L, 3L, 1L, 1L)), barcode_freq = c(V1 = 0.555556, V2 = 0.408889, 
-    V3 = 0.44, V4 = 0.48, V5 = 0.48, V6 = 0.528889), succesfull_treatments = 2, 
-        unsuccesful_treatments_lpf = 0, not_treated = 2, treatment_failure = 0, 
-        daily_pop_eir = 2.048056, mutations = c(0, 0, 0, 0, 0, 0), 
-        overall_treatment_failure = 0, pcr_prev = 0.372389, dat = 0.266111, 
-        micro_2_10 = 0.168707), list(summary_coi = list(age_bin = c("(-0.001,5]", 
     "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(15,100]", "(15,100]", 
-    "(15,100]"), clinical = c("Asymptomatic", "P", "S", "Asymptomatic", 
-    "S", "Asymptomatic", "Clinical", "S"), N = c(9, 1, 36, 26, 66, 
-    70, 1, 91), mean = c(1.777778, 0, 0, 1.923077, 0, 1.685714, 1, 
-    0)), summary_coi_detected = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-    "(-0.001,5]", "(5,15]", "(5,15]", "(15,100]", "(15,100]", "(15,100]"
-    ), clinical = c("Asymptomatic", "P", "S", "Asymptomatic", "S", 
-    "Asymptomatic", "Clinical", "S"), N = c(9, 1, 36, 26, 66, 70, 
-    1, 91), mean = c(1.444444, 0, 0, 1.307692, 0, 1.242857, 1, 0)), 
-        summary_moi_detected = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-        "(-0.001,5]", "(5,15]", "(5,15]", "(15,100]", "(15,100]", 
-        "(15,100]"), clinical = c("Asymptomatic", "P", "S", "Asymptomatic", 
-        "S", "Asymptomatic", "Clinical", "S"), N = c(9, 1, 36, 26, 
-        66, 70, 1, 91), mean = c(1.444444, 0, 0, 1.307692, 0, 1.228571, 
-        1, 0)), summary_polygenom = list(age_bin = c("(-0.001,5]", 
-        "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(15,100]", 
-        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "P", 
-        "S", "Asymptomatic", "S", "Asymptomatic", "Clinical", "S"
-        ), N = c(9, 1, 36, 26, 66, 70, 1, 91), mean = c(0.555556, 
-        0, 0, 0.5, 0, 0.428571, 0, 0)), summary_ages = list(age_bin = c("(-0.001,5]", 
-        "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(15,100]", 
-        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "P", 
-        "S", "Asymptomatic", "S", "Asymptomatic", "Clinical", "S"
-        ), N = c(9, 1, 36, 26, 66, 70, 1, 91), mean = c(1119.333333, 
-        457, 925.361111, 3591.615385, 3717.939394, 12230.114286, 
-        8689, 13230.813187)), summary_unique = list(age_bin = c("(-0.001,5]", 
-        "(5,15]", "(15,100]", NA, NA, NA, NA, NA), N = c(46, 92, 
-        162, 105, 1, 1, 193, 300), age = c(953.130435, 3682.23913, 
-        12770.376543, 9138.704762, 8689, 457, 7682.388601, 8171.37
-        ), mean = c("1" = 1, "1" = 0.58, "1" = 0.176471, "1" = 0.048913, 
-        "1" = 1, 0, 0, "1" = 0.048649), clinical = c(NA, NA, NA, 
-        "Asymptomatic", "Clinical", "P", "S", NA)), summary_cou = list(
-            age_bin = c("(-0.001,5]", "(5,15]", "(15,100]", NA, NA, 
-            NA, NA, NA), N = c(46, 92, 162, 105, 1, 1, 193, 300), 
-            age = c(953.130435, 3682.23913, 12770.376543, 9138.704762, 
-            8689, 457, 7682.388601, 8171.37), mean = c(0, 0.009796, 
-            0.017376, 0.016215, NaN, NaN, NaN, 0.016157), clinical = c(NA, 
-            NA, NA, "Asymptomatic", "Clinical", "P", "S", NA)), clonality = list(
-            names = c("1", "2", "3", "4", "5", "6", "7", "8", "9"
-            ), counts = c(9L, 17L, 14L, 8L, 4L, 4L, 1L, 2L, 1L)), 
-        coi_table = list(names = c("0", "1", "2", "3", "4", "5", 
-        "7"), counts = c(194L, 58L, 30L, 11L, 3L, 3L, 1L)), barcode_freq = c(V1 = 0.523316, 
-        V2 = 0.414508, V3 = 0.440415, V4 = 0.502591, V5 = 0.476684, 
-        V6 = 0.57513), succesfull_treatments = 2, unsuccesful_treatments_lpf = 0, 
-        not_treated = 7, treatment_failure = 0, daily_pop_eir = 2.108889, 
+    "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
+    "P", "S", "Asymptomatic", "S", "Asymptomatic", "Clinical", "P", 
+    "S"), N = c(16, 1, 1, 53, 30, 69, 56, 1, 1, 72), mean = c(2.125, 
+    1, 0, 0, 2.333333, 0, 1.696429, 1, 0, 0)), summary_coi_detected = list(
+        age_bin = c("(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", 
+        "(5,15]", "(5,15]", "(15,100]", "(15,100]", "(15,100]", "(15,100]"
+        ), clinical = c("Asymptomatic", "Clinical", "P", "S", "Asymptomatic", 
+        "S", "Asymptomatic", "Clinical", "P", "S"), N = c(16, 1, 
+        1, 53, 30, 69, 56, 1, 1, 72), mean = c(1.9375, 1, 0, 0, 1.266667, 
+        0, 1.071429, 1, 0, 0)), summary_moi_detected = list(age_bin = c("(-0.001,5]", 
+    "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
+    "(15,100]", "(15,100]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
+    "Clinical", "P", "S", "Asymptomatic", "S", "Asymptomatic", "Clinical", 
+    "P", "S"), N = c(16, 1, 1, 53, 30, 69, 56, 1, 1, 72), mean = c(1.875, 
+    1, 0, 0, 1.266667, 0, 1.071429, 1, 0, 0)), summary_polygenom = list(
+        age_bin = c("(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", 
+        "(5,15]", "(5,15]", "(15,100]", "(15,100]", "(15,100]", "(15,100]"
+        ), clinical = c("Asymptomatic", "Clinical", "P", "S", "Asymptomatic", 
+        "S", "Asymptomatic", "Clinical", "P", "S"), N = c(16, 1, 
+        1, 53, 30, 69, 56, 1, 1, 72), mean = c(0.5, 0, 0, 0, 0.633333, 
+        0, 0.375, 0, 0, 0)), summary_ages = list(age_bin = c("(-0.001,5]", 
+    "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
+    "(15,100]", "(15,100]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
+    "Clinical", "P", "S", "Asymptomatic", "S", "Asymptomatic", "Clinical", 
+    "P", "S"), N = c(16, 1, 1, 53, 30, 69, 56, 1, 1, 72), mean = c(1138.875, 
+    1040, 1452, 847.226415, 3586.6, 3425.043478, 13248.732143, 10772, 
+    5926, 11998.111111)), summary_unique = list(age_bin = c("(-0.001,5]", 
+    "(5,15]", "(15,100]", NA, NA, NA, NA, NA), N = c(71, 99, 130, 
+    102, 2, 2, 194, 300), age = c(924.183099, 3474, 12480.7, 8507.343137, 
+    5906, 3689, 5902.551546, 6773.446667), mean = c("1" = 0.714286, 
+    "1" = 0.471429, "1" = 0.208333, "1" = 0.045226, "1" = 1, 0, 0, 
+    "1" = 0.044776), clinical = c(NA, NA, NA, "Asymptomatic", "Clinical", 
+    "P", "S", NA)), summary_cou = list(age_bin = c("(-0.001,5]", 
+    "(5,15]", "(15,100]", NA, NA, NA, NA, NA), N = c(71, 99, 130, 
+    102, 2, 2, 194, 300), age = c(924.183099, 3474, 12480.7, 8507.343137, 
+    5906, 3689, 5902.551546, 6773.446667), mean = c(0.015126, 0.015735, 
+    0.013377, 0.015989, 0, NaN, NaN, 0.01592), clinical = c(NA, NA, 
+    NA, "Asymptomatic", "Clinical", "P", "S", NA)), clonality = list(
+        names = c("1", "2", "3", "4", "5", "6", "7", "10"), counts = c(9L, 
+        18L, 13L, 10L, 5L, 4L, 3L, 1L)), coi_table = list(names = c("0", 
+    "1", "2", "3", "4", "5", "6", "7", "12"), counts = c(196L, 56L, 
+    29L, 5L, 8L, 3L, 1L, 1L, 1L)), barcode_freq = c(V1 = 0.470588, 
+    V2 = 0.52451, V3 = 0.578431, V4 = 0.495098, V5 = 0.465686, V6 = 0.558824
+    ), succesfull_treatments = 4, unsuccesful_treatments_lpf = 0, 
+        not_treated = 7, treatment_failure = 0, daily_pop_eir = 2.3725, 
         mutations = c(0, 0, 0, 0, 0, 0), overall_treatment_failure = 0, 
-        pcr_prev = 0.353333, dat = 0.228222, micro_2_10 = 0.119902), 
+        pcr_prev = 0.348722, dat = 0.239333, micro_2_10 = 0.189769), 
         list(summary_coi = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-        "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", "(5,15]", "(15,100]", 
+        "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", "(15,100]", "(15,100]", 
+        "(15,100]"), clinical = c("Asymptomatic", "P", "S", "Asymptomatic", 
+        "P", "S", "Asymptomatic", "P", "S"), N = c(14, 1, 55, 33, 
+        3, 62, 58, 3, 71), mean = c(1.785714, 0, 0, 2.212121, 0, 
+        0, 1.87931, 0, 0)), summary_coi_detected = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", 
         "(15,100]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-        "Clinical", "S", "Asymptomatic", "Clinical", "P", "S", "Asymptomatic", 
-        "Clinical", "P", "S"), N = c(10, 1, 34, 25, 1, 1, 65, 67, 
-        1, 1, 94), mean = c(1.6, 1, 0, 2, 2, 0, 0, 1.731343, 3, 0, 
-        0)), summary_coi_detected = list(age_bin = c("(-0.001,5]", 
-        "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", 
-        "(5,15]", "(15,100]", "(15,100]", "(15,100]", "(15,100]"), 
-            clinical = c("Asymptomatic", "Clinical", "S", "Asymptomatic", 
-            "Clinical", "P", "S", "Asymptomatic", "Clinical", "P", 
-            "S"), N = c(10, 1, 34, 25, 1, 1, 65, 67, 1, 1, 94), mean = c(1.1, 
-            1, 0, 1.32, 1, 0, 0, 1.19403, 1, 0, 0)), summary_moi_detected = list(
+        "P", "S", "Asymptomatic", "P", "S", "Asymptomatic", "P", 
+        "S"), N = c(14, 1, 55, 33, 3, 62, 58, 3, 71), mean = c(1.428571, 
+        0, 0, 1.606061, 0, 0, 1.224138, 0, 0)), summary_moi_detected = list(
             age_bin = c("(-0.001,5]", "(-0.001,5]", "(-0.001,5]", 
-            "(5,15]", "(5,15]", "(5,15]", "(5,15]", "(15,100]", "(15,100]", 
-            "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-            "Clinical", "S", "Asymptomatic", "Clinical", "P", "S", 
-            "Asymptomatic", "Clinical", "P", "S"), N = c(10, 1, 34, 
-            25, 1, 1, 65, 67, 1, 1, 94), mean = c(1.1, 1, 0, 1.32, 
-            1, 0, 0, 1.179104, 1, 0, 0)), summary_polygenom = list(
-            age_bin = c("(-0.001,5]", "(-0.001,5]", "(-0.001,5]", 
-            "(5,15]", "(5,15]", "(5,15]", "(5,15]", "(15,100]", "(15,100]", 
-            "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-            "Clinical", "S", "Asymptomatic", "Clinical", "P", "S", 
-            "Asymptomatic", "Clinical", "P", "S"), N = c(10, 1, 34, 
-            25, 1, 1, 65, 67, 1, 1, 94), mean = c(0.5, 0, 0, 0.6, 
-            1, 0, 0, 0.477612, 1, 0, 0)), summary_ages = list(age_bin = c("(-0.001,5]", 
+            "(5,15]", "(5,15]", "(5,15]", "(15,100]", "(15,100]", 
+            "(15,100]"), clinical = c("Asymptomatic", "P", "S", "Asymptomatic", 
+            "P", "S", "Asymptomatic", "P", "S"), N = c(14, 1, 55, 
+            33, 3, 62, 58, 3, 71), mean = c(1.428571, 0, 0, 1.424242, 
+            0, 0, 1.224138, 0, 0)), summary_polygenom = list(age_bin = c("(-0.001,5]", 
         "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", 
-        "(5,15]", "(15,100]", "(15,100]", "(15,100]", "(15,100]"), 
-            clinical = c("Asymptomatic", "Clinical", "S", "Asymptomatic", 
-            "Clinical", "P", "S", "Asymptomatic", "Clinical", "P", 
-            "S"), N = c(10, 1, 34, 25, 1, 1, 65, 67, 1, 1, 94), mean = c(1058.4, 
-            1183, 916.382353, 3806.56, 4522, 5333, 3596.846154, 12452.268657, 
-            6734, 6513, 13154.212766)), summary_unique = list(age_bin = c("(-0.001,5]", 
-        "(5,15]", "(15,100]", NA, NA, NA, NA, NA), N = c(45, 92, 
-        163, 102, 3, 2, 193, 300), age = c(953.866667, 3682.76087, 
-        12785.552147, 9216.176471, 4146.333333, 5923, 7779.523316, 
-        8219.276667), mean = c("1" = 0.647059, "1" = 0.480769, "1" = 0.176471, 
-        "1" = 0.071429, "1" = 0.666667, 0, 0, "1" = 0.069149), clinical = c(NA, 
-        NA, NA, "Asymptomatic", "Clinical", "P", "S", NA)), summary_cou = list(
+        "(15,100]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
+        "P", "S", "Asymptomatic", "P", "S", "Asymptomatic", "P", 
+        "S"), N = c(14, 1, 55, 33, 3, 62, 58, 3, 71), mean = c(0.5, 
+        0, 0, 0.545455, 0, 0, 0.5, 0, 0)), summary_ages = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", 
+        "(15,100]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
+        "P", "S", "Asymptomatic", "P", "S", "Asymptomatic", "P", 
+        "S"), N = c(14, 1, 55, 33, 3, 62, 58, 3, 71), mean = c(1240.285714, 
+        1126, 867.890909, 3603.515152, 2942.666667, 3427.903226, 
+        12830.103448, 6526.333333, 12360.070423)), summary_unique = list(
             age_bin = c("(-0.001,5]", "(5,15]", "(15,100]", NA, NA, 
-            NA, NA, NA), N = c(45, 92, 163, 102, 3, 2, 193, 300), 
-            age = c(953.866667, 3682.76087, 12785.552147, 9216.176471, 
-            4146.333333, 5923, 7779.523316, 8219.276667), mean = c(0.022059, 
-            0.013575, 0.018089, 0.018517, 0.066667, NaN, NaN, 0.018603
-            ), clinical = c(NA, NA, NA, "Asymptomatic", "Clinical", 
+            NA, NA), N = c(70, 98, 132, 105, 7, 188, 300), age = c(946.057143, 
+            3472.183673, 12434.015152, 8385.009524, 4219, 6052.281915, 
+            6825.96), mean = c("1" = 0.68, "1" = 0.383562, "1" = 0.183486, 
+            "1" = 0.038647, 0, 0, "1" = 0.038647), clinical = c(NA, 
+            NA, NA, "Asymptomatic", "P", "S", NA)), summary_cou = list(
+            age_bin = c("(-0.001,5]", "(5,15]", "(15,100]", NA, NA, 
+            NA, NA), N = c(70, 98, 132, 105, 7, 188, 300), age = c(946.057143, 
+            3472.183673, 12434.015152, 8385.009524, 4219, 6052.281915, 
+            6825.96), mean = c(0.026667, 0.01484, 0.015121, 0.017354, 
+            NaN, NaN, 0.017354), clinical = c(NA, NA, NA, "Asymptomatic", 
             "P", "S", NA)), clonality = list(names = c("1", "2", 
-        "3", "4", "5", "6", "9", "10", "12"), counts = c(13L, 13L, 
-        9L, 6L, 7L, 6L, 2L, 1L, 1L)), coi_table = list(names = c("0", 
-        "1", "2", "3", "4", "5", "7"), counts = c(195L, 51L, 35L, 
-        14L, 2L, 2L, 1L)), barcode_freq = c(V1 = 0.542289, V2 = 0.452736, 
-        V3 = 0.437811, V4 = 0.527363, V5 = 0.547264, V6 = 0.616915
-        ), succesfull_treatments = 3, unsuccesful_treatments_lpf = 0, 
-            not_treated = 11, treatment_failure = 0, daily_pop_eir = 2.250833, 
+        "3", "4", "5", "6", "7", "8", "9", "11"), counts = c(8L, 
+        17L, 13L, 6L, 6L, 3L, 3L, 2L, 2L, 1L)), coi_table = list(
+            names = c("0", "1", "2", "3", "4", "5", "6", "12"), counts = c(195L, 
+            51L, 32L, 9L, 8L, 3L, 1L, 1L)), barcode_freq = c(V1 = 0.456621, 
+        V2 = 0.493151, V3 = 0.584475, V4 = 0.511416, V5 = 0.424658, 
+        V6 = 0.60274), succesfull_treatments = 14, unsuccesful_treatments_lpf = 0, 
+            not_treated = 12, treatment_failure = 0, daily_pop_eir = 3.264722, 
             mutations = c(0, 0, 0, 0, 0, 0), overall_treatment_failure = 0, 
-            pcr_prev = 0.356889, dat = 0.253889, micro_2_10 = 0.173427), 
+            pcr_prev = 0.352778, dat = 0.221, micro_2_10 = 0.212782), 
         list(summary_coi = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-        "(5,15]", "(5,15]", "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-        "S", "Asymptomatic", "Clinical", "S", "Asymptomatic", "S"
-        ), N = c(9, 35, 27, 1, 63, 67, 98), mean = c(2.111111, 0, 
-        1.814815, 1, 0, 1.910448, 0)), summary_coi_detected = list(
-            age_bin = c("(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
-            "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-            "S", "Asymptomatic", "Clinical", "S", "Asymptomatic", 
-            "S"), N = c(9, 35, 27, 1, 63, 67, 98), mean = c(1.222222, 
-            0, 1, 1, 0, 1.268657, 0)), summary_moi_detected = list(
-            age_bin = c("(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
-            "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-            "S", "Asymptomatic", "Clinical", "S", "Asymptomatic", 
-            "S"), N = c(9, 35, 27, 1, 63, 67, 98), mean = c(1.222222, 
-            0, 1, 1, 0, 1.253731, 0)), summary_polygenom = list(age_bin = c("(-0.001,5]", 
-        "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", "(15,100]", "(15,100]"
-        ), clinical = c("Asymptomatic", "S", "Asymptomatic", "Clinical", 
-        "S", "Asymptomatic", "S"), N = c(9, 35, 27, 1, 63, 67, 98
-        ), mean = c(0.666667, 0, 0.444444, 0, 0, 0.58209, 0)), summary_ages = list(
-            age_bin = c("(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
-            "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-            "S", "Asymptomatic", "Clinical", "S", "Asymptomatic", 
-            "S"), N = c(9, 35, 27, 1, 63, 67, 98), mean = c(1085, 
-            972.285714, 3691.851852, 3755, 3677.714286, 12818, 12714.806122
-            )), summary_unique = list(age_bin = c("(-0.001,5]", "(5,15]", 
-        "(15,100]", NA, NA, NA, NA), N = c(44, 91, 165, 103, 1, 196, 
-        300), age = c(995.340909, 3682.758242, 12756.709091, 9400.495146, 
-        3755, 7713.147959, 8279.276667), mean = c("1" = 0.421053, 
-        "1" = 0.4, "1" = 0.15625, "1" = 0.076531, "1" = 1, 0, "1" = 0.076142
-        ), clinical = c(NA, NA, NA, "Asymptomatic", "Clinical", "S", 
-        NA)), summary_cou = list(age_bin = c("(-0.001,5]", "(5,15]", 
-        "(15,100]", NA, NA, NA, NA), N = c(44, 91, 165, 103, 1, 196, 
-        300), age = c(995.340909, 3682.758242, 12756.709091, 9400.495146, 
-        3755, 7713.147959, 8279.276667), mean = c(0.040936, 0.017143, 
-        0.020546, 0.023234, NaN, NaN, 0.023205), clinical = c(NA, 
-        NA, NA, "Asymptomatic", "Clinical", "S", NA)), clonality = list(
-            names = c("1", "2", "3", "4", "5", "6", "7", "8", "9", 
-            "11", "15", "16"), counts = c(15L, 9L, 10L, 6L, 4L, 4L, 
-            1L, 2L, 1L, 1L, 2L, 1L)), coi_table = list(names = c("0", 
-        "1", "2", "3", "4", "5", "7"), counts = c(196L, 47L, 34L, 
-        16L, 3L, 3L, 1L)), barcode_freq = c(V1 = 0.509091, V2 = 0.4, 
-        V3 = 0.363636, V4 = 0.568182, V5 = 0.563636, V6 = 0.604545
-        ), succesfull_treatments = 2, unsuccesful_treatments_lpf = 0, 
-            not_treated = 10, treatment_failure = 0, daily_pop_eir = 2.311667, 
-            mutations = c(0, 0, 0, 0, 0, 0), overall_treatment_failure = 0, 
-            pcr_prev = 0.352778, dat = 0.259722, micro_2_10 = 0.207615), 
-        list(summary_coi = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-        "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", "(5,15]", "(15,100]", 
-        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
-        "S", "Asymptomatic", "Clinical", "P", "S", "Asymptomatic", 
-        "P", "S"), N = c(7, 2, 35, 32, 1, 1, 56, 73, 1, 92), mean = c(1.857143, 
-        1, 0, 1.9375, 1, 0, 0, 1.917808, 0, 0)), summary_coi_detected = list(
-            age_bin = c("(-0.001,5]", "(-0.001,5]", "(-0.001,5]", 
-            "(5,15]", "(5,15]", "(5,15]", "(5,15]", "(15,100]", "(15,100]", 
-            "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
-            "S", "Asymptomatic", "Clinical", "P", "S", "Asymptomatic", 
-            "P", "S"), N = c(7, 2, 35, 32, 1, 1, 56, 73, 1, 92), 
-            mean = c(1.142857, 1, 0, 1.03125, 1, 0, 0, 1.315068, 
-            0, 0)), summary_moi_detected = list(age_bin = c("(-0.001,5]", 
         "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", 
-        "(5,15]", "(15,100]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
-        "Clinical", "S", "Asymptomatic", "Clinical", "P", "S", "Asymptomatic", 
-        "P", "S"), N = c(7, 2, 35, 32, 1, 1, 56, 73, 1, 92), mean = c(1.142857, 
-        1, 0, 1.03125, 1, 0, 0, 1.30137, 0, 0)), summary_polygenom = list(
-            age_bin = c("(-0.001,5]", "(-0.001,5]", "(-0.001,5]", 
-            "(5,15]", "(5,15]", "(5,15]", "(5,15]", "(15,100]", "(15,100]", 
-            "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
-            "S", "Asymptomatic", "Clinical", "P", "S", "Asymptomatic", 
-            "P", "S"), N = c(7, 2, 35, 32, 1, 1, 56, 73, 1, 92), 
-            mean = c(0.428571, 0, 0, 0.5, 0, 0, 0, 0.547945, 0, 0
-            )), summary_ages = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
-        "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", "(5,15]", "(15,100]", 
-        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
-        "S", "Asymptomatic", "Clinical", "P", "S", "Asymptomatic", 
-        "P", "S"), N = c(7, 2, 35, 32, 1, 1, 56, 73, 1, 92), mean = c(1196.285714, 
-        1616.5, 943.628571, 3750.09375, 4160, 4744, 3615.803571, 
-        12416.835616, 10378, 13063.532609)), summary_unique = list(
+        "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
+        "Clinical", "P", "S", "Asymptomatic", "Clinical", "P", "S", 
+        "Asymptomatic", "S"), N = c(12, 2, 1, 53, 26, 1, 2, 71, 50, 
+        82), mean = c(2.083333, 2, 0, 0, 2.230769, 2, 0, 0, 1.78, 
+        0)), summary_coi_detected = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
+        "(5,15]", "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
+        "Clinical", "P", "S", "Asymptomatic", "Clinical", "P", "S", 
+        "Asymptomatic", "S"), N = c(12, 2, 1, 53, 26, 1, 2, 71, 50, 
+        82), mean = c(1.416667, 1, 0, 0, 1.692308, 1, 0, 0, 1.14, 
+        0)), summary_moi_detected = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
+        "(5,15]", "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
+        "Clinical", "P", "S", "Asymptomatic", "Clinical", "P", "S", 
+        "Asymptomatic", "S"), N = c(12, 2, 1, 53, 26, 1, 2, 71, 50, 
+        82), mean = c(1.416667, 1, 0, 0, 1.461538, 1, 0, 0, 1.14, 
+        0)), summary_polygenom = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", 
+        "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
+        "Clinical", "P", "S", "Asymptomatic", "Clinical", "P", "S", 
+        "Asymptomatic", "S"), N = c(12, 2, 1, 53, 26, 1, 2, 71, 50, 
+        82), mean = c(0.583333, 1, 0, 0, 0.461538, 1, 0, 0, 0.54, 
+        0)), summary_ages = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", 
+        "(5,15]", "(15,100]", "(15,100]"), clinical = c("Asymptomatic", 
+        "Clinical", "P", "S", "Asymptomatic", "Clinical", "P", "S", 
+        "Asymptomatic", "S"), N = c(12, 2, 1, 53, 26, 1, 2, 71, 50, 
+        82), mean = c(1288.916667, 972.5, 1790, 792.226415, 3735.961538, 
+        1878, 4513.5, 3298.507042, 13108.18, 11732.292683)), summary_unique = list(
             age_bin = c("(-0.001,5]", "(5,15]", "(15,100]", NA, NA, 
-            NA, NA, NA), N = c(44, 90, 166, 112, 3, 2, 183, 300), 
-            age = c(1014.409091, 3682.133333, 12762.963855, 9239.339286, 
-            2464.333333, 7561, 7854.409836, 8315.593333), mean = c("1" = 0.266667, 
-            "1" = 0.333333, "1" = 0.121429, "1" = 0.065116, "1" = 1, 
-            0, 0, "1" = 0.06422), clinical = c(NA, NA, NA, "Asymptomatic", 
+            NA, NA, NA), N = c(68, 100, 132, 88, 3, 3, 206, 300), 
+            age = c(899.852941, 3422.34, 12253.462121, 8727.397727, 
+            1274.333333, 3605.666667, 6010.825243, 6736.27), mean = c("1" = 0.724138, 
+            "1" = 0.333333, "1" = 0.235955, "1" = 0.069767, "1" = 1, 
+            0, 0, "1" = 0.067416), clinical = c(NA, NA, NA, "Asymptomatic", 
             "Clinical", "P", "S", NA)), summary_cou = list(age_bin = c("(-0.001,5]", 
-        "(5,15]", "(15,100]", NA, NA, NA, NA, NA), N = c(44, 90, 
-        166, 112, 3, 2, 183, 300), age = c(1014.409091, 3682.133333, 
-        12762.963855, 9239.339286, 2464.333333, 7561, 7854.409836, 
-        8315.593333), mean = c(0.066667, 0.023041, 0.020966, 0.024169, 
-        0, NaN, NaN, 0.024521), clinical = c(NA, NA, NA, "Asymptomatic", 
+        "(5,15]", "(15,100]", NA, NA, NA, NA, NA), N = c(68, 100, 
+        132, 88, 3, 3, 206, 300), age = c(899.852941, 3422.34, 12253.462121, 
+        8727.397727, 1274.333333, 3605.666667, 6010.825243, 6736.27
+        ), mean = c(0.019704, 0.016384, 0.018641, 0.018836, 0, NaN, 
+        NaN, 0.019488), clinical = c(NA, NA, NA, "Asymptomatic", 
         "Clinical", "P", "S", NA)), clonality = list(names = c("1", 
-        "2", "3", "4", "5", "6", "7", "8", "10", "11", "15", "16", 
-        "18"), counts = c(13L, 10L, 8L, 8L, 3L, 4L, 2L, 2L, 1L, 3L, 
-        1L, 1L, 1L)), coi_table = list(names = c("0", "1", "2", "3", 
-        "4", "5", "7", "8"), counts = c(185L, 56L, 35L, 13L, 7L, 
-        2L, 1L, 1L)), barcode_freq = c(V1 = 0.456, V2 = 0.348, V3 = 0.372, 
-        V4 = 0.564, V5 = 0.576, V6 = 0.636), succesfull_treatments = 4, 
-            unsuccesful_treatments_lpf = 0, not_treated = 12, treatment_failure = 0, 
-            daily_pop_eir = 2.980833, mutations = c(0, 0, 0, 0, 0, 
-            0), overall_treatment_failure = 0, pcr_prev = 0.373, 
-            dat = 0.2755, micro_2_10 = 0.23341), list(Loggers = list(
-            Log_Counter = 60, Incidence = 0.316667, Incidence_05 = 0.083333, 
-            Treatments = list(Successful_Treatments = 7, Unsuccesful_Treatments_LPF = 0, 
-                Not_Treated = 13, daily_bite_counters = 15962, daily_infectious_bite_counters = 205), 
+        "2", "3", "4", "5", "6", "7", "8", "9"), counts = c(11L, 
+        15L, 6L, 6L, 5L, 3L, 4L, 3L, 2L)), coi_table = list(names = c("0", 
+        "1", "2", "3", "4", "5", "6", "12"), counts = c(209L, 42L, 
+        32L, 8L, 5L, 2L, 1L, 1L)), barcode_freq = c(V1 = 0.5, V2 = 0.459184, 
+        V3 = 0.535714, V4 = 0.510204, V5 = 0.44898, V6 = 0.602041
+        ), succesfull_treatments = 4, unsuccesful_treatments_lpf = 0, 
+            not_treated = 8, treatment_failure = 0, daily_pop_eir = 2.392778, 
+            mutations = c(0, 0, 0, 0, 0, 0), overall_treatment_failure = 0, 
+            pcr_prev = 0.326333, dat = 0.206278, micro_2_10 = 0.193846), 
+        list(summary_coi = list(age_bin = c("(-0.001,5]", "(-0.001,5]", 
+        "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", "(15,100]", "(15,100]"
+        ), clinical = c("Asymptomatic", "Clinical", "S", "Asymptomatic", 
+        "Clinical", "S", "Asymptomatic", "S"), N = c(13, 1, 56, 26, 
+        1, 73, 48, 82), mean = c(1.923077, 1, 0, 2.423077, 1, 0, 
+        1.75, 0)), summary_coi_detected = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", 
+        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
+        "S", "Asymptomatic", "Clinical", "S", "Asymptomatic", "S"
+        ), N = c(13, 1, 56, 26, 1, 73, 48, 82), mean = c(1.384615, 
+        1, 0, 1.5, 1, 0, 1.083333, 0)), summary_moi_detected = list(
+            age_bin = c("(-0.001,5]", "(-0.001,5]", "(-0.001,5]", 
+            "(5,15]", "(5,15]", "(5,15]", "(15,100]", "(15,100]"), 
+            clinical = c("Asymptomatic", "Clinical", "S", "Asymptomatic", 
+            "Clinical", "S", "Asymptomatic", "S"), N = c(13, 1, 56, 
+            26, 1, 73, 48, 82), mean = c(1.384615, 1, 0, 1.307692, 
+            1, 0, 1.083333, 0)), summary_polygenom = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", 
+        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
+        "S", "Asymptomatic", "Clinical", "S", "Asymptomatic", "S"
+        ), N = c(13, 1, 56, 26, 1, 73, 48, 82), mean = c(0.538462, 
+        0, 0, 0.5, 0, 0, 0.520833, 0)), summary_ages = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", "(5,15]", 
+        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
+        "S", "Asymptomatic", "Clinical", "S", "Asymptomatic", "S"
+        ), N = c(13, 1, 56, 26, 1, 73, 48, 82), mean = c(1242.538462, 
+        1220, 712.928571, 3615.692308, 2763, 3331.410959, 12901.020833, 
+        11945.268293)), summary_unique = list(age_bin = c("(-0.001,5]", 
+        "(5,15]", "(15,100]", NA, NA, NA, NA), N = c(70, 100, 130, 
+        87, 2, 211, 300), age = c(818.528571, 3399.64, 12298.161538, 
+        8384.022989, 1991.5, 5984.023697, 6653.406667), mean = c("1" = 0.653846, 
+        "1" = 0.234375, "1" = 0.238095, "1" = 0.052326, "1" = 1, 
+        0, "1" = 0.057471), clinical = c(NA, NA, NA, "Asymptomatic", 
+        "Clinical", "S", NA)), summary_cou = list(age_bin = c("(-0.001,5]", 
+        "(5,15]", "(15,100]", NA, NA, NA, NA), N = c(70, 100, 130, 
+        87, 2, 211, 300), age = c(818.528571, 3399.64, 12298.161538, 
+        8384.022989, 1991.5, 5984.023697, 6653.406667), mean = c(0.018462, 
+        0.017361, 0.021228, 0.020876, 0, NaN, 0.020995), clinical = c(NA, 
+        NA, NA, "Asymptomatic", "Clinical", "S", NA)), clonality = list(
+            names = c("1", "2", "3", "4", "5", "6", "7", "8", "12"
+            ), counts = c(9L, 19L, 5L, 6L, 4L, 4L, 3L, 3L, 1L)), 
+            coi_table = list(names = c("0", "1", "2", "3", "4", "5", 
+            "6", "12"), counts = c(211L, 44L, 25L, 12L, 4L, 2L, 1L, 
+            1L)), barcode_freq = c(V1 = 0.475936, V2 = 0.40107, V3 = 0.550802, 
+            V4 = 0.502674, V5 = 0.459893, V6 = 0.614973), succesfull_treatments = 3, 
+            unsuccesful_treatments_lpf = 0, not_treated = 9, treatment_failure = 0, 
+            daily_pop_eir = 2.19, mutations = c(0, 0, 0, 0, 0, 0), 
+            overall_treatment_failure = 0, pcr_prev = 0.301667, dat = 0.206389, 
+            micro_2_10 = 0.199693), list(summary_coi = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
+        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
+        "P", "S", "Asymptomatic", "S", "Asymptomatic", "S"), N = c(12, 
+        1, 1, 57, 33, 66, 50, 80), mean = c(1.666667, 1, 0, 0, 2.242424, 
+        0, 1.96, 0)), summary_coi_detected = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
+        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
+        "P", "S", "Asymptomatic", "S", "Asymptomatic", "S"), N = c(12, 
+        1, 1, 57, 33, 66, 50, 80), mean = c(1.083333, 1, 0, 0, 1.545455, 
+        0, 1.22, 0)), summary_moi_detected = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
+        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
+        "P", "S", "Asymptomatic", "S", "Asymptomatic", "S"), N = c(12, 
+        1, 1, 57, 33, 66, 50, 80), mean = c(1.083333, 1, 0, 0, 1.393939, 
+        0, 1.22, 0)), summary_polygenom = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
+        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
+        "P", "S", "Asymptomatic", "S", "Asymptomatic", "S"), N = c(12, 
+        1, 1, 57, 33, 66, 50, 80), mean = c(0.416667, 0, 0, 0, 0.515152, 
+        0, 0.52, 0)), summary_ages = list(age_bin = c("(-0.001,5]", 
+        "(-0.001,5]", "(-0.001,5]", "(-0.001,5]", "(5,15]", "(5,15]", 
+        "(15,100]", "(15,100]"), clinical = c("Asymptomatic", "Clinical", 
+        "P", "S", "Asymptomatic", "S", "Asymptomatic", "S"), N = c(12, 
+        1, 1, 57, 33, 66, 50, 80), mean = c(1281.333333, 648, 1338, 
+        743.087719, 3675.212121, 3265.787879, 12706.62, 11874.7375
+        )), summary_unique = list(age_bin = c("(-0.001,5]", "(5,15]", 
+        "(15,100]", NA, NA, NA, NA, NA), N = c(71, 99, 130, 95, 1, 
+        1, 203, 300), age = c(841.098592, 3402.262626, 12194.692308, 
+        8126.2, 648, 1338, 5950.133005, 6606.173333), mean = c("1" = 0.619048, 
+        "1" = 0.189189, "1" = 0.163265, "1" = 0.057292, "1" = 1, 
+        0, 0, "1" = 0.056995), clinical = c(NA, NA, NA, "Asymptomatic", 
+        "Clinical", "P", "S", NA)), summary_cou = list(age_bin = c("(-0.001,5]", 
+        "(5,15]", "(15,100]", NA, NA, NA, NA, NA), N = c(71, 99, 
+        130, 95, 1, 1, 203, 300), age = c(841.098592, 3402.262626, 
+        12194.692308, 8126.2, 648, 1338, 5950.133005, 6606.173333
+        ), mean = c(0.019048, 0.022214, 0.019567, 0.021979, NaN, 
+        NaN, NaN, 0.021967), clinical = c(NA, NA, NA, "Asymptomatic", 
+        "Clinical", "P", "S", NA)), clonality = list(names = c("1", 
+        "2", "3", "4", "5", "6", "7", "8", "9", "10", "13"), counts = c(11L, 
+        11L, 9L, 4L, 3L, 2L, 5L, 3L, 1L, 3L, 1L)), coi_table = list(
+            names = c("0", "1", "2", "3", "4", "5", "6", "7", "12"
+            ), counts = c(204L, 48L, 26L, 11L, 5L, 3L, 1L, 1L, 1L
+            )), barcode_freq = c(V1 = 0.462617, V2 = 0.378505, V3 = 0.462617, 
+        V4 = 0.518692, V5 = 0.476636, V6 = 0.649533), succesfull_treatments = 5, 
+            unsuccesful_treatments_lpf = 0, not_treated = 15, treatment_failure = 0, 
+            daily_pop_eir = 2.656389, mutations = c(0, 0, 0, 0, 0, 
+            0), overall_treatment_failure = 0, pcr_prev = 0.304333, 
+            dat = 0.227556, micro_2_10 = 0.197564), list(Loggers = list(
+            Log_Counter = 60, Incidence = 0.283333, Incidence_05 = 0.066667, 
+            Treatments = list(Successful_Treatments = 4, Unsuccesful_Treatments_LPF = 0, 
+                Not_Treated = 13, daily_bite_counters = 15962, daily_infectious_bite_counters = 158), 
             daily_mutations_per_loci = c(0, 0, 0, 0, 0, 0), InfectionStates = list(
-                length = 300L, n_na = 0L, sum = 263, quantiles = c(0, 
-                0, 0, 2, 5)), Ages = list(length = 300L, n_na = 0L, 
-                sum = 2509360, quantiles = c(25, 2983, 6702, 11220, 
-                36075)), IB = list(length = 300L, n_na = 0L, sum = 6019.848051, 
-                quantiles = c(0, 2.854036, 10.91068, 19.539721, 243.257114
-                )), ICA = list(length = 300L, n_na = 0L, sum = 5592.198108, 
-                quantiles = c(0, 2.51482, 9.163714, 22.709366, 219.874185
-                )), ICM = list(length = 300L, n_na = 0L, sum = 47.313969, 
-                quantiles = c(0, 0, 0, 0, 45.802479)), ID = list(
-                length = 300L, n_na = 0L, sum = 2935.279903, quantiles = c(0, 
-                1.684565, 6.428214, 10.971936, 116.574945)), Mosquitoes = list(
-                Mos_S = 826.833333, Mos_E = 30.666667, Mos_I = 12.5), 
-            Time = 361, S = 0.605, D = 0.005056, A = 0.278556, U = 0.100389, 
-            T = 0.001222, P = 0.009778)))
+                length = 300L, n_na = 0L, sum = 239, quantiles = c(0, 
+                0, 0, 2, 3)), Ages = list(length = 300L, n_na = 0L, 
+                sum = 1998519, quantiles = c(42, 2000, 4691, 9887.75, 
+                36128)), IB = list(length = 300L, n_na = 0L, sum = 4882.262707, 
+                quantiles = c(0, 2.094963, 7.638114, 18.555482, 173.556707
+                )), ICA = list(length = 300L, n_na = 0L, sum = 4436.627739, 
+                quantiles = c(0, 1.672609, 6.306238, 19.897773, 133.204514
+                )), ICM = list(length = 300L, n_na = 0L, sum = 78.869508, 
+                quantiles = c(0, 0, 0, 0, 49.295578)), ID = list(
+                length = 300L, n_na = 0L, sum = 2455.032643, quantiles = c(0, 
+                1.272935, 4.581632, 10.229102, 81.258775)), Mosquitoes = list(
+                Mos_S = 833.233333, Mos_E = 27.15, Mos_I = 9.616667), 
+            Time = 361, S = 0.645722, D = 0.003778, A = 0.271, U = 0.070944, 
+            T = 0.001278, P = 0.007278)))
 
 # characterisation: resistance, importation, mutation and lineages
 
-    list(list(af = c(0.477612, 0.477612, 0, 0), lineage = list(names = c("0", 
+    list(list(af = c(0.388889, 0.388889, 0, 0), lineage = list(names = c("0", 
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", 
-    "13", "14", "15"), counts = c(35L, 0L, 0L, 32L, 0L, 0L, 0L, 0L, 
-    0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 7, 
+    "13", "14", "15"), counts = c(22L, 0L, 0L, 14L, 0L, 0L, 0L, 0L, 
+    0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 12, 
         unsuccesful_treatments_lpf = 0, not_treated = 4, treatment_failure = 0, 
-        daily_pop_eir = 1.155833, mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
-        pcr_prev = 0.20375, dat = 0.133417, micro_2_10 = 0.021528), 
-        list(af = c(0.478261, 0.478261, 0, 0), lineage = list(names = c("0", 
+        daily_pop_eir = 0.669167, mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
+        pcr_prev = 0.167167, dat = 0.101667, micro_2_10 = 0.165457), 
+        list(af = c(0.461538, 0.461538, 0, 0), lineage = list(names = c("0", 
         "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
-        "12", "13", "14", "15"), counts = c(24L, 0L, 0L, 22L, 0L, 
-        0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 8, 
-            unsuccesful_treatments_lpf = 0, not_treated = 3, treatment_failure = 0, 
-            daily_pop_eir = 1.00375, mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
-            pcr_prev = 0.18325, dat = 0.109417, micro_2_10 = 0.043043), 
-        list(af = c(0.5, 0.5, 0, 0), lineage = list(names = c("0", 
-        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
-        "12", "13", "14", "15"), counts = c(27L, 0L, 0L, 27L, 0L, 
+        "12", "13", "14", "15"), counts = c(14L, 0L, 0L, 12L, 0L, 
         0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 3, 
-            unsuccesful_treatments_lpf = 0, not_treated = 4, treatment_failure = 0, 
-            daily_pop_eir = 1.034167, mutations = c(0, 0, 0, 0), 
-            overall_treatment_failure = 0, pcr_prev = 0.140833, dat = 0.079917, 
-            micro_2_10 = 0.063169), list(af = c(0.535714, 0.535714, 
-        0, 0), lineage = list(names = c("0", "1", "2", "3", "4", 
-        "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"
-        ), counts = c(13L, 0L, 0L, 15L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 
-        0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 5, unsuccesful_treatments_lpf = 0, 
-            not_treated = 3, treatment_failure = 0, daily_pop_eir = 1.125417, 
-            mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
-            pcr_prev = 0.140417, dat = 0.101, micro_2_10 = 0.060572), 
-        list(af = c(0.475, 0.475, 0, 0), lineage = list(names = c("0", 
+            unsuccesful_treatments_lpf = 0, not_treated = 1, treatment_failure = 0, 
+            daily_pop_eir = 0.45625, mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
+            pcr_prev = 0.120833, dat = 0.067417, micro_2_10 = 0.097609), 
+        list(af = c(0.428571, 0.428571, 0, 0), lineage = list(names = c("0", 
         "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
-        "12", "13", "14", "15"), counts = c(21L, 0L, 0L, 19L, 0L, 
-        0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 5, 
-            unsuccesful_treatments_lpf = 0, not_treated = 6, treatment_failure = 0, 
-            daily_pop_eir = 0.608333, mutations = c(0, 0, 0, 0), 
-            overall_treatment_failure = 0, pcr_prev = 0.13275, dat = 0.09475, 
-            micro_2_10 = 0.103275), list(af = c(0.512821, 0.512821, 
-        0, 0), lineage = list(names = c("0", "1", "2", "3", "4", 
-        "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"
-        ), counts = c(19L, 0L, 0L, 20L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 
-        0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 5, unsuccesful_treatments_lpf = 0, 
-            not_treated = 4, treatment_failure = 0, daily_pop_eir = 1.00375, 
-            mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
-            pcr_prev = 0.136917, dat = 0.094667, micro_2_10 = 0.086014), 
-        list(af = c(0.375, 0.375, 0, 0), lineage = list(names = c("0", 
-        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
-        "12", "13", "14", "15"), counts = c(25L, 0L, 0L, 15L, 0L, 
+        "12", "13", "14", "15"), counts = c(12L, 0L, 0L, 9L, 0L, 
         0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 4, 
-            unsuccesful_treatments_lpf = 0, not_treated = 5, treatment_failure = 0, 
-            daily_pop_eir = 0.5475, mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
-            pcr_prev = 0.146917, dat = 0.100833, micro_2_10 = 0.088269), 
-        list(af = c(0.366667, 0.366667, 0, 0), lineage = list(names = c("0", 
-        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
-        "12", "13", "14", "15"), counts = c(19L, 0L, 0L, 11L, 0L, 
-        0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 3, 
-            unsuccesful_treatments_lpf = 0, not_treated = 0, treatment_failure = 0, 
+            unsuccesful_treatments_lpf = 0, not_treated = 4, treatment_failure = 0, 
             daily_pop_eir = 0.425833, mutations = c(0, 0, 0, 0), 
-            overall_treatment_failure = 0, pcr_prev = 0.110917, dat = 0.075583, 
-            micro_2_10 = 0.041289), list(af = c(0.454545, 0.454545, 
+            overall_treatment_failure = 0, pcr_prev = 0.099333, dat = 0.0585, 
+            micro_2_10 = 0.063027), list(af = c(0.333333, 0.333333, 
         0, 0), lineage = list(names = c("0", "1", "2", "3", "4", 
         "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"
-        ), counts = c(12L, 0L, 0L, 10L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 
-        0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 4, unsuccesful_treatments_lpf = 0, 
-            not_treated = 1, treatment_failure = 0, daily_pop_eir = 0.334583, 
+        ), counts = c(10L, 0L, 0L, 5L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 
+        0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 7, unsuccesful_treatments_lpf = 0, 
+            not_treated = 0, treatment_failure = 0, daily_pop_eir = 0.517083, 
             mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
-            pcr_prev = 0.100333, dat = 0.062833, micro_2_10 = 0.040437), 
-        list(af = c(0.333333, 0.333333, 0, 0), lineage = list(names = c("0", 
+            pcr_prev = 0.082667, dat = 0.052333, micro_2_10 = 0.032032), 
+        list(af = c(0.384615, 0.384615, 0, 0), lineage = list(names = c("0", 
         "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
-        "12", "13", "14", "15"), counts = c(12L, 0L, 0L, 6L, 0L, 
-        0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 2, 
-            unsuccesful_treatments_lpf = 0, not_treated = 0, treatment_failure = 0, 
-            daily_pop_eir = 0.060833, mutations = c(0, 0, 0, 0), 
-            overall_treatment_failure = 0, pcr_prev = 0.08075, dat = 0.041667, 
-            micro_2_10 = 0.020662), list(af = c(0.357143, 0.357143, 
+        "12", "13", "14", "15"), counts = c(16L, 0L, 0L, 10L, 0L, 
+        0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 6, 
+            unsuccesful_treatments_lpf = 0, not_treated = 1, treatment_failure = 0, 
+            daily_pop_eir = 0.851667, mutations = c(0, 0, 0, 0), 
+            overall_treatment_failure = 0, pcr_prev = 0.07375, dat = 0.046083, 
+            micro_2_10 = 0.080201), list(af = c(0.357143, 0.357143, 
         0, 0), lineage = list(names = c("0", "1", "2", "3", "4", 
         "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"
         ), counts = c(9L, 0L, 0L, 5L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 
-        0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 1, unsuccesful_treatments_lpf = 0, 
-            not_treated = 0, treatment_failure = 0, daily_pop_eir = 0.1825, 
+        0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 6, unsuccesful_treatments_lpf = 0, 
+            not_treated = 4, treatment_failure = 0, daily_pop_eir = 0.395417, 
             mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
-            pcr_prev = 0.058333, dat = 0.034917, micro_2_10 = 0.020665), 
-        list(Loggers = list(Log_Counter = 60, Incidence = 0.05, Incidence_05 = 0, 
-            Treatments = list(Successful_Treatments = 3, Unsuccesful_Treatments_LPF = 1, 
-                Not_Treated = 1, daily_bite_counters = 5690, daily_infectious_bite_counters = 3), 
+            pcr_prev = 0.073917, dat = 0.0495, micro_2_10 = 0.066179), 
+        list(af = c(0.5, 0.5, 0, 0), lineage = list(names = c("0", 
+        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
+        "12", "13", "14", "15"), counts = c(10L, 0L, 0L, 10L, 0L, 
+        0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 2, 
+            unsuccesful_treatments_lpf = 0, not_treated = 1, treatment_failure = 0, 
+            daily_pop_eir = 0.577917, mutations = c(0, 0, 0, 0), 
+            overall_treatment_failure = 0, pcr_prev = 0.086583, dat = 0.053, 
+            micro_2_10 = 0.063029), list(af = c(0.44, 0.44, 0, 0), 
+            lineage = list(names = c("0", "1", "2", "3", "4", "5", 
+            "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"
+            ), counts = c(14L, 0L, 0L, 11L, 0L, 0L, 0L, 0L, 0L, 0L, 
+            0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 8, 
+            unsuccesful_treatments_lpf = 0, not_treated = 3, treatment_failure = 0, 
+            daily_pop_eir = 0.365, mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
+            pcr_prev = 0.097083, dat = 0.067667, micro_2_10 = 0.048943), 
+        list(af = c(0.222222, 0.222222, 0, 0), lineage = list(names = c("0", 
+        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
+        "12", "13", "14", "15"), counts = c(7L, 0L, 0L, 2L, 0L, 0L, 
+        0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 4, 
+            unsuccesful_treatments_lpf = 0, not_treated = 0, treatment_failure = 0, 
+            daily_pop_eir = 0.1825, mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
+            pcr_prev = 0.064833, dat = 0.029333, micro_2_10 = 0), 
+        list(af = c(0.2, 0.2, 0, 0), lineage = list(names = c("0", 
+        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
+        "12", "13", "14", "15"), counts = c(4L, 0L, 0L, 1L, 0L, 0L, 
+        0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)), succesfull_treatments = 2, 
+            unsuccesful_treatments_lpf = 0, not_treated = 0, treatment_failure = 0, 
+            daily_pop_eir = 0.060833, mutations = c(0, 0, 0, 0), 
+            overall_treatment_failure = 0, pcr_prev = 0.047417, dat = 0.017083, 
+            micro_2_10 = 0), list(af = c(0.25, 0.25, 0, 0), lineage = list(
+            names = c("0", "1", "2", "3", "4", "5", "6", "7", "8", 
+            "9", "10", "11", "12", "13", "14", "15"), counts = c(3L, 
+            0L, 0L, 1L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 
+            0L)), succesfull_treatments = 1, unsuccesful_treatments_lpf = 0, 
+            not_treated = 0, treatment_failure = 0, daily_pop_eir = 0.060833, 
+            mutations = c(0, 0, 0, 0), overall_treatment_failure = 0, 
+            pcr_prev = 0.03825, dat = 0.015333, micro_2_10 = 0), 
+        list(Loggers = list(Log_Counter = 60, Incidence = 0.016667, 
+            Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
+                Unsuccesful_Treatments_LPF = 0, Not_Treated = 1, 
+                daily_bite_counters = 5692, daily_infectious_bite_counters = 3), 
             daily_mutations_per_loci = c(0, 0, 0, 0), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 37, quantiles = c(0, 
+                length = 200L, n_na = 0L, sum = 45, quantiles = c(0, 
                 0, 0, 0, 5)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1442008, quantiles = c(22, 2260.25, 6013, 10701.5, 
-                32701)), IB = list(length = 200L, n_na = 0L, sum = 1741.463006, 
-                quantiles = c(0, 0.759844, 3.920562, 7.082444, 156.586822
-                )), ICA = list(length = 200L, n_na = 0L, sum = 1771.453087, 
-                quantiles = c(0, 0.684693, 3.579936, 8.385237, 148.796829
-                )), ICM = list(length = 200L, n_na = 0L, sum = 6.240603, 
-                quantiles = c(0, 0, 0, 0, 1.598948)), ID = list(length = 200L, 
-                n_na = 0L, sum = 894.918878, quantiles = c(0, 0.405709, 
-                2.31439, 4.085846, 63.600251)), Mosquitoes = list(
-                Mos_S = 308.966667, Mos_E = 1.85, Mos_I = 0.183333), 
-            Time = 721, S = 0.944083, D = 0.00025, A = 0.025583, 
-            U = 0.0165, T = 0.002, P = 0.011583), Infections = list(
-            Humans = 0, Mosquitoes = 0)))
+                sum = 1510670, quantiles = c(15, 1839.5, 5541.5, 
+                11133, 34602)), IB = list(length = 200L, n_na = 0L, 
+                sum = 1061.815015, quantiles = c(0, 0.687248, 2.503391, 
+                6.255647, 38.666736)), ICA = list(length = 200L, 
+                n_na = 0L, sum = 1166.741404, quantiles = c(0, 0.591532, 
+                2.103014, 7.438049, 55.480448)), ICM = list(length = 200L, 
+                n_na = 0L, sum = 11.998166, quantiles = c(0, 0, 0, 
+                0, 4.896543)), ID = list(length = 200L, n_na = 0L, 
+                sum = 584.279471, quantiles = c(0, 0.385244, 1.415613, 
+                3.672341, 18.806182)), Mosquitoes = list(Mos_S = 310.05, 
+                Mos_E = 0.75, Mos_I = 0.2), Time = 721, S = 0.9515, 
+            D = 8.3e-05, A = 0.01175, U = 0.01775, T = 0, P = 0.018917), 
+            Infections = list(Humans = 0, Mosquitoes = 0)))
 
 # characterisation: seasonal admin unit with historic interventions
 
@@ -696,172 +699,172 @@
 
 ---
 
-    list(list(Log_Counter = 90, Incidence = 0.044444, Incidence_05 = 0, 
-        Treatments = list(Successful_Treatments = 3, Unsuccesful_Treatments_LPF = 0, 
-            Not_Treated = 2, daily_bite_counters = 6658, daily_infectious_bite_counters = 14), 
+    list(list(Log_Counter = 90, Incidence = 0.033333, Incidence_05 = 0.011111, 
+        Treatments = list(Successful_Treatments = 2, Unsuccesful_Treatments_LPF = 0, 
+            Not_Treated = 1, daily_bite_counters = 6655, daily_infectious_bite_counters = 6), 
         daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
             sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-            length = 200L, n_na = 0L, sum = 74, quantiles = c(0, 
-            0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, sum = 1534595, 
-            quantiles = c(75, 2402.5, 5577.5, 10850, 31333)), IB = list(
-            length = 200L, n_na = 0L, sum = 1189.172413, quantiles = c(0, 
-            0.454382, 2.168447, 4.139331, 125.896741)), ICA = list(
-            length = 200L, n_na = 0L, sum = 1202.955548, quantiles = c(0, 
-            0.346527, 1.712151, 5.433495, 129.880788)), ICM = list(
-            length = 200L, n_na = 0L, sum = 7.712391, quantiles = c(0, 
-            0, 0, 0, 3.144008)), ID = list(length = 200L, n_na = 0L, 
-            sum = 633.632816, quantiles = c(0, 0.268306, 1.28238, 
-            2.439806, 47.458503)), Mosquitoes = list(Mos_S = 331.933333, 
-            Mos_E = 3.777778, Mos_I = 1.288889), Time = 91, S = 0.848, 
-        D = 0.000333, A = 0.104111, U = 0.0425, T = 0.000889, P = 0.004167), 
-        list(Log_Counter = 90, Incidence = 0.022222, Incidence_05 = 0, 
-            Treatments = list(Successful_Treatments = 0, Unsuccesful_Treatments_LPF = 0, 
-                Not_Treated = 2, daily_bite_counters = 4396, daily_infectious_bite_counters = 4), 
+            length = 200L, n_na = 0L, sum = 80, quantiles = c(0, 
+            0, 0, 0, 5)), Ages = list(length = 200L, n_na = 0L, sum = 1363470, 
+            quantiles = c(53, 2186.75, 4643.5, 10101.75, 30830)), 
+        IB = list(length = 200L, n_na = 0L, sum = 1023.679654, quantiles = c(0, 
+        0.46643, 1.711766, 3.746947, 108.865514)), ICA = list(length = 200L, 
+            n_na = 0L, sum = 1043.427647, quantiles = c(0, 0.362827, 
+            1.389616, 4.025113, 91.372812)), ICM = list(length = 200L, 
+            n_na = 0L, sum = 10.236121, quantiles = c(0, 0, 0, 0, 
+            4.564411)), ID = list(length = 200L, n_na = 0L, sum = 551.8018, 
+            quantiles = c(0, 0.275298, 1.011061, 2.210497, 43.865331
+            )), Mosquitoes = list(Mos_S = 331.622222, Mos_E = 4.5, 
+            Mos_I = 0.877778), Time = 91, S = 0.822722, D = 0.000722, 
+        A = 0.110944, U = 0.063556, T = 0.000722, P = 0.001333), 
+        list(Log_Counter = 90, Incidence = 0.011111, Incidence_05 = 0, 
+            Treatments = list(Successful_Treatments = 1, Unsuccesful_Treatments_LPF = 0, 
+                Not_Treated = 0, daily_bite_counters = 4402, daily_infectious_bite_counters = 2), 
             daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
                 sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 41, quantiles = c(0, 
+                length = 200L, n_na = 0L, sum = 58, quantiles = c(0, 
                 0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1507812, quantiles = c(25, 2309.75, 5427, 10671.75, 
-                31181)), IB = list(length = 200L, n_na = 0L, sum = 1140.941153, 
-                quantiles = c(0, 0.398536, 1.820192, 3.992891, 122.830398
-                )), ICA = list(length = 200L, n_na = 0L, sum = 1172.801308, 
-                quantiles = c(0, 0.295339, 1.46421, 5.389019, 128.81765
-                )), ICM = list(length = 200L, n_na = 0L, sum = 13.641383, 
-                quantiles = c(0, 0, 0, 0, 7.032114)), ID = list(length = 200L, 
-                n_na = 0L, sum = 608.617397, quantiles = c(0, 0.235247, 
-                1.163741, 2.353864, 46.302602)), Mosquitoes = list(
-                Mos_S = 334.122222, Mos_E = 2.1, Mos_I = 0.777778), 
-            Time = 181, S = 0.891, D = 0.000167, A = 0.062389, U = 0.046444, 
-            T = 0, P = 0), list(Log_Counter = 90, Incidence = 0, 
+                sum = 1369562, quantiles = c(34, 2013.5, 4697, 10191.75, 
+                30920)), IB = list(length = 200L, n_na = 0L, sum = 981.885732, 
+                quantiles = c(0, 0.45507, 1.670075, 3.655686, 106.213983
+                )), ICA = list(length = 200L, n_na = 0L, sum = 1017.166137, 
+                quantiles = c(0, 0.355816, 1.378241, 3.992166, 90.62488
+                )), ICM = list(length = 200L, n_na = 0L, sum = 25.39539, 
+                quantiles = c(0, 0, 0, 0, 22.641321)), ID = list(
+                length = 200L, n_na = 0L, sum = 529.206304, quantiles = c(0, 
+                0.260298, 0.986436, 2.156658, 42.796946)), Mosquitoes = list(
+                Mos_S = 335.144444, Mos_E = 1.755556, Mos_I = 0.1), 
+            Time = 181, S = 0.856667, D = 0, A = 0.0715, U = 0.069, 
+            T = 0.000111, P = 0.002722), list(Log_Counter = 90, Incidence = 0, 
             Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
                 Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
                 daily_bite_counters = 3, daily_infectious_bite_counters = 0), 
             daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
                 sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 35, quantiles = c(0, 
+                length = 200L, n_na = 0L, sum = 40, quantiles = c(0, 
                 0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1502338, quantiles = c(9, 2346.25, 5405.5, 
-                10650.25, 31271)), IB = list(length = 200L, n_na = 0L, 
-                sum = 1111.870198, quantiles = c(0, 0.335079, 1.77586, 
-                3.89564, 119.838738)), ICA = list(length = 200L, 
-                n_na = 0L, sum = 1161.764518, quantiles = c(0, 0.265451, 
-                1.452225, 5.344908, 127.763214)), ICM = list(length = 200L, 
-                n_na = 0L, sum = 6.842529, quantiles = c(0, 0, 0, 
-                0, 2.854538)), ID = list(length = 200L, n_na = 0L, 
-                sum = 593.036946, quantiles = c(0, 0.197766, 1.135397, 
-                2.296533, 45.174855)), Mosquitoes = list(Mos_S = 335, 
-                Mos_E = 1, Mos_I = 1), Time = 271, S = 0.919111, 
-            D = 0, A = 0.058, U = 0.022889, T = 0, P = 0), list(Log_Counter = 90, 
+                sum = 1372461, quantiles = c(30, 2039.75, 4765, 10060, 
+                31010)), IB = list(length = 200L, n_na = 0L, sum = 955.890938, 
+                quantiles = c(0, 0.389144, 1.629398, 3.566648, 103.627033
+                )), ICA = list(length = 200L, n_na = 0L, sum = 1006.975479, 
+                quantiles = c(0, 0.310216, 1.366959, 3.959488, 89.883071
+                )), ICM = list(length = 200L, n_na = 0L, sum = 8.793607, 
+                quantiles = c(0, 0, 0, 0, 5.991177)), ID = list(length = 200L, 
+                n_na = 0L, sum = 515.088702, quantiles = c(0, 0.229517, 
+                0.96241, 2.10413, 41.754583)), Mosquitoes = list(
+                Mos_S = 335.155556, Mos_E = 1.844444, Mos_I = 0), 
+            Time = 271, S = 0.903444, D = 0, A = 0.051944, U = 0.044611, 
+            T = 0, P = 0), list(Log_Counter = 90, Incidence = 0, 
+            Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
+                Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
+                daily_bite_counters = 0, daily_infectious_bite_counters = 0), 
+            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
+                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
+                length = 200L, n_na = 0L, sum = 23, quantiles = c(0, 
+                0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
+                sum = 1385140, quantiles = c(1, 2078.25, 4855, 10150, 
+                31100)), IB = list(length = 200L, n_na = 0L, sum = 931.831147, 
+                quantiles = c(0, 0.379359, 1.589713, 3.479779, 101.103091
+                )), ICA = list(length = 200L, n_na = 0L, sum = 998.152484, 
+                quantiles = c(0, 0.290523, 1.35577, 3.927077, 89.147334
+                )), ICM = list(length = 200L, n_na = 0L, sum = 3.474675, 
+                quantiles = c(0, 0, 0, 0, 1.585341)), ID = list(length = 200L, 
+                n_na = 0L, sum = 502.083774, quantiles = c(0, 0.223451, 
+                0.93897, 2.052882, 40.737607)), Mosquitoes = list(
+                Mos_S = 336.522222, Mos_E = 0.477778, Mos_I = 0), 
+            Time = 361, S = 0.933833, D = 0, A = 0.027167, U = 0.039, 
+            T = 0, P = 0), list(Log_Counter = 90, Incidence = 0, 
+            Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
+                Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
+                daily_bite_counters = 0, daily_infectious_bite_counters = 0), 
+            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
+                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
+                length = 200L, n_na = 0L, sum = 20, quantiles = c(0, 
+                0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
+                sum = 1389941, quantiles = c(3, 2107.5, 4937, 9990.75, 
+                31190)), IB = list(length = 200L, n_na = 0L, sum = 905.558843, 
+                quantiles = c(0, 0.369221, 1.550993, 3.395025, 98.640622
+                )), ICA = list(length = 200L, n_na = 0L, sum = 985.873603, 
+                quantiles = c(0, 0.282161, 1.344673, 3.894932, 88.417619
+                )), ICM = list(length = 200L, n_na = 0L, sum = 6.495923, 
+                quantiles = c(0, 0, 0, 0, 4.327788)), ID = list(length = 200L, 
+                n_na = 0L, sum = 487.744278, quantiles = c(0, 0.210569, 
+                0.9161, 2.002882, 39.745401)), Mosquitoes = list(
+                Mos_S = 337, Mos_E = 0, Mos_I = 0), Time = 451, S = 0.960111, 
+            D = 0, A = 0.016167, U = 0.023722, T = 0, P = 0), list(
+            Log_Counter = 90, Incidence = 0, Incidence_05 = 0, Treatments = list(
+                Successful_Treatments = 0, Unsuccesful_Treatments_LPF = 0, 
+                Not_Treated = 0, daily_bite_counters = 0, daily_infectious_bite_counters = 0), 
+            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
+                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
+                length = 200L, n_na = 0L, sum = 6, quantiles = c(0, 
+                0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
+                sum = 1397862, quantiles = c(3, 2184.75, 4986.5, 
+                10080.75, 31280)), IB = list(length = 200L, n_na = 0L, 
+                sum = 880.598392, quantiles = c(0, 0.347968, 1.513217, 
+                3.312336, 96.238129)), ICA = list(length = 200L, 
+                n_na = 0L, sum = 974.47974, quantiles = c(0, 0.262047, 
+                1.259189, 3.86305, 87.693877)), ICM = list(length = 200L, 
+                n_na = 0L, sum = 3.941388, quantiles = c(0, 0, 0, 
+                0, 1.758226)), ID = list(length = 200L, n_na = 0L, 
+                sum = 474.150233, quantiles = c(0, 0.183665, 0.893788, 
+                1.9541, 38.777362)), Mosquitoes = list(Mos_S = 337, 
+                Mos_E = 0, Mos_I = 0), Time = 541, S = 0.977, D = 0, 
+            A = 0.004, U = 0.019, T = 0, P = 0), list(Log_Counter = 90, 
             Incidence = 0, Incidence_05 = 0, Treatments = list(Successful_Treatments = 0, 
                 Unsuccesful_Treatments_LPF = 0, Not_Treated = 0, 
                 daily_bite_counters = 0, daily_infectious_bite_counters = 0), 
             daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
                 sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 25, quantiles = c(0, 
+                length = 200L, n_na = 0L, sum = 3, quantiles = c(0, 
                 0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1498418, quantiles = c(30, 2373.75, 5347.5, 
-                10679.5, 31361)), IB = list(length = 200L, n_na = 0L, 
-                sum = 1078.985636, quantiles = c(0, 0.303307, 1.418861, 
-                3.800758, 116.919943)), ICA = list(length = 200L, 
-                n_na = 0L, sum = 1145.367848, quantiles = c(0, 0.235729, 
-                1.210419, 5.301157, 126.717409)), ICM = list(length = 200L, 
-                n_na = 0L, sum = 3.849752, quantiles = c(0, 0, 0, 
-                0, 1.338843)), ID = list(length = 200L, n_na = 0L, 
-                sum = 575.168159, quantiles = c(0, 0.17908, 0.86183, 
-                2.240599, 44.074576)), Mosquitoes = list(Mos_S = 336.522222, 
-                Mos_E = 0.255556, Mos_I = 0.222222), Time = 361, 
-            S = 0.936278, D = 0, A = 0.048333, U = 0.015389, T = 0, 
-            P = 0), list(Log_Counter = 90, Incidence = 0, Incidence_05 = 0, 
-            Treatments = list(Successful_Treatments = 0, Unsuccesful_Treatments_LPF = 0, 
-                Not_Treated = 0, daily_bite_counters = 0, daily_infectious_bite_counters = 0), 
-            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
-                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 20, quantiles = c(0, 
-                0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1512424, quantiles = c(4, 2398.25, 5437.5, 
-                10769.5, 31451)), IB = list(length = 200L, n_na = 0L, 
-                sum = 1047.522535, quantiles = c(0, 0.295919, 1.296168, 
-                3.657221, 114.072239)), ICA = list(length = 200L, 
-                n_na = 0L, sum = 1131.932518, quantiles = c(0, 0.233799, 
-                1.080946, 5.257764, 125.680164)), ICM = list(length = 200L, 
-                n_na = 0L, sum = 7.357839, quantiles = c(0, 0, 0, 
-                0, 5.379815)), ID = list(length = 200L, n_na = 0L, 
-                sum = 558.09334, quantiles = c(0, 0.174718, 0.765578, 
-                2.156314, 43.001094)), Mosquitoes = list(Mos_S = 337, 
-                Mos_E = 0, Mos_I = 0), Time = 451, S = 0.952889, 
-            D = 0, A = 0.038944, U = 0.008167, T = 0, P = 0), list(
+                sum = 1381578, quantiles = c(17, 2224, 5017.5, 9986.5, 
+                31370)), IB = list(length = 200L, n_na = 0L, sum = 854.323006, 
+                quantiles = c(0, 0.301408, 1.35508, 3.231661, 93.894151
+                )), ICA = list(length = 200L, n_na = 0L, sum = 959.226315, 
+                quantiles = c(0, 0.223771, 1.129728, 3.794075, 86.976059
+                )), ICM = list(length = 200L, n_na = 0L, sum = 2.644647, 
+                quantiles = c(0, 0, 0, 0, 1.167006)), ID = list(length = 200L, 
+                n_na = 0L, sum = 459.755109, quantiles = c(0, 0.172321, 
+                0.800379, 1.906506, 37.832899)), Mosquitoes = list(
+                Mos_S = 337, Mos_E = 0, Mos_I = 0), Time = 631, S = 0.991278, 
+            D = 0, A = 0, U = 0.008722, T = 0, P = 0), list(Loggers = list(
             Log_Counter = 90, Incidence = 0, Incidence_05 = 0, Treatments = list(
                 Successful_Treatments = 0, Unsuccesful_Treatments_LPF = 0, 
                 Not_Treated = 0, daily_bite_counters = 0, daily_infectious_bite_counters = 0), 
             daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
                 sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 15, quantiles = c(0, 
-                0, 0, 0, 3)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1512863, quantiles = c(22, 2403.5, 5486, 10859.5, 
-                31541)), IB = list(length = 200L, n_na = 0L, sum = 1017.658005, 
-                quantiles = c(0, 0.263669, 1.256823, 3.568145, 111.293893
-                )), ICA = list(length = 200L, n_na = 0L, sum = 1118.122362, 
-                quantiles = c(0, 0.231885, 1.056561, 5.214727, 124.65141
-                )), ICM = list(length = 200L, n_na = 0L, sum = 3.979725, 
-                quantiles = c(0, 0, 0, 0, 1.423566)), ID = list(length = 200L, 
-                n_na = 0L, sum = 541.931639, quantiles = c(0, 0.155617, 
-                0.681828, 2.103794, 41.953759)), Mosquitoes = list(
-                Mos_S = 337, Mos_E = 0, Mos_I = 0), Time = 541, S = 0.9615, 
-            D = 0, A = 0.023722, U = 0.014778, T = 0, P = 0), list(
-            Log_Counter = 90, Incidence = 0, Incidence_05 = 0, Treatments = list(
-                Successful_Treatments = 0, Unsuccesful_Treatments_LPF = 0, 
-                Not_Treated = 0, daily_bite_counters = 0, daily_infectious_bite_counters = 0), 
-            daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
-                sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                length = 200L, n_na = 0L, sum = 4, quantiles = c(0, 
-                0, 0, 0, 2)), Ages = list(length = 200L, n_na = 0L, 
-                sum = 1523176, quantiles = c(51, 2398.75, 5576, 10949.5, 
-                31631)), IB = list(length = 200L, n_na = 0L, sum = 992.479622, 
-                quantiles = c(0, 0.257247, 1.226212, 3.48124, 108.583217
-                )), ICA = list(length = 200L, n_na = 0L, sum = 1108.63773, 
-                quantiles = c(0, 0.229987, 1.047913, 5.172042, 123.631077
-                )), ICM = list(length = 200L, n_na = 0L, sum = 1.377143, 
-                quantiles = c(0, 0, 0, 0, 0.376694)), ID = list(length = 200L, 
-                n_na = 0L, sum = 528.500821, quantiles = c(0, 0.151827, 
-                0.665222, 2.052554, 40.931932)), Mosquitoes = list(
-                Mos_S = 337, Mos_E = 0, Mos_I = 0), Time = 631, S = 0.980111, 
-            D = 0, A = 0.010611, U = 0.009278, T = 0, P = 0), list(
-            Loggers = list(Log_Counter = 90, Incidence = 0, Incidence_05 = 0, 
-                Treatments = list(Successful_Treatments = 0, Unsuccesful_Treatments_LPF = 0, 
-                    Not_Treated = 0, daily_bite_counters = 0, daily_infectious_bite_counters = 0), 
-                daily_mutations_per_loci = list(length = 24L, n_na = 0L, 
-                    sum = 0, quantiles = c(0, 0, 0, 0, 0)), InfectionStates = list(
-                    length = 200L, n_na = 0L, sum = 4, quantiles = c(0, 
-                    0, 0, 0, 2)), Ages = list(length = 200L, n_na = 0L, 
-                    sum = 1538784, quantiles = c(16, 2488.75, 5666, 
-                    11039.5, 31721)), IB = list(length = 200L, n_na = 0L, 
-                    sum = 968.188983, quantiles = c(0, 0.250981, 
-                    1.196346, 3.39645, 105.938561)), ICA = list(length = 200L, 
-                    n_na = 0L, sum = 1099.47984, quantiles = c(0, 
-                    0.228105, 1.039335, 5.129706, 122.619096)), ICM = list(
-                    length = 200L, n_na = 0L, sum = 1.486579, quantiles = c(0, 
-                    0, 0, 0, 0.951297)), ID = list(length = 200L, 
-                    n_na = 0L, sum = 515.559117, quantiles = c(0, 
-                    0.148129, 0.64902, 2.002562, 39.934993)), Mosquitoes = list(
-                    Mos_S = 337, Mos_E = 0, Mos_I = 0), Time = 721, 
-                S = 0.99, D = 0, A = 0.01, U = 0, T = 0, P = 0), 
-            Infections = list(Humans = 0, Mosquitoes = 0)))
+                length = 200L, n_na = 0L, sum = 0, quantiles = c(0, 
+                0, 0, 0, 0)), Ages = list(length = 200L, n_na = 0L, 
+                sum = 1392121, quantiles = c(56, 2216.75, 5021.5, 
+                10076.5, 31460)), IB = list(length = 200L, n_na = 0L, 
+                sum = 831.265043, quantiles = c(0, 0.284428, 1.203748, 
+                3.15295, 91.607264)), ICA = list(length = 200L, n_na = 0L, 
+                sum = 949.007645, quantiles = c(0, 0.203445, 1.065092, 
+                3.763019, 86.264117)), ICM = list(length = 200L, 
+                n_na = 0L, sum = 1.695033, quantiles = c(0, 0, 0, 
+                0, 0.995226)), ID = list(length = 200L, n_na = 0L, 
+                sum = 447.2286, quantiles = c(0, 0.16226, 0.71099, 
+                1.860071, 36.911441)), Mosquitoes = list(Mos_S = 337, 
+                Mos_E = 0, Mos_I = 0), Time = 721, S = 0.997889, 
+            D = 0, A = 0, U = 0.002111, T = 0, P = 0), Infections = list(
+            Humans = 0, Mosquitoes = 0)))
 
 # characterisation: set_up_only state and full save inputs
 
     list(population_List = list(Infection_States = list(length = 100L, 
-        n_na = 0L, sum = 32, quantiles = c(0, 0, 0, 0, 4)), Zetas = list(
-        length = 100L, n_na = 0L, sum = 102.53002, quantiles = c(0.018138, 
-        0.251547, 0.552821, 1.258437, 6.36768)), Ages = list(length = 100L, 
-        n_na = 0L, sum = 645083, quantiles = c(40, 1485.25, 4108, 
-        9439.25, 32798)), IB = list(length = 100L, n_na = 0L, sum = 459.957895, 
-        quantiles = c(0.004861, 0.417666, 1.754499, 3.880973, 23.254701
-        )), ICA = list(length = 100L, n_na = 0L, sum = 490.700441, 
-        quantiles = c(0.002913, 0.300234, 1.401084, 4.133839, 30.757604
-        )), ICM = list(length = 100L, n_na = 0L, sum = 2.500625, 
-        quantiles = c(0, 0, 0, 0, 1.113742)), ID = list(length = 100L, 
-        n_na = 0L, sum = 261.585479, quantiles = c(0.002869, 0.246614, 
-        1.036301, 2.289401, 12.615883)), cA = list(length = 100L, 
+        n_na = 0L, sum = 34, quantiles = c(0, 0, 0, 0, 5)), Zetas = list(
+        length = 100L, n_na = 0L, sum = 113.221386, quantiles = c(0.034856, 
+        0.229898, 0.598637, 1.178587, 8.605239)), Ages = list(length = 100L, 
+        n_na = 0L, sum = 657551, quantiles = c(122, 2091, 4631, 8534, 
+        31660)), IB = list(length = 100L, n_na = 0L, sum = 408.63353, 
+        quantiles = c(0.008714, 0.644314, 2.403009, 4.050509, 34.149798
+        )), ICA = list(length = 100L, n_na = 0L, sum = 386.249765, 
+        quantiles = c(0.005265, 0.501925, 2.050518, 5.014498, 26.544297
+        )), ICM = list(length = 100L, n_na = 0L, sum = 1.586307, 
+        quantiles = c(0, 0, 0, 0, 1.177533)), ID = list(length = 100L, 
+        n_na = 0L, sum = 236.570045, quantiles = c(0.005142, 0.380437, 
+        1.419207, 2.388637, 18.949111)), cA = list(length = 100L, 
         n_na = 0L, sum = 0, quantiles = c(0, 0, 0, 0, 0)), Treatment_Outcomes = list(
         length = 100L, n_na = 0L, sum = 300, quantiles = c(3, 3, 
         3, 3, 3)), Recrudescence_Outcomes = list(length = 100L, n_na = 0L, 
@@ -873,33 +876,33 @@
         2147483647, 2147483647, 2147483647, 2147483647)), NMF_age_band = list(
         length = 100L, n_na = 0L, sum = 0, quantiles = c(0, 0, 0, 
         0, 0)), IB_last_boost_time = list(length = 100L, n_na = 0L, 
-        sum = 44.805341, quantiles = c(0, 0.207734, 0.402575, 0.683496, 
-        0.995951)), ICA_last_boost_time = list(length = 100L, n_na = 0L, 
-        sum = 47.096375, quantiles = c(0.001184, 0.224531, 0.479709, 
-        0.729502, 0.995448)), ID_last_boost_time = list(length = 100L, 
-        n_na = 0L, sum = 47.927136, quantiles = c(0.029104, 0.236087, 
-        0.47297, 0.701575, 0.978076)), IB_last_calculated_time = list(
+        sum = 44.834327, quantiles = c(0.004758, 0.176393, 0.415123, 
+        0.655858, 0.999608)), ICA_last_boost_time = list(length = 100L, 
+        n_na = 0L, sum = 52.661246, quantiles = c(0.002923, 0.276031, 
+        0.525028, 0.796284, 0.997846)), ID_last_boost_time = list(
+        length = 100L, n_na = 0L, sum = 49.073937, quantiles = c(0.00567, 
+        0.204248, 0.483281, 0.765456, 0.995459)), IB_last_calculated_time = list(
         length = 100L, n_na = 0L, sum = 100, quantiles = c(1, 1, 
         1, 1, 1)), I_C_D_CM_last_calculated_time = list(length = 100L, 
         n_na = 0L, sum = 100, quantiles = c(1, 1, 1, 1, 1)), Immunity_boost_float = list(
-        length = 100L, n_na = 0L, sum = 50.406424, quantiles = c(0.001218, 
-        0.297461, 0.493577, 0.741617, 0.999642))), populations_event_and_strains_List = list(
+        length = 100L, n_na = 0L, sum = 46.516179, quantiles = c(0.006742, 
+        0.234289, 0.443785, 0.670006, 0.98729))), populations_event_and_strains_List = list(
         Day_of_InfectionStatus_change = list(length = 100L, n_na = 0L, 
-            sum = 2044, quantiles = c(0, 0, 0, 0, 512)), Day_of_strain_clearance = list(
+            sum = 2768, quantiles = c(0, 0, 0, 0, 610)), Day_of_strain_clearance = list(
             length = 100L, n_na = 0L, sum = 0, quantiles = c(0, 0, 
             0, 0, 0)), Day_of_death = list(length = 100L, n_na = 0L, 
-            sum = 786142, quantiles = c(186, 2509, 5759, 11270.25, 
-            40954)), Number_of_Strains = list(length = 100L, n_na = 0L, 
-            sum = 35, quantiles = c(0, 0, 0, 0, 7)), Day_of_next_strain_state_change = list(
-            length = 100L, n_na = 0L, sum = 191126046623, quantiles = c(7, 
+            sum = 765133, quantiles = c(51, 1958, 5358, 10252.5, 
+            35442)), Number_of_Strains = list(length = 100L, n_na = 0L, 
+            sum = 40, quantiles = c(0, 0, 0, 0, 9)), Day_of_next_strain_state_change = list(
+            length = 100L, n_na = 0L, sum = 188978563696, quantiles = c(12, 
             2147483647, 2147483647, 2147483647, 2147483647)), Day_of_next_event = list(
-            length = 100L, n_na = 0L, sum = 676707, quantiles = c(4, 
-            1211.25, 4156, 10266.25, 40954)), Day_of_last_treatment = list(
+            length = 100L, n_na = 0L, sum = 700378, quantiles = c(1, 
+            1391.5, 3850, 9516.25, 35442)), Day_of_last_treatment = list(
             length = 100L, n_na = 0L, sum = 0, quantiles = c(0, 0, 
             0, 0, 0)), Day_of_prophylaxis_waning = list(length = 100L, 
             n_na = 0L, sum = 0, quantiles = c(0, 0, 0, 0, 0)), Number_of_Realised_Infections = list(
-            length = 100L, n_na = 0L, sum = 35, quantiles = c(0, 
-            0, 0, 0, 7)), Infection_time_realisation_vectors = list(
+            length = 100L, n_na = 0L, sum = 40, quantiles = c(0, 
+            0, 0, 0, 9)), Infection_time_realisation_vectors = list(
             n_elements = 100L, first = list(numeric(0), numeric(0), 
                 numeric(0), numeric(0), numeric(0)), last = list(
                 numeric(0))), Infection_state_realisation_vectors = list(
@@ -910,32 +913,28 @@
                 list(), list()), last = list(list())), Strain_infection_state_vectors = list(
             n_elements = 100L, first = list(numeric(0), numeric(0), 
                 numeric(0), numeric(0), numeric(0)), last = list(
-                c(2, 2, 2, 2, 2, 2, 2))), Strain_day_of_infection_state_change_vectors = list(
+                numeric(0))), Strain_day_of_infection_state_change_vectors = list(
             n_elements = 100L, first = list(numeric(0), numeric(0), 
                 numeric(0), numeric(0), numeric(0)), last = list(
-                c(369, 369, 369, 369, 369, 369, 369))), Strain_day_of_acquisition_vectors = list(
+                numeric(0))), Strain_day_of_acquisition_vectors = list(
             n_elements = 100L, first = list(numeric(0), numeric(0), 
                 numeric(0), numeric(0), numeric(0)), last = list(
-                c(-32, -184, -342, -236, -50, -3, -303))), Strain_barcode_vectors = list(
-            n_elements = 100L, first = list(list(), list(), list(), 
-                list(), list()), last = list(list(c(FALSE, FALSE, 
-            TRUE), c(TRUE, TRUE, TRUE), c(TRUE, FALSE, TRUE), c(FALSE, 
-            TRUE, TRUE), c(FALSE, TRUE, TRUE), c(FALSE, FALSE, TRUE
-            ), c(FALSE, TRUE, FALSE)))), Strain_cotransmission = list(
-            n_elements = 100L, first = list(logical(0), logical(0), 
-                logical(0), logical(0), logical(0)), last = list(
-                logical(0))), Recent_identity_vectors = list(n_elements = 100L, 
-            first = list(numeric(0), numeric(0), numeric(0), numeric(0), 
-                numeric(0)), last = list(numeric(0)))), scourge_List = list(
-        Mosquito_Infection_States = list(length = 96L, n_na = 0L, 
-            sum = 5, quantiles = c(0, 0, 0, 0, 1)), Mosquito_Day_of_next_blood_meal = list(
-            length = 96L, n_na = 0L, sum = 196, quantiles = c(1, 
-            1, 2, 3, 3)), Mosquito_Off_Season = list(length = 96L, 
-            table = list(names = "FALSE", counts = 96L)), Mosquito_Day_of_death = list(
-            length = 96L, n_na = 0L, sum = 808, quantiles = c(1, 
-            3, 7, 11.25, 24)), Mosquito_Number_of_ruptured_oocysts = list(
-            length = 96L, n_na = 0L, sum = 0, quantiles = c(0, 0, 
-            0, 0, 0)), Mosquito_Oocyst_remaining_spz_vectors = list(
+                numeric(0))), Strain_barcode_vectors = list(n_elements = 100L, 
+            first = list(list(), list(), list(), list(), list()), 
+            last = list(list())), Strain_cotransmission = list(n_elements = 100L, 
+            first = list(logical(0), logical(0), logical(0), logical(0), 
+                logical(0)), last = list(logical(0))), Recent_identity_vectors = list(
+            n_elements = 100L, first = list(numeric(0), numeric(0), 
+                numeric(0), numeric(0), numeric(0)), last = list(
+                numeric(0)))), scourge_List = list(Mosquito_Infection_States = list(
+        length = 96L, n_na = 0L, sum = 2, quantiles = c(0, 0, 0, 
+        0, 2)), Mosquito_Day_of_next_blood_meal = list(length = 96L, 
+        n_na = 0L, sum = 190, quantiles = c(1, 1, 2, 3, 3)), Mosquito_Off_Season = list(
+        length = 96L, table = list(names = "FALSE", counts = 96L)), 
+        Mosquito_Day_of_death = list(length = 96L, n_na = 0L, sum = 775, 
+            quantiles = c(1, 3, 5, 11.25, 63)), Mosquito_Number_of_ruptured_oocysts = list(
+            length = 96L, n_na = 0L, sum = 1, quantiles = c(0, 0, 
+            0, 0, 1)), Mosquito_Oocyst_remaining_spz_vectors = list(
             n_elements = 96L, first = list(numeric(0), numeric(0), 
                 numeric(0), numeric(0), numeric(0)), last = list(
                 numeric(0))), Mosquito_Oocyst_rupture_time_vectors = list(
@@ -949,7 +948,7 @@
         parameters_List = list(g_current_time = 1, g_calendar_day = 1, 
             g_theta = list(length = 365L, n_na = 0L, sum = 365, quantiles = c(1, 
             1, 1, 1, 1)), g_years = 1, g_mean_maternal_immunity = 0, 
-            g_sum_maternal_immunity = 22.43581, g_total_mums = 3, 
+            g_sum_maternal_immunity = 5.52288, g_total_mums = 2, 
             g_N = 100, g_max_age = 36500, g_average_age = 7665, g_EIR = 0, 
             g_a0 = 2920, g_rho = 0.85, g_zeta_meanlog = -0.835, g_zeta_sdlog = 1.292285, 
             g_ft = 0.4, g_mu0 = 0.132, g_mean_mosquito_age = 7.575758, 
@@ -1056,24 +1055,29 @@
                 0.25, 0.25, 0.25), cov = c(1, 0, 0, 0), d_ITN0 = 0.41, 
                 r_ITN0 = 0.56, r_ITN1 = 0.24, r_IRS0 = 0.6, d_IRS0 = 1, 
                 irs_half_life = 182.5, itn_half_life = 963.6, IRS_interval = 365, 
-                ITN_interval = 1095, irs_loss = 0.003798, itn_loss = 0.000719)))
+                ITN_interval = 1095, irs_loss = 0.003798, itn_loss = 0.000719), 
+            spatial_settings = list(spatial_type = NULL, island_imports_plaf_linked_flag = FALSE, 
+                survival_percentage = 0.2, oocyst_mean = 2.5, oocyst_shape = 1)), 
+        rng_state = list(length = 626L, n_na = 0L, sum = 25929670488, 
+            quantiles = c(-2138386923, -966188371, 48034205.5, 1109808107.75, 
+            2147080281)))
 
 ---
 
     list(population_List = list(Infection_States = list(length = 100L, 
-        n_na = 0L, sum = 23, quantiles = c(0, 0, 0, 0, 3)), Zetas = list(
-        length = 100L, n_na = 0L, sum = 102.53002, quantiles = c(0.018138, 
-        0.251547, 0.552821, 1.258437, 6.36768)), Ages = list(length = 100L, 
-        n_na = 0L, sum = 649200, quantiles = c(102, 1691.75, 4183, 
-        9400.5, 33158)), IB = list(length = 100L, n_na = 0L, sum = 415.677258, 
-        quantiles = c(0, 0.326917, 1.459119, 3.670076, 22.550465)), 
-        ICA = list(length = 100L, n_na = 0L, sum = 460.498558, quantiles = c(0, 
-        0.26639, 1.222819, 3.553929, 29.762837)), ICM = list(length = 100L, 
-            n_na = 0L, sum = 1.134571, quantiles = c(0, 0, 0, 0, 
-            0.934069)), ID = list(length = 100L, n_na = 0L, sum = 236.824787, 
-            quantiles = c(0, 0.19295, 0.86183, 2.138854, 12.249256
-            )), cA = list(length = 100L, n_na = 0L, sum = 5.191002, 
-            quantiles = c(0.017173, 0.033492, 0.064149, 0.067361, 
+        n_na = 0L, sum = 16, quantiles = c(0, 0, 0, 0, 4)), Zetas = list(
+        length = 100L, n_na = 0L, sum = 113.221386, quantiles = c(0.034856, 
+        0.229898, 0.598637, 1.178587, 8.605239)), Ages = list(length = 100L, 
+        n_na = 0L, sum = 679688, quantiles = c(38, 2168, 4888, 8894, 
+        32020)), IB = list(length = 100L, n_na = 0L, sum = 403.69096, 
+        quantiles = c(0, 0.587091, 2.330302, 3.909965, 33.807469)), 
+        ICA = list(length = 100L, n_na = 0L, sum = 389.059778, quantiles = c(0, 
+        0.485692, 1.895096, 4.87094, 25.685798)), ICM = list(length = 100L, 
+            n_na = 0L, sum = 1.931642, quantiles = c(0, 0, 0, 0, 
+            1.908686)), ID = list(length = 100L, n_na = 0L, sum = 232.227086, 
+            quantiles = c(0, 0.338608, 1.286449, 2.283648, 19.122409
+            )), cA = list(length = 100L, n_na = 0L, sum = 5.228356, 
+            quantiles = c(0.017874, 0.037795, 0.060462, 0.067082, 
             0.067691)), Treatment_Outcomes = list(length = 100L, 
             n_na = 0L, sum = 0, quantiles = c(0, 0, 0, 0, 0)), Recrudescence_Outcomes = list(
             length = 100L, n_na = 0L, sum = 0, quantiles = c(0, 0, 
@@ -1085,71 +1089,69 @@
             2147483647, 2147483647, 2147483647)), NMF_age_band = list(
             length = 100L, n_na = 0L, sum = 0, quantiles = c(0, 0, 
             0, 0, 0)), IB_last_boost_time = list(length = 100L, n_na = 0L, 
-            sum = 4160.207771, quantiles = c(-6.855047, 0.254138, 
-            0.523344, 0.888826, 293.777269)), ICA_last_boost_time = list(
-            length = 100L, n_na = 0L, sum = 2435.905905, quantiles = c(-5.88959, 
-            0.244227, 0.516403, 0.78774, 293.813975)), ID_last_boost_time = list(
-            length = 100L, n_na = 0L, sum = 2426.591776, quantiles = c(-9.166211, 
-            0.232805, 0.497138, 0.86264, 293.410384)), IB_last_calculated_time = list(
+            sum = 7572.236757, quantiles = c(-6.919851, 0.250342, 
+            0.587537, 145.56996, 358.295578)), ICA_last_boost_time = list(
+            length = 100L, n_na = 0L, sum = 3779.470776, quantiles = c(-5.760642, 
+            0.300437, 0.704115, 0.970804, 358.555867)), ID_last_boost_time = list(
+            length = 100L, n_na = 0L, sum = 3765.738577, quantiles = c(-9.401065, 
+            0.251782, 0.704848, 0.958807, 358.829364)), IB_last_calculated_time = list(
             length = 100L, n_na = 0L, sum = 36100, quantiles = c(361, 
             361, 361, 361, 361)), I_C_D_CM_last_calculated_time = list(
             length = 100L, n_na = 0L, sum = 36100, quantiles = c(361, 
             361, 361, 361, 361)), Immunity_boost_float = list(length = 100L, 
-            n_na = 0L, sum = 50.406424, quantiles = c(0.001218, 0.297461, 
-            0.493577, 0.741617, 0.999642))), populations_event_and_strains_List = list(
+            n_na = 0L, sum = 46.516179, quantiles = c(0.006742, 0.234289, 
+            0.443785, 0.670006, 0.98729))), populations_event_and_strains_List = list(
         Day_of_InfectionStatus_change = list(length = 100L, n_na = 0L, 
-            sum = 4679, quantiles = c(0, 0, 0, 0, 766)), Day_of_strain_clearance = list(
+            sum = 3968, quantiles = c(0, 0, 0, 0, 777)), Day_of_strain_clearance = list(
             length = 100L, n_na = 0L, sum = 0, quantiles = c(0, 0, 
             0, 0, 0)), Day_of_death = list(length = 100L, n_na = 0L, 
-            sum = 835476, quantiles = c(419, 2802.75, 5975.5, 11910.25, 
-            40954)), Number_of_Strains = list(length = 100L, n_na = 0L, 
-            sum = 18, quantiles = c(0, 0, 0, 0, 7)), Day_of_next_strain_state_change = list(
-            length = 100L, n_na = 0L, sum = 193273532909, quantiles = c(369, 
+            sum = 793125, quantiles = c(432, 2229.75, 5503.5, 10641, 
+            35442)), Number_of_Strains = list(length = 100L, n_na = 0L, 
+            sum = 28, quantiles = c(0, 0, 0, 0, 9)), Day_of_next_strain_state_change = list(
+            length = 100L, n_na = 0L, sum = 199715982722, quantiles = c(365, 
             2147483647, 2147483647, 2147483647, 2147483647)), Day_of_next_event = list(
-            length = 100L, n_na = 0L, sum = 770779, quantiles = c(369, 
-            1765.75, 5559, 11340, 40954)), Day_of_last_treatment = list(
-            length = 100L, n_na = 0L, sum = 0, quantiles = c(0, 0, 
-            0, 0, 0)), Day_of_prophylaxis_waning = list(length = 100L, 
+            length = 100L, n_na = 0L, sum = 760199, quantiles = c(364, 
+            1981.5, 5358, 10252.5, 35442)), Day_of_last_treatment = list(
+            length = 100L, n_na = 0L, sum = 1937, quantiles = c(0, 
+            0, 0, 0, 355)), Day_of_prophylaxis_waning = list(length = 100L, 
             n_na = 0L, sum = 0, quantiles = c(0, 0, 0, 0, 0)), Number_of_Realised_Infections = list(
-            length = 100L, n_na = 0L, sum = 18, quantiles = c(0, 
-            0, 0, 0, 7)), Infection_time_realisation_vectors = list(
+            length = 100L, n_na = 0L, sum = 29, quantiles = c(0, 
+            0, 0, 0, 9)), Infection_time_realisation_vectors = list(
             n_elements = 100L, first = list(numeric(0), numeric(0), 
-                numeric(0), 267, numeric(0)), last = list(c(84, 212
-            ))), Infection_state_realisation_vectors = list(n_elements = 100L, 
-            first = list(numeric(0), numeric(0), numeric(0), 1, numeric(0)), 
-            last = list(c(1, 4))), Infection_barcode_realisation_vectors = list(
+                numeric(0), c(38, 38, 38), numeric(0)), last = list(
+                numeric(0))), Infection_state_realisation_vectors = list(
+            n_elements = 100L, first = list(numeric(0), numeric(0), 
+                numeric(0), c(2, 2, 2), numeric(0)), last = list(
+                numeric(0))), Infection_barcode_realisation_vectors = list(
             n_elements = 100L, first = list(list(), list(), list(), 
-                list(c(TRUE, TRUE, FALSE)), list()), last = list(
-                list(c(TRUE, FALSE, FALSE), c(FALSE, FALSE, TRUE)))), 
-        Strain_infection_state_vectors = list(n_elements = 100L, 
-            first = list(numeric(0), numeric(0), numeric(0), 2, numeric(0)), 
-            last = list(c(2, 2, 2, 2, 2, 2, 2))), Strain_day_of_infection_state_change_vectors = list(
+                list(c(TRUE, FALSE, TRUE), c(FALSE, TRUE, FALSE), 
+                    c(FALSE, FALSE, FALSE)), list()), last = list(
+                list())), Strain_infection_state_vectors = list(n_elements = 100L, 
+            first = list(numeric(0), numeric(0), numeric(0), c(2, 
+            3, 2), numeric(0)), last = list(4)), Strain_day_of_infection_state_change_vectors = list(
             n_elements = 100L, first = list(numeric(0), numeric(0), 
-                numeric(0), 529, numeric(0)), last = list(c(369, 
-            369, 369, 369, 369, 369, 369))), Strain_day_of_acquisition_vectors = list(
-            n_elements = 100L, first = list(numeric(0), numeric(0), 
-                numeric(0), 267, numeric(0)), last = list(c(-32, 
-            -184, -342, -236, -50, -3, -303))), Strain_barcode_vectors = list(
+                numeric(0), c(777, 403, 521), numeric(0)), last = list(
+                365)), Strain_day_of_acquisition_vectors = list(n_elements = 100L, 
+            first = list(numeric(0), numeric(0), numeric(0), c(38, 
+            38, 38), numeric(0)), last = list(355)), Strain_barcode_vectors = list(
             n_elements = 100L, first = list(list(), list(), list(), 
-                list(c(TRUE, TRUE, FALSE)), list()), last = list(
-                list(c(FALSE, FALSE, TRUE), c(TRUE, TRUE, TRUE), 
-                    c(TRUE, FALSE, TRUE), c(FALSE, TRUE, TRUE), c(FALSE, 
-                    TRUE, TRUE), c(FALSE, FALSE, TRUE), c(FALSE, 
-                    TRUE, FALSE)))), Strain_cotransmission = list(
+                list(c(TRUE, FALSE, TRUE), c(FALSE, TRUE, FALSE), 
+                    c(FALSE, FALSE, FALSE)), list()), last = list(
+                list(c(FALSE, TRUE, FALSE)))), Strain_cotransmission = list(
             n_elements = 100L, first = list(logical(0), logical(0), 
                 logical(0), logical(0), logical(0)), last = list(
                 logical(0))), Recent_identity_vectors = list(n_elements = 100L, 
             first = list(numeric(0), numeric(0), numeric(0), numeric(0), 
                 numeric(0)), last = list(numeric(0)))), scourge_List = list(
         Mosquito_Infection_States = list(length = 96L, n_na = 0L, 
-            sum = 2, quantiles = c(0, 0, 0, 0, 1)), Mosquito_Day_of_next_blood_meal = list(
-            length = 96L, n_na = 0L, sum = 34748, quantiles = c(361, 
+            sum = 9, quantiles = c(0, 0, 0, 0, 2)), Mosquito_Day_of_next_blood_meal = list(
+            length = 96L, n_na = 0L, sum = 34745, quantiles = c(361, 
             361, 362, 363, 363)), Mosquito_Off_Season = list(length = 96L, 
             table = list(names = "FALSE", counts = 96L)), Mosquito_Day_of_death = list(
-            length = 96L, n_na = 0L, sum = 35262, quantiles = c(361, 
-            363, 366, 369, 394)), Mosquito_Number_of_ruptured_oocysts = list(
-            length = 96L, n_na = 0L, sum = 0, quantiles = c(0, 0, 
-            0, 0, 0)), Mosquito_Oocyst_remaining_spz_vectors = list(
+            length = 96L, n_na = 0L, sum = 35277, quantiles = c(361, 
+            362, 365, 370, 400)), Mosquito_Number_of_ruptured_oocysts = list(
+            length = 96L, n_na = 0L, sum = 3, quantiles = c(0, 0, 
+            0, 0, 2)), Mosquito_Oocyst_remaining_spz_vectors = list(
             n_elements = 96L, first = list(numeric(0), numeric(0), 
                 numeric(0), numeric(0), numeric(0)), last = list(
                 numeric(0))), Mosquito_Oocyst_rupture_time_vectors = list(
@@ -1162,8 +1164,8 @@
                 list(), list()), last = list(list())), Scourge_size = 96), 
         parameters_List = list(g_current_time = 361, g_calendar_day = 361, 
             g_theta = list(length = 365L, n_na = 0L, sum = 365, quantiles = c(1, 
-            1, 1, 1, 1)), g_years = 0.493151, g_mean_maternal_immunity = 3.865689, 
-            g_sum_maternal_immunity = 54.119646, g_total_mums = 14, 
+            1, 1, 1, 1)), g_years = 0.493151, g_mean_maternal_immunity = 3.503775, 
+            g_sum_maternal_immunity = 66.571724, g_total_mums = 19, 
             g_N = 100, g_max_age = 36500, g_average_age = 7665, g_EIR = 0, 
             g_a0 = 2920, g_rho = 0.85, g_zeta_meanlog = -0.835, g_zeta_sdlog = 1.292285, 
             g_ft = 0.4, g_mu0 = 0.132, g_mean_mosquito_age = 7.575758, 
@@ -1171,7 +1173,7 @@
             g_ak = 0.30677, g_Q0 = 0.92, g_mosquito_deficit = 0, 
             g_scourge_today = 96, g_mean_mv = 96, g_mosquito_next_biting_day_vector = list(
                 length = 1000L, n_na = 0L, sum = 3003, quantiles = c(3, 
-                3, 3, 3, 4)), g_mosquito_biting_counter = 506, g_max_mosquito_biting_counter = 1000, 
+                3, 3, 3, 4)), g_mosquito_biting_counter = 507, g_max_mosquito_biting_counter = 1000, 
             g_delay_mos = 10, g_delay_gam = 12.5, g_dur_E = 12, g_dur_T = 5, 
             g_dur_D = 5, g_dur_U = 110.29, g_dur_P = 25, g_dur_A = 195, 
             g_dur_AU = 305.29, g_d1 = 0.160527, g_dID = 3650, g_ID0 = 1.577533, 
@@ -1182,13 +1184,13 @@
             g_dCA = 10950, g_IC0 = 18.02366, g_kC = 2.36949, g_uCA = 6.06349, 
             g_PM = 0.774368, g_dCM = 67.6952, g_gamma1 = 1.82425, 
             g_cD = 0.067691, g_cT = 0.021796, g_cU = 0.0062, g_total_human_infections = 0, 
-            g_total_mosquito_infections = 0, g_percentage_imported_human_infections = 0, 
+            g_total_mosquito_infections = 1, g_percentage_imported_human_infections = 0, 
             g_percentage_imported_mosquito_infections = 0, g_cotransmission_frequencies = list(
                 length = 10000L, n_na = 0L, sum = 24352, quantiles = c(1, 
-                1, 2, 3, 18)), g_cotransmission_frequencies_counter = 26, 
+                1, 2, 3, 18)), g_cotransmission_frequencies_counter = 45, 
             g_cotransmission_frequencies_size = 10000, g_oocyst_frequencies = list(
                 length = 10000L, n_na = 0L, sum = 35094, quantiles = c(1, 
-                1, 3, 5, 24)), g_oocyst_frequencies_counter = 60, 
+                1, 3, 5, 24)), g_oocyst_frequencies_counter = 121, 
             g_oocyst_frequencies_size = 10000, g_identity_id = 0, 
             g_num_loci = 3, g_ibd_length = 1, g_barcode_length = 3, 
             g_plaf = c(0.5, 0.5, 0.5), g_prob_crossover = c(0.5, 
@@ -1273,7 +1275,12 @@
                 0.25, 0.25, 0.25), cov = c(1, 0, 0, 0), d_ITN0 = 0.41, 
                 r_ITN0 = 0.56, r_ITN1 = 0.24, r_IRS0 = 0.6, d_IRS0 = 1, 
                 irs_half_life = 182.5, itn_half_life = 963.6, IRS_interval = 365, 
-                ITN_interval = 1095, irs_loss = 0.003798, itn_loss = 0.000719)))
+                ITN_interval = 1095, irs_loss = 0.003798, itn_loss = 0.000719), 
+            spatial_settings = list(spatial_type = NULL, island_imports_plaf_linked_flag = FALSE, 
+                survival_percentage = 0.2, oocyst_mean = 2.5, oocyst_shape = 1)), 
+        rng_state = list(length = 626L, n_na = 0L, sum = 4597015823, 
+            quantiles = c(-2137226893, -1144004075.75, 10874815.5, 
+            1123566658.75, 2147295473)))
 
 # characterisation: equilibrium initialisation is stable
 

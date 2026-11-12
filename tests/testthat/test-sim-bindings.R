@@ -7,7 +7,7 @@ test_that("sim_init returns a state pointer and loggers for a tiny population", 
   expect_type(state$sim$Loggers, "list")
   expect_length(state$sim$Loggers$Ages, 40)
   expect_null(state$sim$Loggers$Time)
-  magenta:::sim_free(state$sim$Ptr, 11L)
+  magenta:::sim_free(state$sim$Ptr)
 })
 
 test_that("sim_update advances the clock by the days it is given", {
@@ -15,38 +15,38 @@ test_that("sim_update advances the clock by the days it is given", {
   state <- tiny_state(seed = 12L, N = 40)
   mu_fv <- constant_mu_fv(365)
   # the loggers report the day after the last simulated one
-  state <- magenta:::run_period(state, 1:30, 0.4, mu_fv, seed = 12L)
+  state <- magenta:::run_period(state, 1:30, 0.4, mu_fv)
   expect_equal(state$sim$Loggers$Time, 31)
   expect_equal(state$sim$Loggers$Log_Counter, 30)
-  state <- magenta:::run_period(state, 31:45, 0.4, mu_fv, seed = 12L)
+  state <- magenta:::run_period(state, 31:45, 0.4, mu_fv)
   expect_equal(state$sim$Loggers$Time, 46)
-  magenta:::sim_free(state$sim$Ptr, 12L)
+  magenta:::sim_free(state$sim$Ptr)
 })
 
 test_that("sim_get_state returns the five lists and sim_init_saved restarts from them", {
   skip_on_cran()
   state <- tiny_state(seed = 13L, N = 40)
-  state <- magenta:::run_period(state, 1:20, 0.4, constant_mu_fv(365), seed = 13L)
-  saved <- magenta:::sim_get_state(state$sim$Ptr, 13L)
+  state <- magenta:::run_period(state, 1:20, 0.4, constant_mu_fv(365))
+  saved <- magenta:::sim_get_state(state$sim$Ptr)
   expect_named(saved, magenta:::cpp_contract$saved_state)
   expect_equal(saved$parameters_List$g_current_time, 21)
   expect_length(saved$population_List$Infection_States, 40)
-  magenta:::sim_free(state$sim$Ptr, 13L)
+  magenta:::sim_free(state$sim$Ptr)
 
-  restored <- magenta:::sim_init_saved(saved, 13L)
+  restored <- magenta:::sim_init_saved(saved)
   expect_type(restored$Ptr, "externalptr")
-  again <- magenta:::sim_get_state(restored$Ptr, 13L)
+  again <- magenta:::sim_get_state(restored$Ptr)
   expect_equal(again$population_List$Infection_States, saved$population_List$Infection_States)
   expect_equal(again$parameters_List$g_current_time, 21)
-  expect_invisible(magenta:::sim_free(restored$Ptr, 13L))
+  expect_invisible(magenta:::sim_free(restored$Ptr))
 })
 
 test_that("the bindings check their inputs", {
-  expect_error(magenta:::sim_get_state("ptr", 1L), "statePtr must be an external pointer")
-  expect_error(magenta:::sim_free(NULL, 1L), "statePtr must be an external pointer")
-  expect_error(magenta:::sim_init_saved("x", 1L), "saved_state must be a list")
+  expect_error(magenta:::sim_get_state("ptr"), "statePtr must be an external pointer")
+  expect_error(magenta:::sim_free(NULL), "statePtr must be an external pointer")
+  expect_error(magenta:::sim_init_saved("x"), "saved_state must be a list")
   expect_error(
-    magenta:::sim_init_saved(list(population_List = 1), 1L),
+    magenta:::sim_init_saved(list(population_List = 1)),
     "missing the elements: populations_event_and_strains_List"
   )
 })
@@ -95,7 +95,7 @@ test_that("param_list_simulation_update_create fills in constant rates and check
     ),
     "mu_vec must have length 10, not 3"
   )
-  magenta:::sim_free(state$sim$Ptr, 15L)
+  magenta:::sim_free(state$sim$Ptr)
 })
 
 test_that("simulation_R dispatches init and saved-state lists, nested or not", {
@@ -122,5 +122,5 @@ test_that("simulation_R dispatches init and saved-state lists, nested or not", {
   )
   expect_warning(restored <- magenta:::simulation_R(list(savedState = saved), 16L), "deprecated")
   expect_type(restored$Ptr, "externalptr")
-  magenta:::sim_free(restored$Ptr, 16L)
+  magenta:::sim_free(restored$Ptr)
 })
