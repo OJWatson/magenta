@@ -54,7 +54,7 @@ For example to run the model for 10 years at an EIR of 1 and no seasonality for 
 ``` r
 out1 <- pipeline(EIR = 1, years = 10, N = 10000)
 ## magenta v1.4.0
-## Seed set to 28475535
+## Seed set to 888086293
 ## Starting Stochastic Simulation for 10 years
 ```
 
@@ -64,14 +64,14 @@ By default, magenta will run the simulation for the entire duration and return a
 ``` r
 out1
 ## <magenta_sim>
-##   call:     pipeline(EIR = 1, N = 10000, years = 10, seed = 28475535L)
+##   call:     pipeline(EIR = 1, N = 10000, years = 10, seed = 888086293L)
 ##   N: 10000   years: 10   EIR: 1
 ##   output:   loggers, 1 period(s), final = loggers
-##   seed:     28475535   version: 1.4.0
-##   elapsed:  11.3 secs
+##   seed:     888086293   version: 1.4.0
+##   elapsed:  11.4 secs
 as.data.frame(tail(out1$output$Loggers, 6))
 ##           S           D         A          U           T           P
-## 1 0.8588786 0.001609589 0.0951411 0.03865315 0.001019178 0.004698356
+## 1 0.8582493 0.001532603 0.0961063 0.03790466 0.001063288 0.005143836
 ```
 
 (See the [model output vignette](Loggers.html) for more info about what is returned in Loggers.) 
@@ -404,8 +404,6 @@ out9 <- pipeline(EIR = 4, years = 20, N = 10000,
                  seed = 123456789L)
 ## magenta v1.4.0
 ## Seed set to 123456789
-## 
-## Running Deterministic Model for 20 years
 ## Starting Stochastic Simulation for 20 years
 
 df9 <- as.data.frame(out9)
@@ -533,8 +531,6 @@ out12 <- pipeline(
 ## Returned: Kinshasa, Democratic Republic of the Congo
 ## Requested: Kinshasa, Democratic Republic of the Congo
 ## Returned: Kinshasa, Democratic Republic of the Congo
-## 
-## Running Deterministic Model for 36 years
 ## Starting Stochastic Simulation for 36 years
 
 # Grab the microscopy prevalence over time in 2-10s
