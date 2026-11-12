@@ -84,6 +84,15 @@ handling has changed are listed under "Schedule" below.
   restarted from.
 * The vignettes are written against the new interface.
 
+## Smaller changes
+
+* An argument in `...` that `model_param_list_create()` does not take is
+  reported as an unknown `pipeline()` argument, which is what a misspelt
+  argument almost always is.
+* `admin_match()` honours `quiet`, so `equilibrium_init_create(quiet = TRUE)`
+  is quiet.
+* Every exported function has a runnable example.
+
 ## Simulation bindings
 
 * `simulation_R()` is deprecated and no longer exported. `pipeline()` calls
