@@ -5,9 +5,19 @@
 * Fixed a crash (`SIGFPE`, integer division by zero) in
   `Person::late_paristological_failure_boolean()` that terminated the R session
   whenever a resistance simulation was run with treatment, i.e. any
-  `drug_list_create(resistance_flag = TRUE)` with `ft > 0`. A strain whose
-  status change day equalled its acquisition day divided by zero. The window is
-  now guarded; behaviour is unchanged wherever it previously did not crash.
+  `drug_list_create(resistance_flag = TRUE)` with `ft > 0`.
+
+  The cause was in initialisation, not in the simulation loop. Individuals
+  starting the simulation in the `TREATED` state had their strains given a
+  status change day hardcoded to `0` and an acquisition day drawn as
+  `0 - runiform_int_1(0, dur_T)`. That draw is inclusive of both bounds, so
+  roughly one strain in six got an acquisition day of `0` as well, leaving a
+  zero length course that divided by zero as soon as that individual's
+  treatment outcome was evaluated. The draw now starts at `1`, so the
+  acquisition day is always strictly before the status change day, which is
+  what every in-run state change already guaranteed by drawing
+  `current_time + 1` or later. The division is also guarded, for saved states
+  written by earlier versions.
 * The discounting of an asymptomatic strain's probability of surviving
   treatment, by how far through its course that strain is, now takes effect. It
   was computed with integer arithmetic and truncated to zero for any strain
@@ -29,6 +39,25 @@
   so a reduced value persists for later mosquitoes reusing that element until
   the vector is regenerated the following year. Only affects simulations with
   `gametocyte_sterilisation_flag` set.
+* Gametocyte sterilisation cannot reduce a host's infectiousness. The
+  multiplier is applied to `m_active_strain_contribution`, which `sample1()`
+  treats as relative weights among the strains one host carries, and a host
+  carrying a single strain returns before those weights are read at all. A host
+  whose strains are all sensitive therefore has every weight scaled equally and
+  nothing changes. Sterilisation only reweights which strain a mixed host
+  transmits. There is consequently no population level signal from switching it
+  on, in either direction, at the scale the test suite can run.
+* In `Person::sample_two_barcodes()`, `m_female_contribution_sum` is computed
+  by summing `m_active_strain_contribution` rather than
+  `m_active_female_strain_contribution`, and is then used to sample from the
+  female vector. The female vector also never receives the resistance fitness
+  modifier or the sterilisation multiplier, so the two sums diverge whenever
+  either applies and the female gamete draw is biased.
+* The gate deciding which additional strains survive a late parasitological
+  failure reads the loop variable after its loop has ended, so one strain's
+  value is applied to all of them. Instrumented runs show it open on 98% of
+  late parasitological failures, so it is close to a no-op, but it is not the
+  per-strain test it appears to be.
 
 ## Documentation
 
