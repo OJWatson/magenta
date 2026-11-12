@@ -31,3 +31,4 @@ vignettes_src
 docs
 submission_data
 ^\.github$
+^\.claude$

@@ -422,3 +422,70 @@ for(i in ranges) {
 expect_true(mean(varses) > mean(varno))
 
 })
+test_that("Gametocyte sterilisation runs and leaves the default untouched", {
+
+  # NOTE ON WHAT IS NOT TESTED HERE.
+  #
+  # An earlier version of this test asserted that switching sterilisation on
+  # raised the final artemisinin resistant allele frequency. That assertion is
+  # not supported: over 14 seeds the paired difference is +0.045 (p = 0.30),
+  # and the same test also passes on the code with the sterilisation condition
+  # the other way round. It passed only because seeds 1 to 5 happened to agree.
+  #
+  # The reason the effect is unmeasurable is structural. The sterilisation
+  # multiplier is applied to m_active_strain_contribution, which sample1()
+  # uses as relative weights among the strains that one host carries. A host
+  # whose strains are all sensitive has every weight scaled by the same factor,
+  # so the scaling cancels, and a host with a single strain returns early
+  # before the weights are used at all. Sterilisation therefore only reweights
+  # which strain a mixed host transmits; it never reduces how infectious that
+  # host is. Until that is addressed there is no population level signal to
+  # assert on, so this test only checks that the option runs and that it is
+  # genuinely off by default.
+
+  nl <- 6
+  art_locus <- 4          # kelch13 580Y, zero indexed
+
+  drug_list <-
+    magenta:::drug_list_create(
+      resistance_flag = TRUE,
+      number_of_resistance_loci = nl,
+      artemisinin_loci = art_locus,
+      cost_of_resistance = rep(1, nl),
+      drugs = list(magenta:::drug_create_al()),
+      number_of_drugs = 1,
+      partner_drug_ratios = 1
+    )
+
+  run <- function(vector_adaptation_list) {
+    magenta::pipeline(
+      EIR = 20, N = 500, years = 2, ft = 0.8,
+      num_loci = nl, plaf = rep(0.15, nl),
+      drug_list = drug_list,
+      vector_adaptation_list = vector_adaptation_list,
+      seed = 1L
+    )
+  }
+
+  off <- run(magenta:::vector_adaptation_list_create(vector_adaptation_loci = art_locus))
+  on <- run(magenta:::vector_adaptation_list_create(
+    vector_adaptation_loci = art_locus,
+    gametocyte_sterilisation_flag = TRUE,
+    gametocyte_sterilisation = 0.01,
+    oocyst_reduction_by_artemisinin = 1
+  ))
+
+  # both complete and report a sane prevalence
+  expect_true(all(vapply(list(off, on), function(x) {
+    p <- sum(unlist(x$Loggers[c("D", "A", "U", "T")]))
+    p > 0 && p < 1
+  }, logical(1))))
+
+  # the flag is off by default, so the default list must not switch it on
+  expect_false(
+    magenta:::vector_adaptation_list_create(
+      vector_adaptation_loci = art_locus
+    )$gametocyte_sterilisation_flag
+  )
+
+})

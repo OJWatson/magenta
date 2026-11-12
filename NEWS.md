@@ -1,3 +1,14 @@
+## magenta 1.3.8
+
+* New vignettes: `Loggers`, `DrugStrategies` and `NewDrugs`. `Resistance` and
+  `Introduction` rewritten, and vignette sources moved to `vignettes_src/`.
+* Bug fix to initialisation that caused resistance simulations to crash during
+  the LPF calculation.
+* Bug fix to the asymptomatic discount in the LPF calculation, which was
+  computed with integer arithmetic and so never applied.
+* Gametocyte sterilisation now applies to artemisinin sensitive strains, as
+  documented, rather than resistant ones.
+
 ## magenta 1.3.7
 
 * Fix to saved state initialisation of barcode bitset sizing on Windows

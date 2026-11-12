@@ -360,8 +360,13 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
             Strain::temp_barcode = Strain::generate_next_barcode();
           }
           
-          // draw the likely time if this is the first time at treated
-          int temp_t_acquistion = 0 - runiform_int_1(0,static_cast<int>(parameters.g_dur_T));
+          // draw the likely time if this is the first time at treated.
+          // The draw starts at 1 so that the acquisition day is always strictly
+          // before the strain's status change day, which is set to 0 below. A
+          // draw of 0 would make the two equal and leave the strain with a zero
+          // length course, which the rest of the model never produces because
+          // every in run state change day is drawn as current_time + 1 or later.
+          int temp_t_acquistion = 0 - runiform_int_1(1,static_cast<int>(parameters.g_dur_T) + 1);
           
           // then work out if this is likely not the first time clinically infected
           if (rbernoulli1(parameters.g_ft)) {
