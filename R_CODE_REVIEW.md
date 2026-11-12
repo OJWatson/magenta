@@ -710,9 +710,18 @@ and where it departs from the plan above:
   `set_up_only` too. The vignette sources are rewritten against the new
   interface.
 
-Still open: Phase 4 (seed replay; `min(ft[ft > 0])` for a single period,
-which the schedule keeps deliberately; the metapop error is done; the
-`human_vars` and single-period `i` items were absorbed above) and Phase 5.
+Phase 4 is pinned, not applied: `tests/testthat/test-findings.R` records what
+the code does today for the three items whose fix changes results (seed
+replay; `min(ft[ft > 0])` for a single period; a resumed run rebuilding the
+barcode and spatial lists from the new call) and says what the fix would
+make each test expect. The other 4.6 items are done (Phase 0, or absorbed in
+Phases 2-3 as noted above). Phase 5: unit tests for every `sim_*`, parameter,
+schedule, saver and `magenta_sim` function and for the utilities (R-side
+line coverage 86.9% -> 95.9% over this step; 47.6% at Phase 0), an example
+on every export, `R CMD check --as-cran` clean (one pre-existing NOTE).
+
+Still open: the Phase 4 decisions above, and the remaining Phase 5 items
+(pkgdown reference regrouping is done; coverage gate in CI is not).
 The two commits on `docs-revamp` after the Phase 0 base (the asymptomatic
 discount and the sterilisation direction) change C++ results and are not on
 this branch; merging them will move the snapshots and needs a deliberate
