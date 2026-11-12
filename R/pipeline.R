@@ -222,6 +222,7 @@ pipeline <- function(EIR = 120,
   # A saved state carries the lists it was created with; those win.
   if (is.null(saved_state_path)) {
     saved_state <- NULL
+    check_dots_are_model_params(...)
     mpl <- model_param_list_create(...)
   } else {
     saved <- read_saved_state(saved_state_path)
@@ -329,6 +330,22 @@ pipeline <- function(EIR = 120,
   sim
 }
 
+# The dots of pipeline() go to model_param_list_create(); anything else is
+# almost always a misspelt pipeline() argument, so say so.
+check_dots_are_model_params <- function(...) {
+  dots <- names(list(...))
+  unknown <- setdiff(dots, names(formals(model_param_list_create)))
+  if (length(dots) && (is.null(dots) || any(!nzchar(dots)) || length(unknown))) {
+    stop(
+      "unknown argument(s) to pipeline(): ",
+      paste(if (length(unknown)) unknown else "<unnamed>", collapse = ", "),
+      ". Arguments in ... are passed to model_param_list_create()",
+      call. = FALSE
+    )
+  }
+  invisible(NULL)
+}
+
 # Read a saved state from disk and split it into the C++ state and the R-side
 # parameter lists it was created with.
 read_saved_state <- function(saved_state_path) {
@@ -391,8 +408,6 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, barcode, spatial,
     model_param_list = mpl
   )
 
-  # reset seed here as there is some randomness in equilibrium
-  set.seed(seed)
   eqSS <- equilibrium_ss_create(eqInit = eqInit)
 
   state <- list(
