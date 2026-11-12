@@ -53,8 +53,9 @@ For example to run the model for 10 years at an EIR of 1 and no seasonality for 
 
 ``` r
 out1 <- pipeline(EIR = 1, years = 10, N = 10000)
-## Seed set to 265508663
 ## magenta v1.4.0
+## Seed set to 28475535
+## Starting Stochastic Simulation for 10 years
 ```
 
 By default, magenta will run the simulation for the entire duration and return a few summaries of the human population at the end of the 10 years, which are stored within the `Loggers` list in `out1$output`. (The returned `magenta_sim` also carries the parameters, the schedule and the metadata of the run, see below.) For example, the human proportions in each infection state are the last 6 elements in `Loggers`. 
@@ -63,14 +64,14 @@ By default, magenta will run the simulation for the entire duration and return a
 ``` r
 out1
 ## <magenta_sim>
-##   call:     pipeline(EIR = 1, N = 10000, years = 10, seed = 265508663L)
+##   call:     pipeline(EIR = 1, N = 10000, years = 10, seed = 28475535L)
 ##   N: 10000   years: 10   EIR: 1
 ##   output:   loggers, 1 period(s), final = loggers
-##   seed:     265508663   version: 1.4.0
-##   elapsed:  13 secs
+##   seed:     28475535   version: 1.4.0
+##   elapsed:  11.3 secs
 as.data.frame(tail(out1$output$Loggers, 6))
-##          S          D          A          U          T          P
-## 1 0.857897 0.00153389 0.09589595 0.03892121 0.00101074 0.00474126
+##           S           D         A          U           T           P
+## 1 0.8588786 0.001609589 0.0951411 0.03865315 0.001019178 0.004698356
 ```
 
 (See the [model output vignette](Loggers.html) for more info about what is returned in Loggers.) 
@@ -82,8 +83,8 @@ If we want to save information about the model state over time we set `update_sa
 out2 <- pipeline(EIR = 1, years = 10, N = 10000, 
                  update_save = TRUE, update_length = 30,
                  seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Starting Stochastic Simulation for 10 years
 ```
 
@@ -105,33 +106,33 @@ abline(v = 1000, col = "red")
 ``` r
 head(as.data.frame(out2))
 ##   period day_end year Log_Counter Incidence Incidence_05 Successful_Treatments
-## 1      1      30    1          30  3.033333    0.5666667                    43
-## 2      2      60    1          30  4.100000    0.4000000                    54
-## 3      3      90    1          30  3.700000    0.7000000                    48
-## 4      4     120    1          30  3.033333    0.5333333                    40
-## 5      5     150    1          30  3.333333    0.5666667                    42
-## 6      6     180    1          30  3.866667    0.7000000                    49
+## 1      1      30    1          30  2.866667    0.4333333                    35
+## 2      2      60    1          30  4.066667    0.4000000                    62
+## 3      3      90    1          30  3.800000    0.5333333                    42
+## 4      4     120    1          30  3.266667    0.4333333                    42
+## 5      5     150    1          30  2.866667    0.5000000                    34
+## 6      6     180    1          30  3.733333    0.4666667                    39
 ##   Unsuccesful_Treatments_LPF Not_Treated daily_bite_counters
-## 1                          0          49               88332
-## 2                          0          62               88332
-## 3                          0          78               88325
-## 4                          0          53               88322
-## 5                          0          52               88325
-## 6                          0          70               88323
+## 1                          0          41               88333
+## 2                          0          73               88328
+## 3                          0          68               88335
+## 4                          0          59               88335
+## 5                          0          53               88330
+## 6                          0          67               88324
 ##   daily_infectious_bite_counters    Mos_S    Mos_E    Mos_I Time         S
-## 1                            596 9362.067 178.9000 71.03333   31 0.8472100
-## 2                            507 9381.433 167.3000 63.26667   61 0.8469767
-## 3                            464 9397.600 155.5667 58.83333   91 0.8487567
-## 4                            449 9397.067 158.6000 56.33333  121 0.8539600
-## 5                            430 9416.300 141.5667 54.13333  151 0.8588233
-## 6                            496 9405.933 145.1667 60.90000  181 0.8623900
+## 1                            584 9346.733 195.2000 70.06667   31 0.8443500
+## 2                            539 9380.167 165.2667 66.56667   61 0.8438967
+## 3                            525 9368.967 176.7000 66.33333   91 0.8475767
+## 4                            451 9395.833 160.4000 55.76667  121 0.8497500
+## 5                            447 9389.900 167.2333 54.86667  151 0.8559200
+## 6                            428 9408.433 150.4000 53.16667  181 0.8588300
 ##              D          A          U            T           P
-## 1 0.0010133333 0.09966000 0.04576667 0.0009300000 0.005420000
-## 2 0.0011066667 0.09579000 0.05010000 0.0012433333 0.004783333
-## 3 0.0013400000 0.09255667 0.05193000 0.0007166667 0.004700000
-## 4 0.0009766667 0.08939333 0.05173000 0.0007100000 0.003230000
-## 5 0.0010533333 0.08521000 0.05022333 0.0008800000 0.003810000
-## 6 0.0012666667 0.08393667 0.04739333 0.0006600000 0.004353333
+## 1 0.0008466667 0.10137000 0.04792333 0.0008700000 0.004640000
+## 2 0.0014200000 0.09821667 0.05086333 0.0010533333 0.004550000
+## 3 0.0011233333 0.09557333 0.05106000 0.0008333333 0.003833333
+## 4 0.0011766667 0.09324333 0.05058000 0.0009033333 0.004346667
+## 5 0.0010533333 0.08805667 0.05100333 0.0007100000 0.003256667
+## 6 0.0012900000 0.08402333 0.05172333 0.0009100000 0.003223333
 ```
 
 `magenta` starts simulations close to the equilibrium solution, but it is not quite perfect. For example, in the above plot there is a burn in period before the red vertical line. The required burn in time varies depending on the simulation parameters and so it is best to run the model a few times first to work out a suitable burn in time. For most simulations though a 40 year burn in period is more than sufficient. 
@@ -156,8 +157,8 @@ out3 <- pipeline(EIR = 1, years = 10, N = 10000,
                  update_save = TRUE, update_length = 30, 
                  output = save_loggers(final = "humans"), 
                  seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Starting Stochastic Simulation for 10 years
 ```
 
@@ -188,8 +189,12 @@ i <- which.min(last$Infection_States %in% c(0, 5))
 last$Strain_barcode_vectors[i]
 ## [[1]]
 ## [[1]][[1]]
-##  [1]  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE  TRUE
-## [13] FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE
+##  [1] FALSE FALSE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE FALSE
+## [13] FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE
+## 
+## [[1]][[2]]
+##  [1] FALSE  TRUE  TRUE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE
+## [13]  TRUE  TRUE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE  TRUE
 ```
 
 Above we have found the first individual who is infected and returned the barcodes for each parasite strain the individual has. For example, this individual had one parasite strain, as only one parasite barcode is returned. We can then look at the distribution of parasite strains in the population, for example, against their individual biting rate. 
@@ -210,10 +215,10 @@ With the parasite barcode information we can work out what an individual's compl
 
 m <- which.max(n_strains)
 message("Individual ", m, " has ", n_strains[m], " strains")
-## Individual 9109 has 17 strains
+## Individual 4648 has 21 strains
 un <- length(unique(last$Strain_barcode_vectors[[m]]))
 message("Individual ", m, " has ", un, " unique strains")
-## Individual 9109 has 16 unique strains
+## Individual 4648 has 20 unique strains
 ```
 The reason we also return the age and the detection immunity, `ID`, is that these are useful for when we want to estimate the COI in terms of what strains are likely to be observed based on their parasitaemia, which is inferred by their detection immunity, `ID`. These can be estimated using `convert_barcode_vectors` as follows, which below is used to show the COI of parsaites that have sufficiently high parasite density to be detected by microscopy if that was the only parasite strain in the infection. 
 
@@ -239,13 +244,14 @@ out4 <- pipeline(EIR = 1, years = 10, N = 10000,
                  update_save = TRUE, update_length = 30, 
                  output = save_loggers(final = "full"), 
                  seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Starting Stochastic Simulation for 10 years
 names(out4$output[[n]])
 ## [1] "population_List"                    "populations_event_and_strains_List"
 ## [3] "scourge_List"                       "parameters_List"                   
-## [5] "parameter_housekeeping_List"        "saved_inputs"
+## [5] "parameter_housekeeping_List"        "saved_inputs"                      
+## [7] "rng_state"
 ```
 The last list element now contains 4 lists:
 
@@ -268,8 +274,8 @@ out5 <- pipeline(EIR = 1, years = 10, N = 10000,
                  update_save = TRUE, update_length = 30, 
                  output = save_humans(final = "full"), 
                  seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Starting Stochastic Simulation for 10 years
 ```
 
@@ -281,8 +287,8 @@ out6 <- pipeline(EIR = 1, years = 10, N = 10000,
                  update_save = TRUE, update_length = 30, 
                  output = save_summary(final = "full"), 
                  seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Starting Stochastic Simulation for 10 years
 ```
 
@@ -292,18 +298,18 @@ When saving summaries of the genetic information, the mean COI, % polygenomic in
 ``` r
 out6$output[[1]]$summary_coi
 ##       age_bin     clinical    N     mean
-## 1  (-0.001,5] Asymptomatic  140 3.807143
-## 2  (-0.001,5]     Clinical    3 1.000000
-## 3  (-0.001,5]            P    3 0.000000
-## 4  (-0.001,5]            S 2084 0.000000
-## 5      (5,15] Asymptomatic  416 2.951923
-## 6      (5,15]     Clinical    7 1.000000
-## 7      (5,15]            P   18 0.000000
-## 8      (5,15]            S 2467 0.000000
-## 9    (15,100] Asymptomatic  893 2.883539
-## 10   (15,100]     Clinical   11 1.272727
-## 11   (15,100]            P   23 0.000000
-## 12   (15,100]            S 3935 0.000000
+## 1  (-0.001,5] Asymptomatic  148 4.277027
+## 2  (-0.001,5]     Clinical    2 1.000000
+## 3  (-0.001,5]            P    4 0.000000
+## 4  (-0.001,5]            S 2011 0.000000
+## 5      (5,15] Asymptomatic  409 3.119804
+## 6      (5,15]     Clinical   10 1.100000
+## 7      (5,15]            P   15 0.000000
+## 8      (5,15]            S 2542 0.000000
+## 9    (15,100] Asymptomatic  934 2.933619
+## 10   (15,100]     Clinical   13 1.307692
+## 11   (15,100]            P   17 0.000000
+## 12   (15,100]            S 3895 0.000000
 ```
 
 We can then plot the population mean COI over time as follows, using the last 100 values after an approximate burnin period:
@@ -337,8 +343,8 @@ out7 <- pipeline(EIR = 1, years = 10, N = 10000,
                  update_length = 30, 
                  output = save_summary(final = "full"), 
                  seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Starting Stochastic Simulation for 10 years
 ```
 
@@ -363,22 +369,22 @@ out8 <- pipeline(EIR = 1, years = 10, N = 10000,
                                        sample_states = c(1:4),
                                        final = "full"), 
                  seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Starting Stochastic Simulation for 10 years
 
 out8$output[[1]]$summary_coi
 ##     age_bin     clinical   N     mean
-## 1  (-0.1,5] Asymptomatic 140 3.807143
-## 2  (-0.1,5]     Clinical   3 1.000000
-## 3    (5,10] Asymptomatic 204 2.941176
-## 4    (5,10]     Clinical   2 1.000000
-## 5   (10,15] Asymptomatic 212 2.962264
-## 6   (10,15]     Clinical   5 1.000000
-## 7   (15,20] Asymptomatic 176 3.045455
-## 8   (15,20]     Clinical   4 1.250000
-## 9  (20,100] Asymptomatic 717 2.843794
-## 10 (20,100]     Clinical   7 1.285714
+## 1  (-0.1,5] Asymptomatic 148 4.277027
+## 2  (-0.1,5]     Clinical   2 1.000000
+## 3    (5,10] Asymptomatic 225 3.564444
+## 4    (5,10]     Clinical   3 1.000000
+## 5   (10,15] Asymptomatic 184 2.576087
+## 6   (10,15]     Clinical   7 1.142857
+## 7   (15,20] Asymptomatic 177 2.774011
+## 8   (15,20]     Clinical   8 1.125000
+## 9  (20,100] Asymptomatic 757 2.970938
+## 10 (20,100]     Clinical   5 1.600000
 ```
 
 The next is by passing your own function as `output`. See the [model output vignette](Loggers.html) for the signature required. 
@@ -396,8 +402,8 @@ out9 <- pipeline(EIR = 4, years = 20, N = 10000,
                  update_save = TRUE, 
                  update_length = 30, 
                  seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## 
 ## Running Deterministic Model for 20 years
 ## Starting Stochastic Simulation for 20 years
@@ -425,8 +431,8 @@ out10 <- pipeline(EIR = 1,
                  update_length = 30, 
                  output = save_summary(final = "full"), 
                  seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Starting Stochastic Simulation for 25 years
 ```
 
@@ -456,8 +462,8 @@ out11 <- pipeline(EIR = 1,
                  update_length = 30, 
                  output = save_summary(final = "full"), 
                  seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Starting Stochastic Simulation for 25 years
 
 pos <- 1:(length(out11$output) - 1)
@@ -483,8 +489,6 @@ admin <- "Kinshasa"
 ints <- intervention_grab(country = country, 
                           admin = admin,
                           year_range = year_range)
-## Requested: Kinshasa, Democratic Republic of the Congo
-## Returned: Kinshasa, Democratic Republic of the Congo
 
 # grab the importation from the migration model
 spl <- spl_grab(country, admin, year_range)
@@ -523,8 +527,8 @@ out12 <- pipeline(
   update_save = TRUE,
   output = save_loggers(final = "humans")
 )
-## Seed set to 693175740
 ## magenta v1.4.0
+## Seed set to 725576060
 ## Requested: Kinshasa, Democratic Republic of the Congo
 ## Returned: Kinshasa, Democratic Republic of the Congo
 ## Requested: Kinshasa, Democratic Republic of the Congo
@@ -572,15 +576,16 @@ out13 <- pipeline(EIR = 1,
                   num_loci = 24,
                   set_up_only = TRUE,
                   seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Set Up Grab
 
 names(out13)
 
 ## [1] "population_List"                    "populations_event_and_strains_List"
 ## [3] "scourge_List"                       "parameters_List"                   
-## [5] "parameter_housekeeping_List"        "saved_inputs"
+## [5] "parameter_housekeeping_List"        "saved_inputs"                      
+## [7] "rng_state"
 ```
 
 From this we can have a look at the strains to see the IBD representation used:
@@ -676,6 +681,216 @@ strains[1]
 ## [445] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
 ## [457] FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
 ## [469] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## 
+## [[1]][[3]]
+##   [1] FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+##  [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [37] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [61] FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+##  [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [97] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [109] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [121] FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [133] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+## [145] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [157] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [169] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [181] FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [193] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+## [205] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [217] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [229] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [241] FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [253] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+## [265] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [277] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [289] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [301] FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [313] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+## [325] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [337] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [349] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [361] FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [373] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+## [385] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [397] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [409] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [421] FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [433] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+## [445] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [457] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [469] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## 
+## [[1]][[4]]
+##   [1]  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE
+##  [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [37] FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [61]  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE
+##  [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [97] FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [109] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [121]  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [133] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE
+## [145] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [157] FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [169] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [181]  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [193] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE
+## [205] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [217] FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [229] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [241]  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [253] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE
+## [265] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [277] FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [289] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [301]  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [313] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE
+## [325] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [337] FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [349] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [361]  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [373] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE
+## [385] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [397] FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [409] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [421]  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [433] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE
+## [445] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [457] FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+## [469] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## 
+## [[1]][[5]]
+##   [1] FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE
+##  [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [37] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+##  [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [61] FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE
+##  [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [97] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [109] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [121] FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [133] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE
+## [145] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [157] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [169] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [181] FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [193] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE
+## [205] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [217] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [229] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [241] FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [253] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE
+## [265] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [277] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [289] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [301] FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [313] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE
+## [325] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [337] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [349] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [361] FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [373] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE
+## [385] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [397] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [409] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [421] FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [433] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE
+## [445] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [457] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [469] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## 
+## [[1]][[6]]
+##   [1]  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE
+##  [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [37] FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+##  [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [61]  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE
+##  [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [97] FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [109] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [121]  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [133] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE
+## [145] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [157] FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [169] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [181]  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [193] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE
+## [205] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [217] FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [229] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [241]  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [253] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE
+## [265] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [277] FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [289] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [301]  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [313] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE
+## [325] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [337] FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [349] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [361]  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [373] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE
+## [385] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [397] FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [409] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [421]  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [433] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE
+## [445] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [457] FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [469] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## 
+## [[1]][[7]]
+##   [1] FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE
+##  [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [37] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE
+##  [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [61] FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE
+##  [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [97] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [109] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [121] FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [133] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE
+## [145] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [157] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [169] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [181] FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [193] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE
+## [205] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [217] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [229] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [241] FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [253] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE
+## [265] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [277] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [289] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [301] FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [313] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE
+## [325] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [337] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [349] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [361] FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [373] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE
+## [385] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [397] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [409] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [421] FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [433] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE
+## [445] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [457] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE
+## [469] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
 ```
 
 The first infected individual is infected with two parasites as indicated with the two strain barcode vectors. The first is the binary representation of `rep(0, 24)` and the next is `rep(1,24)`. To convert these to integer vectors we can use the unexported `convert_ibd_barcode` passing in the barcode and the number of loci (`nl`) being simulated. So the first parasite in the second infected individual should be represented by a barcode of 2s give that the first individual had two strains (i.e. the 0s and the 1s).
@@ -683,7 +898,7 @@ The first infected individual is infected with two parasites as indicated with t
 
 ``` r
 magenta:::convert_ibd_barcode(strains[[2]][[1]], nl = 24)
-##  [1] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+##  [1] 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7
 ```
 
 We can then work out how many parasites have been allocated in the simulation to begin with:
@@ -693,8 +908,8 @@ We can then work out how many parasites have been allocated in the simulation to
 
 last_infected <- tail(strains,1)[[1]]
 magenta:::convert_ibd_barcode(last_infected[[length(last_infected)]], nl = 24)
-##  [1] 607 607 607 607 607 607 607 607 607 607 607 607 607 607 607 607 607 607 607
-## [20] 607 607 607 607 607
+##  [1] 506 506 506 506 506 506 506 506 506 506 506 506 506 506 506 506 506 506 506
+## [20] 506 506 506 506 506
 ```
 
 Clearly `2^20` will be plenty, even if we add in substantial importation, with importation in the IBD model importing the next integer barcode, i.e. `rep(608, 24)`. Just remember you need to factor in both the rate of importation, the length of the simulation and the size of the population. We can do the same check at the end of the simulation to make sure we allocated sufficient bits. 
@@ -714,8 +929,8 @@ out14 <- pipeline(EIR = 1,
                   update_length = 30, 
                   output = save_summary(final = "full"), 
                   seed = 123456789L)
-## Seed set to 123456789
 ## magenta v1.4.0
+## Seed set to 123456789
 ## Starting Stochastic Simulation for 10 years
 
 l <- length(out14$output)
@@ -728,7 +943,7 @@ converted_barcodes <- lapply(strains[infected], function(x) {
 
 max(unlist(converted_barcodes))
 
-## [1] 9026
+## [1] 10404
 ```
 
 Definitely plenty.
@@ -739,14 +954,14 @@ As when simulating normal barcodes, a summary of the genetics is made at each up
 ``` r
 out14$output[[1]]$summary_ibd
 ##       age_bin     clinical  N         mean
-## 1  (-0.001,5] Asymptomatic 14 0.0001123091
-## 2  (-0.001,5]     Clinical  1 0.0062893082
-## 3  (-0.001,5]            P  0          NaN
-## 4  (-0.001,5]            S  0          NaN
-## 5      (5,15] Asymptomatic 27 0.0001946059
-## 6      (5,15]     Clinical  1 0.0018343816
-## 7      (5,15]            S  0          NaN
-## 8    (15,100] Asymptomatic 62 0.0002600948
+## 1  (-0.001,5] Asymptomatic  8 0.0000000000
+## 2  (-0.001,5]            S  0          NaN
+## 3      (5,15] Asymptomatic 23 0.0003566130
+## 4      (5,15]     Clinical  1 0.0019762846
+## 5      (5,15]            P  0          NaN
+## 6      (5,15]            S  0          NaN
+## 7    (15,100] Asymptomatic 37 0.0001483564
+## 8    (15,100]     Clinical  1 0.0014763780
 ## 9    (15,100]            P  0          NaN
 ## 10   (15,100]            S  0          NaN
 ```
@@ -757,14 +972,14 @@ And for iIBD:
 ``` r
 out14$output[[1]]$summary_within_ibd
 ##       age_bin     clinical  N mean
-## 1  (-0.001,5] Asymptomatic  8    0
-## 2  (-0.001,5]     Clinical  0  NaN
-## 3  (-0.001,5]            P  0  NaN
-## 4  (-0.001,5]            S  0  NaN
-## 5      (5,15] Asymptomatic 19    0
-## 6      (5,15]     Clinical  0  NaN
-## 7      (5,15]            S  0  NaN
-## 8    (15,100] Asymptomatic 23    0
+## 1  (-0.001,5] Asymptomatic  7    0
+## 2  (-0.001,5]            S  0  NaN
+## 3      (5,15] Asymptomatic 16    0
+## 4      (5,15]     Clinical  1    0
+## 5      (5,15]            P  0  NaN
+## 6      (5,15]            S  0  NaN
+## 7    (15,100] Asymptomatic 13    0
+## 8    (15,100]     Clinical  0  NaN
 ## 9    (15,100]            P  0  NaN
 ## 10   (15,100]            S  0  NaN
 ```

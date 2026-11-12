@@ -47,8 +47,9 @@ time step.
 
 ``` r
 out <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L)
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
+## Starting Stochastic Simulation for 3 years
 out
 ## <magenta_sim>
 ##   call:     pipeline(EIR = 5, ft = 0.4, N = 1000, years = 3, seed = 1L)
@@ -78,8 +79,8 @@ subpatent, treated and prophylactic.
 
 ``` r
 as.data.frame(out$output$Loggers[c("S", "D", "A", "U", "T", "P")])
-##           S           D         A         U           T          P
-## 1 0.6158804 0.003590868 0.2853543 0.0826347 0.002294064 0.01024566
+##           S           D         A          U           T          P
+## 1 0.6022603 0.004309589 0.3011836 0.07592877 0.002742466 0.01357534
 ```
 
 **Per individual vectors.** `Ages` (in days), `InfectionStates` coded `0:5` in
@@ -108,11 +109,11 @@ rates. `daily_mutations_per_loci` counts mutations at each barcode locus.
 ``` r
 str(out$output$Loggers$Treatments)
 ## List of 5
-##  $ Successful_Treatments         : num 448
+##  $ Successful_Treatments         : num 205
 ##  $ Unsuccesful_Treatments_LPF    : num 0
-##  $ Not_Treated                   : num 690
-##  $ daily_bite_counters           : int 972234
-##  $ daily_infectious_bite_counters: int 10231
+##  $ Not_Treated                   : num 277
+##  $ daily_bite_counters           : int 324138
+##  $ daily_infectious_bite_counters: int 3807
 ```
 
 `Successful_Treatments` and `Unsuccesful_Treatments_LPF` are counts of
@@ -130,14 +131,14 @@ the simulation is run with update saves:
 ``` r
 out_u <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   update_save = TRUE, update_length = 90)
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
 str(out_u$output[[1]]$Mosquitoes)
 ## List of 3
 ##  $ Mos_S: num 2775
-##  $ Mos_E: num 91.3
-##  $ Mos_I: num 34.2
+##  $ Mos_E: num 89.5
+##  $ Mos_I: num 35.4
 ```
 
 ---
@@ -195,33 +196,33 @@ every scalar logger as a column:
 ``` r
 head(as.data.frame(out_u))
 ##   period day_end year Log_Counter Incidence Incidence_05 Successful_Treatments
-## 1      1      90    1          90 0.9333333    0.2555556                    35
-## 2      2     180    1          90 0.6888889    0.2111111                    25
-## 3      3     270    1          90 1.0111111    0.2444444                    35
-## 4      4     360    1          90 1.0888889    0.3111111                    31
-## 5      5     450    1          90 1.1888889    0.3555556                    36
-## 6      6     540    2          90 1.1000000    0.3000000                    39
+## 1      1      90    1          90 0.8555556    0.2333333                    38
+## 2      2     180    1          90 0.6777778    0.2444444                    25
+## 3      3     270    1          90 1.0777778    0.2777778                    33
+## 4      4     360    1          90 1.0777778    0.3555556                    35
+## 5      5     450    1          90 1.1666667    0.3555556                    39
+## 6      6     540    2          90 1.1333333    0.2888889                    44
 ##   Unsuccesful_Treatments_LPF Not_Treated daily_bite_counters
-## 1                          0          51               79898
-## 2                          0          36               79899
-## 3                          0          56               79927
-## 4                          0          63               79929
-## 5                          0          75               79942
-## 6                          0          58               79922
-##   daily_infectious_bite_counters    Mos_S     Mos_E    Mos_I Time         S
-## 1                            840 2774.511  91.28889 34.20000   91 0.6035556
-## 2                            674 2798.311  73.78889 27.90000  181 0.6282222
-## 3                            748 2782.156  86.67778 31.16667  271 0.6429222
-## 4                            833 2773.122  93.10000 33.77778  361 0.6336444
-## 5                            857 2766.833  98.15556 35.01111  451 0.5979556
-## 6                            992 2757.833 100.84444 41.32222  541 0.5804889
+## 1                          0          36               79900
+## 2                          0          39               79892
+## 3                          0          62               79895
+## 4                          0          64               79906
+## 5                          0          61               79923
+## 6                          0          59               79924
+##   daily_infectious_bite_counters    Mos_S    Mos_E    Mos_I Time         S
+## 1                            871 2775.133 89.45556 35.41111   91 0.6274556
+## 2                            714 2782.067 87.61111 30.32222  181 0.6284222
+## 3                            727 2781.500 88.07778 30.42222  271 0.6252333
+## 4                            799 2768.000 99.00000 33.00000  361 0.6268222
+## 5                            820 2770.011 95.80000 34.18889  451 0.6282556
+## 6                            836 2765.333 99.80000 34.86667  541 0.6364667
 ##             D         A          U           T           P
-## 1 0.003800000 0.2716000 0.10931111 0.002077778 0.009655556
-## 2 0.001955556 0.2492111 0.11082222 0.001511111 0.008277778
-## 3 0.003733333 0.2494000 0.09356667 0.002244444 0.008133333
-## 4 0.003677778 0.2706778 0.08080000 0.002255556 0.008944444
-## 5 0.004388889 0.3039444 0.08367778 0.001977778 0.008055556
-## 6 0.005022222 0.3158556 0.08584444 0.002366667 0.010422222
+## 1 0.002755556 0.2493333 0.10610000 0.002888889 0.011466667
+## 2 0.002511111 0.2518889 0.10541111 0.001566667 0.010200000
+## 3 0.003200000 0.2572222 0.10392222 0.002111111 0.008311111
+## 4 0.003511111 0.2628556 0.09378889 0.001844444 0.011177778
+## 5 0.003522222 0.2684444 0.08961111 0.002411111 0.007755556
+## 6 0.003144444 0.2659556 0.07982222 0.002844444 0.011766667
 ```
 
 ### Reproducibility metadata
@@ -256,8 +257,8 @@ condense them into summary tables:
 out_s <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   update_save = TRUE, update_length = 90,
                   output = save_summary(final = "full"))
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
 names(out_s$output[[1]])
 ##  [1] "summary_coi"                "summary_coi_detected"      
@@ -286,12 +287,12 @@ names(out_s$output[[1]])
 ``` r
 head(out_s$output[[1]]$summary_coi)
 ##      age_bin     clinical   N     mean
-## 1 (-0.001,5] Asymptomatic  44 1.818182
-## 2 (-0.001,5]     Clinical   1 1.000000
-## 3 (-0.001,5]            P   2 0.000000
-## 4 (-0.001,5]            S 172 0.000000
-## 5     (5,15] Asymptomatic 105 2.438095
-## 6     (5,15]     Clinical   3 1.333333
+## 1 (-0.001,5] Asymptomatic  50 2.100000
+## 2 (-0.001,5]     Clinical   2 2.500000
+## 3 (-0.001,5]            P   5 0.000000
+## 4 (-0.001,5]            S 178 0.000000
+## 5     (5,15] Asymptomatic 107 2.327103
+## 6     (5,15]     Clinical   4 1.500000
 ```
 
 Age bins come from `age_breaks` and the infection states included come from
@@ -309,8 +310,8 @@ out_af <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                    num_loci = 6, plaf = rep(0.2, 6),
                    update_save = TRUE, update_length = 90,
                    output = save_summary(genetics = "allele_freqs"))
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
 names(out_af$output[[1]])
 ##  [1] "af"                         "succesfull_treatments"     
@@ -320,7 +321,7 @@ names(out_af$output[[1]])
 ##  [9] "pcr_prev"                   "dat"                       
 ## [11] "micro_2_10"
 round(out_af$output[[1]]$af, 3)
-## [1] 0.201 0.223 0.218 0.187 0.201 0.221
+## [1] 0.215 0.203 0.203 0.166 0.198 0.235
 ```
 
 `genetics = "df"` returns the whole sampled data frame from `pop_strains_df()`
@@ -347,8 +348,8 @@ there rather than the loggers:
 out_h <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   update_save = TRUE, update_length = 365,
                   output = save_loggers(final = "humans"))
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
 names(out_h$output[[length(out_h$output)]])
 ## [1] "Infection_States"                            
@@ -367,12 +368,14 @@ simulation:
 ``` r
 out_f <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   output = save_loggers(final = "full"))
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
+## Starting Stochastic Simulation for 3 years
 names(out_f$output)
 ## [1] "population_List"                    "populations_event_and_strains_List"
 ## [3] "scourge_List"                       "parameters_List"                   
-## [5] "parameter_housekeeping_List"        "saved_inputs"
+## [5] "parameter_housekeeping_List"        "saved_inputs"                      
+## [7] "rng_state"
 ```
 
 `save_humans()` and `save_full()` keep the same two things after *every*
@@ -402,11 +405,11 @@ sim_restore(state_file)
 ##   N: 1000   day: 1096
 ##   from:     pipeline(EIR = 5, ft = 0.4, N = 1000, years = 3, output = save_logg...
 
-out_cont <- pipeline(EIR = 5, N = 1000, years = 2, ft = 0.4, seed = 2L,
+out_cont <- pipeline(EIR = 5, N = 1000, years = 2, ft = 0.4,
                      saved_state_path = state_file,
                      update_save = TRUE, update_length = 365)
-## Seed set to 2
 ## magenta v1.4.0
+## Random number generator restored from the saved state
 ## Starting Stochastic Simulation for 2 years
 
 # the clock carries on from where the saved state stopped
@@ -419,11 +422,14 @@ Three days of work are saved by knowing the following.
 1. The saved state must have been produced with a saver whose
    `final = "full"` (or with `save_full()`). A run that only kept the loggers
    cannot be saved, and `sim_save()` stops with a message saying so.
-2. The **saved parameter lists win**. `barcode_list`, `spatial_list`,
-   `drug_list`, `vector_adaptation_list` and `nmf_list` are all taken from the
-   file, so passing a different `drug_list` to the restarting call has no
-   effect. To change a drug policy partway through a run, do it with the yearly
-   vectors (`resistance_flag`, `ft`) rather than by restarting.
+2. The **saved parameter lists win**. The core, drug, housekeeping, nmf,
+   vector adaptation and barcode lists and the spatial settings are all taken
+   from the file; passing a different one to the restarting call is an error.
+   The yearly inputs (`ft`, `plaf`, `resistance_flag`, the importation
+   matrices) are for the new years and may be given. To change a drug policy
+   partway through a run, do it with the yearly vectors rather than by
+   restarting. The random number generator carries on from where the saved
+   run stopped unless you pass `seed`.
 3. `update_saved_state_barcode_plaf()` exists to edit the barcodes inside a
    saved state, which is the supported way to introduce a new allele into a
    population you have already burned in.
@@ -452,15 +458,15 @@ my_saves <- function(state, period, params) {
 out_custom <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                        update_save = TRUE, update_length = 90,
                        output = my_saves)
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
 str(out_custom$output[[1]])
 ## List of 4
 ##  $ period    : int 1
 ##  $ time      : int 91
-##  $ prevalence: num 0.387
-##  $ treated   : num 35
+##  $ prevalence: num 0.361
+##  $ treated   : num 38
 ```
 
 The source of `save_summary()` is the reference implementation and is worth

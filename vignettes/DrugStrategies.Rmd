@@ -119,16 +119,16 @@ treatments that use each drug, and must be the same length as `drugs`.
 out_mft <- run_strategy(
   strategy_list(mft_flag = TRUE, partner_drug_ratios = c(1/3, 1/3, 1/3))
 )
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 20 years
 
 head(round(usage_over_time(out_mft), 1), 4)
 ##      AL ASAQ DHA-PPQ
-## [1,] 12    1       2
-## [2,] 11    9      10
-## [3,] 20    9      13
-## [4,] 15   17      13
+## [1,] 17    1       3
+## [2,]  6   12      10
+## [3,] 15   10       9
+## [4,] 15    9      16
 ```
 
 All three drugs are in use at once, in roughly the requested proportions. An
@@ -176,8 +176,8 @@ out_seq <- run_strategy(
                 sequential_cycling = 0.10,
                 sequential_update = 3)
 )
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 20 years
 ## Sequential cycling: switched to drug 1
 ## Sequential cycling: switched to drug 2
@@ -207,8 +207,11 @@ plot_usage(out_seq, main = "Sequential cycling at 10% treatment failure")
 
 Three things about sequential cycling are easy to trip over.
 
-1. The switch is evaluated in R **between update intervals**, inside
-   `pipeline()`. It therefore only happens when `update_save = TRUE`.
+1. The switch is evaluated in R **between periods**, inside `pipeline()`:
+   every `update_length` days with `update_save = TRUE`, otherwise once a
+   year. Sequential cycling reads the treatment failure the saver recorded,
+   so it needs `update_save = TRUE` with `save_summary()`; temporal cycling
+   needs neither.
 2. It only happens when `resistance_flag` is `TRUE` for that year. If you stage
    resistance so that it is inactive during a burn-in, cycling is inactive then
    too.
@@ -234,8 +237,8 @@ out_temporal <- run_strategy(
                 drug_choice = 0,
                 temporal_cycling = 5)
 )
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 20 years
 
 plot_usage(out_temporal, main = "Temporal cycling every 5 years")
@@ -257,8 +260,8 @@ out_single <- run_strategy(
   strategy_list(mft_flag = FALSE, partner_drug_ratios = c(0, 0, 1),
                 drug_choice = 2)
 )
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 20 years
 
 tfs <- cbind(
@@ -327,8 +330,8 @@ out_nmf <- pipeline(
   nmf_list = nmf,
   seed = 1L
 )
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 20 years
 
 ppq <- "plasmepsin 2-3 copy number"

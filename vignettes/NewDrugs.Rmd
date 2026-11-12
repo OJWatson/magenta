@@ -116,8 +116,8 @@ out_new <- pipeline(
   output = save_summary(genetics = "allele_freqs"),
   drug_list = dl_new, seed = 1L
 )
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 12 years
 ```
 
@@ -317,19 +317,19 @@ data.frame(
                  oocyst_reduction_by_artemisinin = 0.01))
   )
 )
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 12 years
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 12 years
-## Seed set to 1
 ## magenta v1.4.0
+## Seed set to 1
 ## Starting Stochastic Simulation for 12 years
 ##               scenario pfpr_2_10
-## 1          no blocking 0.4447921
-## 2     default blocking 0.4456503
-## 3 99% oocyst reduction 0.4348484
+## 1          no blocking 0.4697207
+## 2     default blocking 0.4775913
+## 3 99% oocyst reduction 0.4662321
 ```
 
 Even a 99% reduction in oocysts barely moves prevalence, because the mosquito
