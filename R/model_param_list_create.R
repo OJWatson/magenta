@@ -4,7 +4,8 @@
 #' \code{model_param_list_create} creates list of model parameters to be used
 #' within \code{equilibrium_init_create}
 #'
-#' @param eta Death rate for expoential population distribtuion, i.e. 1/Mean Population Age. Default = 0.0001305
+#' @param eta Death rate for exponential population distribution, i.e. 1/Mean
+#'   Population Age. Default = 0.0001305
 #' @param rho Age-dependent biting parameter. Default = 0.85
 #' @param a0 Age-dependent biting parameter. Default = 2920
 #' @param sigma2 Variance of the log heterogeneity in biting rates. Default = 1.67
@@ -58,7 +59,8 @@
 #' @param dEL Development time of early stage larvae. Default = 6.64
 #' @param dLL Development time of late stage larvae. Default = 3.72
 #' @param dPL Development time of pupae. Default = 0.643
-#' @param gammaL Relative effect of density dependence on late instars relative to early instars. Default = 13.25
+#' @param gammaL Relative effect of density dependence on late instars relative
+#'   to early instars. Default = 13.25
 #' @param km Seasonal carrying capacity. Default = 11
 #' @param cm Seasonal birth rate. Default = 0.05
 #' @param betaL Number of eggs laid per day per mosquito. Default = 21.2
@@ -256,7 +258,9 @@ model_param_list_create <- function(
   # {White et al. 2011 Parasites and Vectors}
   mp.list$eov <- betaL / mu0 * (exp(mu0 / mp.list$fv0) - 1)
   mp.list$b_lambda <- (gammaL * muLL / muEL - dEL / dLL + (gammaL - 1) * muLL * dEL)
-  mp.list$lambda <- -0.5 * mp.list$b_lambda + sqrt(0.25 * mp.list$b_lambda^2 + gammaL * betaL * muLL * dEL / (2 * muEL * mu0 * dLL * (1 + dPL * muPL)))
+  mp.list$lambda <- -0.5 * mp.list$b_lambda +
+    sqrt(0.25 * mp.list$b_lambda^2 +
+      gammaL * betaL * muLL * dEL / (2 * muEL * mu0 * dLL * (1 + dPL * muPL)))
 
   # ITN/IRS parameters
   mp.list$num_int <- num_int
@@ -266,7 +270,10 @@ model_param_list_create <- function(
   mp.list$pop_split <- rep(1 / num_int, num_int)
 
   # {No intervention} {ITN only} {IRS only} {Both ITN and IRS}
-  mp.list$cov <- c((1 - itn_cov) * (1 - irs_cov), itn_cov * (1 - irs_cov), (1 - itn_cov) * irs_cov, itn_cov * irs_cov)
+  mp.list$cov <- c(
+    (1 - itn_cov) * (1 - irs_cov), itn_cov * (1 - irs_cov),
+    (1 - itn_cov) * irs_cov, itn_cov * irs_cov
+  )
   mp.list$d_ITN0 <- d_ITN0
   mp.list$r_ITN0 <- r_ITN0
   mp.list$r_ITN1 <- r_ITN1
@@ -276,8 +283,6 @@ model_param_list_create <- function(
   mp.list$itn_half_life <- itn_half_life
   mp.list$IRS_interval <- IRS_interval
   mp.list$ITN_interval <- ITN_interval
-  mp.list$irs_half_life <- 0.5 * mp.list$DY
-  mp.list$itn_half_life <- 2.64 * mp.list$DY
   mp.list$irs_loss <- log(2) / mp.list$irs_half_life
   mp.list$itn_loss <- log(2) / mp.list$itn_half_life
 

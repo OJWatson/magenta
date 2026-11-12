@@ -30,7 +30,8 @@ summarySE <- function(data = NULL, measurevar = "COI",
 #' @param groupvars What are we summarise by
 #' @param mean_only Are we just calculating the mean. Default = TRUE
 #' @keywords internal
-summarySE_mean_only <- function(data = NULL, measurevar = "COI", groupvars = c("Age_Bin", "State"), mean_only = TRUE) {
+summarySE_mean_only <- function(data = NULL, measurevar = "COI",
+                                groupvars = c("Age_Bin", "State"), mean_only = TRUE) {
   if (!mean_only) {
     return(summarySE(data, measurevar, groupvars))
   } else {
@@ -387,7 +388,10 @@ validate_plaf <- function(barcode_matrix, target_plaf, context) {
     stop(sprintf(
       "Failed to match target PLAF for %s. Expected %s but obtained %s.",
       context,
-      paste(paste(round(target_plaf * nrow(barcode_matrix)), collapse = ", "), "out of", nrow(barcode_matrix)),
+      paste(
+        paste(round(target_plaf * nrow(barcode_matrix)), collapse = ", "),
+        "out of", nrow(barcode_matrix)
+      ),
       paste(colSums(barcode_matrix), collapse = ", ")
     ))
   }

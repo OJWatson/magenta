@@ -80,7 +80,8 @@ model_param_list_create(
 )
 }
 \arguments{
-\item{eta}{Death rate for expoential population distribtuion, i.e. 1/Mean Population Age. Default = 0.0001305}
+\item{eta}{Death rate for exponential population distribution, i.e. 1/Mean
+Population Age. Default = 0.0001305}
 
 \item{rho}{Age-dependent biting parameter. Default = 0.85}
 
@@ -188,7 +189,8 @@ model_param_list_create(
 
 \item{dPL}{Development time of pupae. Default = 0.643}
 
-\item{gammaL}{Relative effect of density dependence on late instars relative to early instars. Default = 13.25}
+\item{gammaL}{Relative effect of density dependence on late instars relative
+to early instars. Default = 13.25}
 
 \item{km}{Seasonal carrying capacity. Default = 11}
 

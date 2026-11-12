@@ -301,7 +301,7 @@ simulation_R <- function(param_list, seed) {
   ## -----------------------------------
   ## 2. From memory-continutation
   ## -----------------------------------
-  if (!is.null(param_list$years) & !is.null(param_list$statePtr)) {
+  if (!is.null(param_list$years) && !is.null(param_list$statePtr)) {
     ## Check if paramlist is correct length and has right variable names
     stopifnot(is.list(param_list))
     if (length(param_list) == 8) {
@@ -328,8 +328,8 @@ simulation_R <- function(param_list, seed) {
   ## -----------------------------------
   ## 3. From memory-continutation to saving
   ## -----------------------------------
-  if (is.null(param_list$finalizer) &
-    is.null(param_list$years) &
+  if (is.null(param_list$finalizer) &&
+    is.null(param_list$years) &&
     !is.null(param_list$statePtr)) {
     ## Check if paramlist is correct length and has right variable names
     stopifnot(is.list(param_list))

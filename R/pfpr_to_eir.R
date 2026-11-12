@@ -28,7 +28,7 @@ pfpr_to_eir_heuristic <- function(ft = 0,
 
   bm <- read.csv(system.file("extdata/bm.txt", package = "magenta"),
     sep = ",",
-    header = T
+    header = TRUE
   )
 
   if (!is.null(PfPR)) {
@@ -43,13 +43,12 @@ pfpr_to_eir_heuristic <- function(ft = 0,
   }
 
 
-  not_found <- TRUE
   if (is.null(age_range)) {
     age_low <- 1
     age_high <- length(age.vector)
   } else {
-    age_low <- which(eqInit$age > (age_range[1] * 365))[1]
-    age_high <- which(eqInit$age > (age_range[2] * 365))[1]
+    age_low <- which(age.vector > age_range[1])[1]
+    age_high <- which(age.vector > age_range[2])[1]
   }
 
   # while(not_found){
@@ -64,7 +63,8 @@ pfpr_to_eir_heuristic <- function(ft = 0,
     )
 
     if (!is.null(PfPR)) {
-      diff <- PR - (1 - sum(eqInit$init_S[age_low:age_high, , 1] + eqInit$init_P[age_low:age_high, , 1]) / sum(eqInit$den[age_low:age_high]))
+      uninfected <- eqInit$init_S[age_low:age_high, , 1] + eqInit$init_P[age_low:age_high, , 1]
+      diff <- PR - (1 - sum(uninfected) / sum(eqInit$den[age_low:age_high]))
     } else if ((!is.null(PfPR_micro))) {
       if (all_a) {
         diff <- PR - (sum(eqInit$init_D[age_low:age_high, , 1] +
@@ -82,7 +82,7 @@ pfpr_to_eir_heuristic <- function(ft = 0,
     }
 
     if (abs(diff) < 0.001) {
-      not_found <- FALSE
+      break
     } else {
       if (diff < 0) {
         if (abs(diff) > 0.01) {

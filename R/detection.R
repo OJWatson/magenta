@@ -10,7 +10,7 @@ fd <- function(age, fD0, aD, gammaD) {
 
 #' @noRd
 microscopy_detected <- function(ages, IDs, states, age_brackets = c(2 * 365, 10 * 365)) {
-  age_in <- ages < age_brackets[2] & ages > age_brackets(1)
+  age_in <- ages < age_brackets[2] & ages > age_brackets[1]
   dt <- sum(states %in% c(1, 4) & age_in) / sum(age_in)
   mpl <- model_param_list_create()
 
@@ -23,4 +23,3 @@ microscopy_detected <- function(ages, IDs, states, age_brackets = c(2 * 365, 10 
 
   return(dt + a)
 }
-

@@ -183,15 +183,13 @@ intervention_grab <- function(country, admin, year_range,
   ad_mat <- itn_2000_2015$admin[match_clean(admin, itn_2000_2015$admin)]
   c_mat <- itn_2000_2015$country[match_clean(country, itn_2000_2015$country)]
 
-  itn_cov <- itn_2000_2015$value[which(itn_2000_2015$admin == ad_mat & itn_2000_2015$country == c_mat)]
-  irs_cov <- irs_2000_2015$value[which(irs_2000_2015$admin == ad_mat & irs_2000_2015$country == c_mat)]
+  itn_rows <- itn_2000_2015$admin == ad_mat & itn_2000_2015$country == c_mat
+  irs_rows <- irs_2000_2015$admin == ad_mat & irs_2000_2015$country == c_mat
+  itn_cov <- itn_2000_2015$value[which(itn_rows)]
+  irs_cov <- irs_2000_2015$value[which(irs_rows)]
 
   # admatch for ft
-  if (is.null(options("quiet_admin"))) {
-    options("quiet_admin" = TRUE)
-  }
-
-  adm <- admin_match(admin, country, quiet = options("quiet_admin"))
+  adm <- admin_match(admin, country, quiet = TRUE)
   ft <- admin_units_seasonal$ft[adm]
   ft <- rep(ft, 16)
 
@@ -454,9 +452,10 @@ update_saves <- function(res, i, sim.out, sample_states,
       if (genetics_df_without_summarising) {
         res[[i]] <- list()
         if (only_allele_freqs) {
-          res[[i]]$af <- pop_alf(df$nums[unlist(lapply(df$barcode_states, length)) > 0], num_loci, weighted = weighted)
+          has_strains <- unlist(lapply(df$barcode_states, length)) > 0
+          res[[i]]$af <- pop_alf(df$nums[has_strains], num_loci, weighted = weighted)
           if (save_lineages) {
-            res[[i]]$lineage <- lineages(df$nums[unlist(lapply(df$barcode_states, length)) > 0], num_loci)
+            res[[i]]$lineage <- lineages(df$nums[has_strains], num_loci)
           }
         } else {
           res[[i]]$df <- df
@@ -487,14 +486,17 @@ update_saves <- function(res, i, sim.out, sample_states,
       res[[i]]$succesfull_treatments <- sim.out$Loggers$Treatments$Successful_Treatments
       res[[i]]$unsuccesful_treatments_lpf <- sim.out$Loggers$Treatments$Unsuccesful_Treatments_LPF
       res[[i]]$not_treated <- sim.out$Loggers$Treatments$Not_Treated
-      res[[i]]$treatment_failure <- res[[i]]$unsuccesful_treatments_lpf / (res[[i]]$unsuccesful_treatments_lpf + res[[i]]$succesfull_treatments)
-      res[[i]]$daily_pop_eir <- sim.out$Loggers$Treatments$daily_infectious_bite_counters / sim.out$Loggers$Log_Counter * 365 / length(sim.out$Loggers$Ages)
+      res[[i]]$treatment_failure <- res[[i]]$unsuccesful_treatments_lpf /
+        (res[[i]]$unsuccesful_treatments_lpf + res[[i]]$succesfull_treatments)
+      res[[i]]$daily_pop_eir <- sim.out$Loggers$Treatments$daily_infectious_bite_counters /
+        sim.out$Loggers$Log_Counter * 365 / length(sim.out$Loggers$Ages)
       res[[i]]$mutations <- sim.out$Loggers$daily_mutations_per_loci
 
       if (any(is.na(res[[i]]$treatment_failure))) {
         res[[i]]$treatment_failure[is.na(res[[i]]$treatment_failure)] <- 0
       }
-      res[[i]]$overall_treatment_failure <- sum(res[[i]]$unsuccesful_treatments_lpf) / (sum(res[[i]]$unsuccesful_treatments_lpf + res[[i]]$succesfull_treatments))
+      res[[i]]$overall_treatment_failure <- sum(res[[i]]$unsuccesful_treatments_lpf) /
+        (sum(res[[i]]$unsuccesful_treatments_lpf + res[[i]]$succesfull_treatments))
       if (is.na(res[[i]]$overall_treatment_failure)) {
         res[[i]]$overall_treatment_failure <- 0
       }
@@ -508,7 +510,8 @@ update_saves <- function(res, i, sim.out, sample_states,
         sapply(sim.out$Loggers$Ages, fd, mpl$fD0, mpl$aD, mpl$gammaD)
       )
 
-      a_10 <- sum(sim.out$Loggers$InfectionStates %in% 2 & two_ten) / sum(two_ten) * mean(micro_det[two_ten])
+      a_10 <- sum(sim.out$Loggers$InfectionStates %in% 2 & two_ten) / sum(two_ten) *
+        mean(micro_det[two_ten])
       res[[i]]$pcr_prev <- sum(unlist(sim.out$Loggers[c("D", "A", "U", "T")]))
       res[[i]]$dat <- sum(unlist(sim.out$Loggers[c("D", "A", "T")]))
       res[[i]]$micro_2_10 <- dt_10 + a_10

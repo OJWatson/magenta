@@ -43,7 +43,9 @@ test_that("update_saved_state_barcode_plaf adjusts barcode PLAF", {
   }
 
   strain_plaf <- get_plaf(updated$populations_event_and_strains_List$Strain_barcode_vectors)
-  infection_plaf <- get_plaf(updated$populations_event_and_strains_List$Infection_barcode_realisation_vectors)
+  infection_plaf <- get_plaf(
+    updated$populations_event_and_strains_List$Infection_barcode_realisation_vectors
+  )
   male_plaf <- get_plaf(updated$scourge_List$Mosquito_Oocyst_barcode_male_vectors)
   female_plaf <- get_plaf(updated$scourge_List$Mosquito_Oocyst_barcode_female_vectors)
 
@@ -52,11 +54,16 @@ test_that("update_saved_state_barcode_plaf adjusts barcode PLAF", {
   expect_equal(male_plaf, target)
   expect_equal(female_plaf, target)
 
+  to_matrix <- function(barcode_list) {
+    magenta:::flat_to_matrix(
+      magenta:::flatten_barcode_vectors(barcode_list)$flat, length(target)
+    )
+  }
   combined_matrix <- rbind(
-    magenta:::flat_to_matrix(magenta:::flatten_barcode_vectors(updated$populations_event_and_strains_List$Strain_barcode_vectors)$flat, length(target)),
-    magenta:::flat_to_matrix(magenta:::flatten_barcode_vectors(updated$populations_event_and_strains_List$Infection_barcode_realisation_vectors)$flat, length(target)),
-    magenta:::flat_to_matrix(magenta:::flatten_barcode_vectors(updated$scourge_List$Mosquito_Oocyst_barcode_male_vectors)$flat, length(target)),
-    magenta:::flat_to_matrix(magenta:::flatten_barcode_vectors(updated$scourge_List$Mosquito_Oocyst_barcode_female_vectors)$flat, length(target))
+    to_matrix(updated$populations_event_and_strains_List$Strain_barcode_vectors),
+    to_matrix(updated$populations_event_and_strains_List$Infection_barcode_realisation_vectors),
+    to_matrix(updated$scourge_List$Mosquito_Oocyst_barcode_male_vectors),
+    to_matrix(updated$scourge_List$Mosquito_Oocyst_barcode_female_vectors)
   )
 
   expect_equal(colMeans(combined_matrix), target)

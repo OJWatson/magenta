@@ -56,8 +56,10 @@ convert_barcode_vectors <- function(sim_save, ID,
   # Calcuate COI based on PCR detectability defined in Imperial College Model
   COI_pcr_imperial <- function(i) {
     a <- length(unique(int.out[[i]][which(sim_save$Strain_infection_state_vectors[[i]] == 1)]))
-    a <- a + round(length(unique(int.out[[i]][which(sim_save$Strain_infection_state_vectors[[i]] == 2)])) * (micro_det[i]^mpl$alphaA))
-    a <- a + round(length(unique(int.out[[i]][which(sim_save$Strain_infection_state_vectors[[i]] == 3)])) * (micro_det[i]^mpl$alphaU))
+    states_i <- sim_save$Strain_infection_state_vectors[[i]]
+    n_unique <- function(state) length(unique(int.out[[i]][which(states_i == state)]))
+    a <- a + round(n_unique(2) * (micro_det[i]^mpl$alphaA))
+    a <- a + round(n_unique(3) * (micro_det[i]^mpl$alphaU))
     a <- a + length(unique(int.out[[i]][which(sim_save$Strain_infection_state_vectors[[i]] == 4)]))
     return(a)
   }
@@ -65,7 +67,6 @@ convert_barcode_vectors <- function(sim_save, ID,
   # Calculate COI based on alternative PCR detectability method
   COI_pcr_alternative <- function(i) {
     st <- sim_save$Strain_infection_state_vectors[[i]]
-    stch <- sim_save$Strain_day_of_infection_state_change_vectors[[i]]
     staying <- st == 1 | st == 4 | st == 2
     staying[st == 3] <- as.logical(rbinom(sum(st == 3), size = 1, micro_det[i]^mpl$alphaU))
     a <- length(unique(int.out[[i]][staying]))
@@ -75,7 +76,6 @@ convert_barcode_vectors <- function(sim_save, ID,
   # Calculate COI based on if parasites are microscopically detected
   COI_patent <- function(i) {
     st <- sim_save$Strain_infection_state_vectors[[i]]
-    stch <- sim_save$Strain_day_of_infection_state_change_vectors[[i]]
     staying <- st == 1 | st == 4
     staying[st == 2] <- as.logical(rbinom(sum(st == 2), size = 1, micro_det[i]))
     a <- length(unique(int.out[[i]][staying]))
@@ -86,7 +86,7 @@ convert_barcode_vectors <- function(sim_save, ID,
   if (!ibd) {
     if (!sub_patents_included) {
       COI <- rep(0, length(int.out))
-      for (i in 1:length(int.out)) {
+      for (i in seq_along(int.out)) {
         if (n.strains[i] != 0) {
           if (COI_type == "pcr_imperial") {
             COI[i] <- COI_pcr_imperial(i)
@@ -111,4 +111,3 @@ convert_barcode_vectors <- function(sim_save, ID,
 
   return(list("nums" = int.out, "COI" = COI))
 }
-

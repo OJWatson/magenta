@@ -8,8 +8,6 @@
 #'
 #' @keywords internal
 equilibrium_ss_create <- function(eqInit) {
-  maternal <- which.max(eqInit$age >= 20)
-
   ## create equilibrium state for return
   equilibrium_state <- list(
     "age_brackets" = eqInit$age_bounds,
@@ -102,51 +100,12 @@ spl_create <- function(spatial_type = 0,
       "island_imports_plaf_linked_flag" = island_imports_plaf_linked_flag
     )
 
-    # if metapop sspatial - NOT FINISHED!
+    # metapopulation spatial lists were never finished
   } else {
-    # # first work out how frequent importation is:
-    # hum_imp_rate <- human_importation_rate_vector[-which(is.na(human_importation_rate_vector))]
-    # mos_imp_rate <- mosquito_imporation_rate_vector[-which(is.na(mosquito_imporation_rate_vector))]
-    #
-    # # therefore we frst want to work out the number of transmission events that are due to importation and how large
-    # metapopulation_number <- which(is.na(human_importation_rate_vector))
-    # other_metapopulations <- seq_len(length(human_importation_rate_vector))[-metapopulation_number]
-    #
-    # cotransmission_import_locations <- table(
-    #   sample(other_metapopulations,
-    #          size = num_human_infs * sum(human_importation_rate_vector, na.rm = TRUE),
-    #          replace = TRUE, prob = hum_imp_rate
-    #   ))
-    #
-    # imported_cotransmission_frequences <- sapply(cotransmission_import_locations,
-    #                                              function(x) {
-    #                                                sample(cotransmission_vector, size = x)
-    #                                              })
-    #
-    # ## push these freqs to redis as "Exported_Cotransmission_Frequencies_x->metapopulation_number"
-    #
-    # ## repeat for oocysts (with some doubling...)
-    #
-    # ## grab all the required exports that are coming out of this sim
-    #
-    # ## pass that in as an exported_co.... etc
-    #
-    # ## and grab all the imported barcodes/oocysts and their frequencies if this is not the initialisation step
-    #
-    # ## create spatial_list with 6 vectors
-    #
-    #
-    # imported_cotransmission_events <- sapply(num_human_infs * hum_imp_rate, function(x) rep_len(cotransmission_freq_vector, x))
-    # imported_oocyst_events <- rep_len(oocyst_freq_vector, num_mos_infs * mos_imp_rate)
-    #
-    # spatial_list <- list(
-    #   "spatial_type" = spatial_type,
-    #   "cotransmission_freq_vector" = cotransmission_freq_vector,
-    #   "oocyst_freq_vector" = oocyst_freq_vector,
-    #   "imported_cotransmissions_events" = c(0, imported_cotransmission_events),
-    #   "imported_oocyst_events" = c(0, imported_oocyst_events)
-    # )
+    stop("metapopulation spatial lists are not implemented")
   }
+
+  spatial_list
 }
 
 
@@ -163,7 +122,7 @@ spl_create <- function(spatial_type = 0,
 #'
 #' @keywords internal
 generate_default_model <- function(ft, age, dat, generator, dde = TRUE) {
-  mod <- generator(
+  generator(
     init_S = dat$S,
     init_T = dat$T,
     init_D = dat$D,

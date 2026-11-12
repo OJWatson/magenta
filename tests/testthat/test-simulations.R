@@ -5,7 +5,10 @@ test_that("dependent plaf draws with 100% importation fixes plaf", {
   m <- 0.00084
   sp <- 0.22
   start_p <- 0.5
-  plaf <- matrix(c(rep(c(start_p, start_p, 0, 0, 0, 0), hd), rep(0, nl * tl)), ncol = nl, byrow = TRUE)
+  plaf <- matrix(
+    c(rep(c(start_p, start_p, 0, 0, 0, 0), hd), rep(0, nl * tl)),
+    ncol = nl, byrow = TRUE
+  )
 
 
   drug_list <-
@@ -105,7 +108,10 @@ test_that("Asymptomatic Prophylaxis Test", {
   m <- 0.00084
   sp <- 0.22
   start_p <- 0.5
-  plaf <- matrix(c(rep(c(start_p, start_p, 0, 0, start_p, 0), hd), rep(0, nl * tl)), ncol = nl, byrow = TRUE)
+  plaf <- matrix(
+    c(rep(c(start_p, start_p, 0, 0, start_p, 0), hd), rep(0, nl * tl)),
+    ncol = nl, byrow = TRUE
+  )
 
 
   drug_list <-
@@ -156,7 +162,9 @@ test_that("Asymptomatic Prophylaxis Test", {
     update_save = TRUE,
     human_update_save = TRUE,
     summary_saves_only = TRUE,
-    housekeeping_list = magenta:::housekeeping_list_create(quiet = TRUE, cluster = TRUE, quiet_test = FALSE),
+    housekeeping_list = magenta:::housekeeping_list_create(
+      quiet = TRUE, cluster = TRUE, quiet_test = FALSE
+    ),
     drug_list = drug_list,
     nmf_list = magenta:::nmf_list_create(nmf_flag = FALSE, prob_of_testing_nmf = 1),
     island_imports_plaf_linked_flag = TRUE
@@ -207,7 +215,10 @@ test_that("Fitness Test", {
   m <- 0.00084
   sp <- 0.22
   start_p <- 0.5
-  plaf <- matrix(c(rep(c(start_p, start_p, 0, 0, start_p, 0), hd), rep(0, nl * tl)), ncol = nl, byrow = TRUE)
+  plaf <- matrix(
+    c(rep(c(start_p, start_p, 0, 0, start_p, 0), hd), rep(0, nl * tl)),
+    ncol = nl, byrow = TRUE
+  )
 
 
   drug_list <-
@@ -258,7 +269,9 @@ test_that("Fitness Test", {
     update_save = TRUE,
     human_update_save = TRUE,
     summary_saves_only = TRUE,
-    housekeeping_list = magenta:::housekeeping_list_create(quiet = TRUE, cluster = TRUE, quiet_test = TRUE),
+    housekeeping_list = magenta:::housekeeping_list_create(
+      quiet = TRUE, cluster = TRUE, quiet_test = TRUE
+    ),
     drug_list = drug_list,
     nmf_list = magenta:::nmf_list_create(nmf_flag = FALSE, prob_of_testing_nmf = 1),
     island_imports_plaf_linked_flag = TRUE

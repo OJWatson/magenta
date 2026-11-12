@@ -56,12 +56,9 @@ admin_match <- function(admin = NULL, country = NULL, quiet = FALSE) {
         ignore.case = TRUE
       )
 
-      if (length(unique(ads$country[country_matches])) == 1) {
-        chosen.country <- unique(ads$country[country_matches])
-      } else {
+      if (length(unique(ads$country[country_matches])) != 1) {
         # if exact does not match try closest
         country_matches <- match_clean(country, ads$country)
-        chosen.country <- unique(ads$country[country_matches])
       }
 
       # find exact match
@@ -127,4 +124,3 @@ seasonal_profile <- function(admin = NULL, country = NULL) {
 
   return(y)
 }
-

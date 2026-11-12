@@ -39,8 +39,10 @@ equilibrium_init_create <- function(age_vector,
   ## Check Parameters
   if (!is.numeric(age_vector)) stop("age_vector provided is not numeric")
   if (!is.numeric(het_brackets)) stop("het_brackets provided is not numeric")
-  if (!(is.null(country) | is.character(country))) stop("country specified is not character string")
-  if (!(is.null(admin) | is.character(admin))) stop("admin specified is not character string")
+  if (!(is.null(country) || is.character(country))) {
+    stop("country specified is not character string")
+  }
+  if (!(is.null(admin) || is.character(admin))) stop("admin specified is not character string")
   if (!is.numeric(ft)) stop("ft provided is not numeric")
   if (!is.numeric(EIR)) stop("EIR provided is not numeric")
 
@@ -55,24 +57,23 @@ equilibrium_init_create <- function(age_vector,
   na <- as.integer(length(age)) # number of age groups
   nh <- as.integer(het_brackets) # number of heterogeneity groups
   h <- statmod::gauss.quad.prob(nh, dist = "normal")
-  age0 <- 2
-  age1 <- 10
   num_int <- mpl$num_int
 
   age_rate <- age_width <- age_mid_point <- den <- c()
-  for (i in 1:(na - 1))
-  {
+  for (i in 1:(na - 1)) {
     age_width[i] <- age[i + 1] - age[i]
-    age_rate[i] <- 1 / (age[i + 1] - age[i]) # vector of rates at which people leave each age group (1/age group width)
-    age_mid_point[i] <- 0.5 * (age[i] + age[i + 1]) # set age group vector to the midpoint of the group
+    # rate at which people leave each age group (1 / age group width)
+    age_rate[i] <- 1 / (age[i + 1] - age[i])
+    # midpoint of the age group
+    age_mid_point[i] <- 0.5 * (age[i] + age[i + 1])
   }
   age_rate[na] <- 0
 
 
   den <- 1 / (1 + age_rate[1] / mpl$eta)
-  for (i in 1:(na - 1))
-  {
-    den[i + 1] <- age_rate[i] * den[i] / (age_rate[i + 1] + mpl$eta) # proportion in each age_vector group
+  for (i in 1:(na - 1)) {
+    # proportion in each age_vector group
+    den[i + 1] <- age_rate[i] * den[i] / (age_rate[i + 1] + mpl$eta)
   }
 
   age59 <- which(age_vector * 12 > 59)[1] - 1 # index of age vector before age is >59 months
@@ -80,8 +81,7 @@ equilibrium_init_create <- function(age_vector,
 
   ## force of infection
   foi_age <- c()
-  for (i in 1:na)
-  {
+  for (i in 1:na) {
     foi_age[i] <- 1 - (mpl$rho * exp(-age[i] / mpl$a0)) # force of infection for each age group
   }
   fden <- foi_age * den
@@ -91,7 +91,8 @@ equilibrium_init_create <- function(age_vector,
   het_x <- h$nodes
   het_wt <- h$weights
   den_het <- outer(den, het_wt)
-  rel_foi <- exp(-mpl$sigma2 / 2 + sqrt(mpl$sigma2) * het_x) / sum(het_wt * exp(-mpl$sigma2 / 2 + sqrt(mpl$sigma2) * het_x))
+  het_foi <- exp(-mpl$sigma2 / 2 + sqrt(mpl$sigma2) * het_x)
+  rel_foi <- het_foi / sum(het_wt * het_foi)
 
   ## EIR
   EIRY_eq <- EIR # initial annual EIR
@@ -100,8 +101,7 @@ equilibrium_init_create <- function(age_vector,
 
   ## Immunity and FOI
   x_I <- den[1] / mpl$eta
-  for (i in 2:na)
-  {
+  for (i in 2:na) {
     x_I[i] <- den[i] / (den[i - 1] * age_rate[i - 1]) # temporary variables
   }
   fd <- 1 - (1 - mpl$fD0) / (1 + (age / mpl$aD)^mpl$gammaD)
@@ -109,8 +109,7 @@ equilibrium_init_create <- function(age_vector,
   # maternal immunity begins at a level proportional to the clinical
   # immunity of a 20 year old, this code finds that level
   age20i <- rep(0, na)
-  for (i in 2:na)
-  {
+  for (i in 2:na) {
     age20i[i] <- ifelse(age[i] >= (20 * mpl$DY) & age[i - 1] < (20 * mpl$DY),
       i, age20i[i - 1]
     )
@@ -130,10 +129,8 @@ equilibrium_init_create <- function(age_vector,
   cA_eq <- matrix(0, na, nh)
   FOIvij_eq <- matrix(0, na, nh)
   p_det_eq <- matrix(0, na, nh)
-  for (j in 1:nh)
-  {
-    for (i in 1:na)
-    {
+  for (j in 1:nh) {
+    for (i in 1:na) {
       IB_eq[i, j] <- (ifelse(i == 1, 0, IB_eq[i - 1, j]) +
         EIR_eq[i, j] / (EIR_eq[i, j] * mpl$uB + 1) * x_I[i]) / (1 + x_I[i] / mpl$dB)
       FOI_eq[i, j] <- EIR_eq[i, j] * ifelse(IB_eq[i, j] == 0, mpl$b0,
@@ -148,10 +145,8 @@ equilibrium_init_create <- function(age_vector,
     }
   }
   # needs to be calculated after because it references ICA
-  for (j in 1:nh)
-  {
-    for (i in 1:na)
-    {
+  for (j in 1:nh) {
+    for (i in 1:na) {
       ICM_init_eq[j] <- mpl$PM * (ICA_eq[age20l, j] + age_20_factor *
         (ICA_eq[age20u, j] - ICA_eq[age20l, j]))
       ICM_eq[i, j] <- ifelse(i == 1,
@@ -182,10 +177,8 @@ equilibrium_init_create <- function(age_vector,
   Z_eq[1, , 3] <- aD[1, ] * Z_eq[1, , 1]
   Z_eq[1, , 4] <- aP[1, ] * Z_eq[1, , 1]
 
-  for (j in 1:nh)
-  {
-    for (i in 2:na)
-    {
+  for (j in 1:nh) {
+    for (i in 2:na) {
       Z_eq[i, j, 1] <- (den_het[i, j] - delta[i] * (Z_eq[i - 1, j, 2] / betaT[i, j] +
         Z_eq[i - 1, j, 3] / betaD[i, j] +
         (mpl$rT * Z_eq[i - 1, j, 2] / betaT[i, j]
@@ -218,10 +211,8 @@ equilibrium_init_create <- function(age_vector,
   U_eq <- matrix(ncol = nh, nrow = na)
   S_eq <- matrix(ncol = nh, nrow = na)
 
-  for (i in 1:na)
-  {
-    for (j in 1:nh)
-    {
+  for (i in 1:na) {
+    for (j in 1:nh) {
       A_eq[i, j] <- (delta[i] * ifelse(i == 1, 0, A_eq[i - 1, j]) +
         FOI_eq[i, j] * (1 - phi_eq[i, j]) * Y_eq[i, j] +
         mpl$rD * D_eq[i, j]) / (betaA[i, j] + FOI_eq[i, j] * (1 - phi_eq[i, j]))
@@ -244,11 +235,12 @@ equilibrium_init_create <- function(age_vector,
   mv0 <- omega * EIRd_eq / (Iv_eq * mpl$av0)
 
   # larval states
-  K0 <- 2 * mv0 * mpl$dLL * mpl$mu0 * (1 + mpl$dPL * mpl$muPL) * mpl$gammaL * (mpl$lambda + 1) / (mpl$lambda / (mpl$muLL *
-    mpl$dEL) - 1 / (mpl$muLL * mpl$dLL) - 1)
+  K0 <- 2 * mv0 * mpl$dLL * mpl$mu0 * (1 + mpl$dPL * mpl$muPL) * mpl$gammaL * (mpl$lambda + 1) /
+    (mpl$lambda / (mpl$muLL * mpl$dEL) - 1 / (mpl$muLL * mpl$dLL) - 1)
   PL_eq <- 2 * mpl$dPL * mpl$mu0 * mv0
   LL_eq <- mpl$dLL * (mpl$muPL + 1 / mpl$dPL) * PL_eq
-  EL_eq <- (LL_eq / mpl$dLL + mpl$muLL * LL_eq * (1 + mpl$gammaL * LL_eq / K0)) / (1 / mpl$dEL - mpl$muLL * mpl$gammaL * LL_eq / K0)
+  EL_eq <- (LL_eq / mpl$dLL + mpl$muLL * LL_eq * (1 + mpl$gammaL * LL_eq / K0)) /
+    (1 / mpl$dEL - mpl$muLL * mpl$gammaL * LL_eq / K0)
 
   # add in final dimension - interventions
   num_int <- mpl$num_int

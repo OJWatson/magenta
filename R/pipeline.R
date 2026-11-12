@@ -198,7 +198,7 @@ pipeline <- function(EIR = 120,
   human_vars <- c("Infection_States", "Zetas", "Ages", "ID")
 
   # historic intervetnion grab if asked
-  if (use_historic_interventions & length(years) > 1) {
+  if (use_historic_interventions && length(years) > 1) {
     ints <- intervention_grab(country = country, admin = admin, year_range = years)
     spl <- spl_grab(country = country, admin = admin, year_range = years)
     spatial_incidence_matrix <- spl$incidence
@@ -261,11 +261,7 @@ pipeline <- function(EIR = 120,
     # spatial checks and formatting
     if (!is.null(spatial_type)) {
       if (spatial_type == "metapop") {
-        # spatial_type <- 2
-        # if (is.null(spatial_uuid)) {
-        #   stop("Spatial_uuid is required if running spatial simulations")
-        # }
-        # redis_id <- paste0("magenta_", spatial_uuid)
+        stop("metapopulation simulations are not implemented")
       } else if (spatial_type == "island") {
         spatial_type <- 1
       }
@@ -367,11 +363,7 @@ pipeline <- function(EIR = 120,
     # spatial checks and formatting
     if (!is.null(spatial_type)) {
       if (spatial_type == "metapop") {
-        # spatial_type <- 2
-        # if (is.null(spatial_uuid)) {
-        #   stop("Spatial_uuid is required if running spatial simulations")
-        # }
-        # redis_id <- paste0("magenta_", spatial_uuid)
+        stop("metapopulation simulations are not implemented")
       } else if (spatial_type == "island") {
         spatial_type <- 1
       }
@@ -450,87 +442,6 @@ pipeline <- function(EIR = 120,
     }
   }
 
-  # if it's metapopulation sim set up the necessary redis lists
-  # set this up here anyway and then less if loops later
-  # METAPOP SETUP (NOT FULLY IMPLEMENTED YET) ------ #####
-  imported_barcodes <- NULL
-  if (spatial_type == 2) {
-    stop("metapopulation simulation not implemented yet")
-
-    # redis <- redux::hiredis(host = "fi--dideclusthn.dide.ic.ac.uk")
-    #
-    # # create barcode as binary string
-    # barcodes <- lapply(sim.out$Exported_Barcodes, as.numeric) %>%
-    #   lapply(paste0, collapse = "") %>%
-    #   unlist()
-    #
-    # # work out here how many barcodes are going to which other simulation
-    # export_proportions <- round((spatial / sum(spatial, na.rm = TRUE)) *
-    #                               round(sum(spatial * N, na.rm = TRUE)))
-    # export_positions <- list()
-    # import_positions <- list()
-    # check_barcodes <- list()
-    # epc <- 1
-    # metapopulation_number <- which(is.na(spatial))
-    # other_metapopulations <- seq_len(length(spatial))[-metapopulation_number]
-    #
-    # # Create the necessary redis lists and push the barcodes
-    # for (i in 1:length(export_proportions)) {
-    #   if (!is.na(export_proportions[i])) {
-    #     export_positions[[i]] <- epc:(epc + export_proportions[i] - 1)
-    #     import_positions[[i]] <- paste0(i, metapopulation_number)
-    #     check_barcodes[[i]] <- paste0(i, "DONE")
-    #     epc <- epc + export_proportions[i]
-    #     redis$SET(
-    #       paste0(
-    #         redis_id, "_", metapopulation_number, i
-    #       ),
-    #       redux::object_to_bin(barcodes[export_positions[[i]]])
-    #     )
-    #   } else {
-    #     export_positions[[i]] <- export_proportions[i]
-    #     import_positions[[i]] <- NULL
-    #     check_barcodes[[i]] <- NULL
-    #   }
-    # }
-    #
-    # # clear the blank ones
-    # import_positions[[metapopulation_number]] <- NULL
-    # check_barcodes[[metapopulation_number]] <- NULL
-    #
-    # # Say that this metapopulation is finished
-    # redis$SET(paste0(metapopulation_number, "DONE"), 1)
-    #
-    # # create the redis object for grabbing other barcodes
-    # redis <- redux::redis
-    # get_barcodes_cmds <- lapply(import_positions, function(x) {
-    #   (redis$GET(x))
-    # })
-    # check_done <- lapply(check_barcodes, function(x) {
-    #   (redis$GET(x))
-    # })
-    #
-    # # sit on a while loop here untill all populations are ready
-    # cannot_import <- TRUE
-    # while (cannot_import) {
-    #   barcode_checks <- unlist(redis$pipeline(.commands = check_done))
-    #   if (sum(is.null(barcode_checks)) == 0) {
-    #     cannot_import <- FALSE
-    #   }
-    # }
-    #
-    # # once they are all ready set the done to 0
-    # redis$SET(paste0(redis_id, "_", metapopulation_number, "DONE"), 0)
-    #
-    # # fetch and format the barcodes for import
-    # imported_barcodes <- redis$pipeline(.commands = get_barcodes_cmds) %>%
-    #   lapply(redux::bin_to_object) %>%
-    #   unlist()
-    # imported_barcodes <- imported_barcodes %>%
-    #   lapply(function(x) {
-    #     strsplit(x, "") %>% unlist() %>% as.numeric() %>% as.logical()
-    #   })
-  }
 
 
   # DETERMINISTIC MOSQUITO PRE-SIMULATION ---------- #####
@@ -560,7 +471,6 @@ pipeline <- function(EIR = 120,
 
     # and set up annual checks for variables that change discretely
     year <- 1
-    next_drug_cycle <- drug_list$temporal_cycling
     ft_now <- ft[year]
 
     # messaging
@@ -634,43 +544,6 @@ pipeline <- function(EIR = 120,
           res <- update_save_func(res, i, sim.out, mpl, num_loci)
         }
 
-        # spatial export
-        # Metapopulation not fully implemeted yet so commenting out
-        if (spatial_type == 2) {
-          # # Push barcodes to redis
-          # for (i in 1:length(export_proportions)) {
-          #   if (!is.na(export_proportions[i])) {
-          #     redis$SET(
-          #       paste0(redis_id, "_", metapopulation_number, i),
-          #       redux::object_to_bin(barcodes[export_positions[[i]]])
-          #     )
-          #   }
-          # }
-          #
-          # # once pushed set the done to 1
-          # redis$SET(paste0(redis_id, "_", metapopulation_number, "DONE"), 1)
-          #
-          # # sit on a while loop here untill all populations are ready
-          # cannot_import <- TRUE
-          # while (cannot_import) {
-          #   barcode_checks <- redis$pipeline(.commands = check_done) %>% unlist()
-          #   if (sum(barcode_checks == 0) == 0) {
-          #     cannot_import <- FALSE
-          #   }
-          # }
-          #
-          # # once they are all ready set the done to 0
-          # redis$SET(paste0(redis_id, "_", metapopulation_number, "DONE"), 0)
-          #
-          # # fetch and format the barcodes for import
-          # imported_barcodes <- redis$pipeline(.commands = get_barcodes_cmds) %>%
-          #   lapply(redux::bin_to_object) %>%
-          #   unlist()
-          # imported_barcodes <- imported_barcodes %>%
-          #   lapply(function(x) {
-          #     strsplit(x, "") %>% unlist() %>% as.numeric() %>% as.logical()
-          #   })
-        }
 
         # drug resistance updates
         if (i == 1) {
@@ -764,7 +637,7 @@ pipeline <- function(EIR = 120,
       )
 
       # If we want just the humans then get the keybits and save that instead
-      if (human_only_full_save & !full_save) {
+      if (human_only_full_save && !full_save) {
         human_vars <- c("Infection_States", "Zetas", "Ages")
         Strains <- sim_save$populations_event_and_strains_List[strain_vars]
         Humans <- c(sim_save$population_List[human_vars], Strains)
@@ -808,8 +681,8 @@ pipeline <- function(EIR = 120,
 return_sim_memory <- function(sim) {
   meta <- attr(sim, "meta")
   pl <- param_list_simulation_finalizer_create(meta$Ptr)
-  sim_fin <- simulation_R(pl, seed = meta$seed)
-  for (i in 1:length(sim)) {
+  simulation_R(pl, seed = meta$seed)
+  for (i in seq_along(sim)) {
     if ("Ptr" %in% names(sim[[i]])) {
       sim[[i]]$Ptr <- NULL
     }

@@ -84,11 +84,12 @@ drug_list_create <- function(resistance_flag = FALSE,
     }
 
     max_bits <- (2^(number_of_resistance_loci)) - 1
-    barcode_poss <- matrix(intToBits(0:max_bits), ncol = 32, byrow = T)[, 1:(number_of_resistance_loci)]
+    barcode_poss <- matrix(intToBits(0:max_bits), ncol = 32, byrow = TRUE)
+    barcode_poss <- barcode_poss[, seq_len(number_of_resistance_loci)]
     results <- rep(1, nrow(barcode_poss))
     count <- 1
 
-    for (j in 1:nrow(barcode_poss)) {
+    for (j in seq_len(nrow(barcode_poss))) {
       comp <- epistatic_logic[as.logical(barcode_poss[j, ])]
       res <- as.logical(barcode_poss[j, ])
       res[which(res)] <- comp %in% which(res)
@@ -175,8 +176,14 @@ drug_create <- function(prob_of_lpf = c(1.0, 0.97, 0.80, 0.55),
                         dur_P = 25,
                         dur_SPC = 5,
                         drug_clearance_max_time = 60,
-                        prophylactic_probability = 1 - pgamma(seq(0, drug_clearance_max_time, 0.2), shape = 16.8, rate = 16.8 / 17.9),
-                        prophylactic_resistant_probability = 1 - pgamma(seq(0, drug_clearance_max_time, 0.2), shape = 16.8, rate = 16.8 / 8.7)) {
+                        prophylactic_probability = 1 - pgamma(
+                          seq(0, drug_clearance_max_time, 0.2),
+                          shape = 16.8, rate = 16.8 / 17.9
+                        ),
+                        prophylactic_resistant_probability = 1 - pgamma(
+                          seq(0, drug_clearance_max_time, 0.2),
+                          shape = 16.8, rate = 16.8 / 8.7
+                        )) {
   # Set up for working out hill function parameters for the drug
   time_vec_proph <- seq(0, drug_clearance_max_time,
     length.out = length(prophylactic_probability)
@@ -201,7 +208,7 @@ drug_create <- function(prob_of_lpf = c(1.0, 0.97, 0.80, 0.55),
     ## this is the hill function
     pred <- (concentration^n) / ((concentration^n) + (conc_fix^n))
     data <- proph
-    output <- sum((data - pred)^2)
+    sum((data - pred)^2)
   }
 
   # starting conditions

@@ -148,7 +148,7 @@ COI_df_create <- function(df,
     })
 
     # make samples and reps of them
-    for (i in seq_len(length(results))) {
+    for (i in seq_along(results)) {
       # make a sample
       if (n[1] == Inf) {
         chosen <- seq_len(nrow_df)
@@ -278,7 +278,7 @@ COI_df_create <- function(df,
     length(results) <- reps
 
     # make samples and reps of them
-    for (i in seq_len(length(results))) {
+    for (i in seq_along(results)) {
       # make a sample
       if (n[1] == Inf) {
         chosen <- seq_len(nrow_df)
