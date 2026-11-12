@@ -32,3 +32,4 @@ docs
 submission_data
 ^\.github$
 ^\.claude$
+^R_CODE_REVIEW\.md$
