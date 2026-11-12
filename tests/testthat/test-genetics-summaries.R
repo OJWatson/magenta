@@ -72,3 +72,33 @@ test_that("COI_df_create summarises IBD simulations", {
     "mean_ibd", "mean_ibd_d", "mean_within", "mean_within_d"
   ))
 })
+
+test_that("pop_strains_df returns an empty frame when no one is in the sampled states", {
+  skip_on_cran()
+  state <- tiny_state(seed = 24L, N = 30)
+  none <- magenta:::pop_strains_df(state$sim$Ptr, seed = 24L, sample_size = 0, sample_states = 5)
+  expect_equal(nrow(none), 0)
+  expect_true("nums" %in% names(none))
+  magenta:::sim_free(state$sim$Ptr, 24L)
+})
+
+test_that("COI_df_create samples with or without replacement as the sizes require", {
+  skip_on_cran()
+  df <- strains_df()
+  # two subsamples that together exceed the population, each within it
+  overlap <- magenta:::COI_df_create(df, nl = 2, n = 50, reps = 2)
+  expect_length(overlap, 2)
+  expect_equal(sum(overlap[[1]]$summary_coi$N), 50)
+  # a vector of sizes, one larger than the population
+  sizes <- magenta:::COI_df_create(df, nl = 2, n = c(10, 100))
+  expect_equal(sum(sizes[[2]]$summary_coi$N), 100)
+  expect_equal(sum(sizes[[3]]$summary_coi$N), nrow(df))
+})
+
+test_that("COI_df_create subsamples IBD simulations", {
+  skip_on_cran()
+  df <- strains_df(seed = 25L, ibd_length = 4)
+  sub <- magenta:::COI_df_create(df, nl = 2, ibd = TRUE, n = 20, reps = 2)
+  expect_length(sub, 2)
+  expect_equal(sum(sub[[1]]$summary_ages$N), 20)
+})

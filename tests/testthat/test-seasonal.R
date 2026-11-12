@@ -45,3 +45,11 @@ test_that("pfpr_to_eir_heuristic finds an EIR for each target type", {
   )
   expect_lt(eir_all_a, eir_micro)
 })
+
+test_that("admin_match finds the closest admin unit without a country", {
+  expect_equal(
+    suppressMessages(magenta:::admin_match("Kinshsa")),
+    suppressMessages(magenta:::admin_match("Kinshasa", "Democratic Republic of the Congo"))
+  )
+  expect_message(magenta:::admin_match("Kinshsa"), "Returned: Kinshasa")
+})

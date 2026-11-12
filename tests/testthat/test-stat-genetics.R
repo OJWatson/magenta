@@ -62,3 +62,47 @@ test_that("barcode flattening and rebuilding round trip", {
   expect_equal(magenta:::get_nested_element(nested, c("a", "b")), 1)
   expect_equal(magenta:::set_nested_element(nested, c("a", "b"), 2)$a$b, 2)
 })
+
+test_that("zero truncated draws top up when the first batch is short", {
+  # p = 0.5 rounds most draws to zero, so the first batch is too short and the
+  # top-up loop runs
+  set.seed(2)
+  g <- magenta:::ztrgeomintp(50, 2, 0.5)
+  expect_length(g, 50)
+  expect_true(all(g >= 1))
+})
+
+test_that("barcode flattening accepts empty entries and checks lengths", {
+  flat <- magenta:::flatten_barcode_vectors(list(NULL, c(TRUE, FALSE), list()))
+  expect_equal(flat$counts, c(0, 1, 0))
+  expect_equal(flat$flat, list(c(TRUE, FALSE)))
+
+  empty <- magenta:::flat_to_matrix(list(), 2)
+  expect_equal(dim(empty), c(0, 2))
+  expect_error(
+    magenta:::flat_to_matrix(list(c(TRUE, FALSE), TRUE), 2),
+    "must have the same length"
+  )
+  expect_error(magenta:::validate_plaf_vector(numeric(0)), "positive length")
+})
+
+test_that("matrices are adjusted down as well as up to the target PLAF", {
+  m <- matrix(c(1L, 1L, 0L, 1L, 1L, 1L), ncol = 2)
+  set.seed(1)
+  down <- magenta:::adjust_matrix_to_plaf(m, c(0, 1 / 3))
+  expect_equal(colSums(down), c(0, 1))
+  # a single remaining 1 is flipped without sampling
+  one <- matrix(c(0L, 1L, 0L), ncol = 1)
+  expect_equal(sum(magenta:::adjust_matrix_to_plaf(one, 0)), 0)
+  expect_identical(
+    magenta:::adjust_matrix_to_plaf(matrix(integer(0), 0, 2), c(0.5, 0.5)),
+    matrix(integer(0), 0, 2)
+  )
+  expect_error(magenta:::adjust_matrix_to_plaf(m, c(1.5, 1)), "impossible allele counts")
+
+  expect_null(magenta:::validate_plaf(matrix(integer(0), 0, 2), c(0.5, 0.5), "x"))
+  expect_error(
+    magenta:::validate_plaf(m, c(0, 1), "barcode vectors"),
+    "Failed to match target PLAF for barcode vectors. Expected 0, 3 out of 3 but obtained 2, 3"
+  )
+})

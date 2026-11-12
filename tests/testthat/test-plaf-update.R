@@ -92,3 +92,11 @@ test_that("update_saved_state_barcode_plaf validates inputs", {
     "does not contain any barcode vectors"
   )
 })
+
+test_that("update_saved_state_barcode_plaf needs a saved state with barcodes", {
+  expect_error(update_saved_state_barcode_plaf("a", 0.5), "must be a list")
+  expect_error(
+    update_saved_state_barcode_plaf(list(scourge_List = list()), 0.5),
+    "does not contain `populations_event_and_strains_List\\$Strain_barcode_vectors`"
+  )
+})

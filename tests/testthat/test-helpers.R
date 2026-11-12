@@ -78,3 +78,13 @@ test_that("magenta_sim prints without timings and with a long call", {
   empty$output <- list(Loggers = list(Ages = 1:3))
   expect_output(print(summary(empty)), "No scalar per-period output")
 })
+
+test_that("the assert and check helpers return their input invisibly", {
+  expect_identical(magenta:::assert_scalar_character("a"), "a")
+  expect_identical(magenta:::assert_scalar_logical(TRUE), TRUE)
+  expect_identical(magenta:::assert_scalar_numeric(1), 1)
+  dl <- drug_list_create()
+  expect_identical(magenta:::check_class(dl, "magenta_drug_list", "x"), dl)
+  expect_equal(magenta:::scalar_fields(1), list())
+  expect_equal(magenta:::scalar_fields(list(Loggers = list(a = 1, b = 1:2))), list(a = 1))
+})

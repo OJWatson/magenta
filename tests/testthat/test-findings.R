@@ -84,3 +84,17 @@ test_that("misspelt pipeline() arguments are reported as such", {
     "unknown argument\\(s\\) to pipeline\\(\\): update_lenght"
   )
 })
+
+test_that("finding: spl_grab drops the year 2000 from a range that ends there", {
+  # The historic series runs 2000-2017 but the truncation branch only applies
+  # to end years after 2000, so a range ending in 2000 keeps no data rows: a
+  # range starting before 2000 comes back one row short (all zeros), and
+  # 2000:2000 is an error. Changing `end_year > 2000` to `>= 2000` gives
+  # six rows for 1995:2000 (the last one the 2000 data) and one row for
+  # 2000:2000; nothing else moves.
+  cc <- "Democratic Republic of the Congo"
+  short <- suppressMessages(spl_grab(cc, "Kinshasa", 1995:2000))
+  expect_equal(nrow(short$incidence), 5)
+  expect_true(all(short$incidence == 0))
+  expect_error(suppressMessages(spl_grab(cc, "Kinshasa", 2000:2000)), "argument of length 0")
+})

@@ -97,3 +97,30 @@ test_that("param_list_simulation_update_create fills in constant rates and check
   )
   magenta:::sim_free(state$sim$Ptr, 15L)
 })
+
+test_that("simulation_R dispatches init and saved-state lists, nested or not", {
+  skip_on_cran()
+  mpl <- model_param_list_create()
+  eq_init <- equilibrium_init_create(
+    age_vector = age_brackets(100, 40, TRUE), het_brackets = 5, ft = 0.4,
+    EIR = 1, model_param_list = mpl
+  )
+  pl <- magenta:::param_list_simulation_init_create(
+    N = 40, eqSS = equilibrium_ss_create(eqInit = eq_init),
+    barcode_list = barcode_list_create(num_loci = 2, plaf = c(0.5, 0.5)),
+    spatial_list = magenta:::spl_create(plaf = c(0.5, 0.5)),
+    housekeeping_list = quiet_housekeeping_test(), drug_list = drug_list_create(),
+    nmf_list = nmf_list_create(), vector_adaptation_list = vector_adaptation_list_create(2),
+    mpl = mpl
+  )
+  # the old pipeline wrapped the init list in another list
+  expect_warning(sim <- magenta:::simulation_R(list(pl), 16L), "deprecated")
+  expect_type(sim$Ptr, "externalptr")
+  expect_warning(saved <- magenta:::simulation_R(list(statePtr = sim$Ptr), 16L), "deprecated")
+  expect_warning(
+    magenta:::simulation_R(list(statePtr = sim$Ptr, finalizer = TRUE), 16L), "deprecated"
+  )
+  expect_warning(restored <- magenta:::simulation_R(list(savedState = saved), 16L), "deprecated")
+  expect_type(restored$Ptr, "externalptr")
+  magenta:::sim_free(restored$Ptr, 16L)
+})

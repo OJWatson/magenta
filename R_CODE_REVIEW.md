@@ -671,7 +671,7 @@ tests (`tests/testthat/test-characterisation.R`, Linux only), styler + `.lintr` 
 a lint workflow (zero lints), research code removed, DESCRIPTION brought up to
 date, the plain bug fixes in 4.6 with tests, version 1.4.0 with NEWS.
 
-Phases 1-3 are done on branch `claude/competent-boyd-0d8538`, cut from the
+Phases 1-3 are done on branch `rewrite`, cut from the
 Phase 0 tip, as one commit per step with the tests and lints green after each.
 The characterisation snapshot file is unchanged throughout; the tests read
 `out$output` instead of `out` because of the new return object. What landed,
@@ -713,12 +713,16 @@ and where it departs from the plan above:
 Phase 4 is pinned, not applied: `tests/testthat/test-findings.R` records what
 the code does today for the three items whose fix changes results (seed
 replay; `min(ft[ft > 0])` for a single period; a resumed run rebuilding the
-barcode and spatial lists from the new call) and says what the fix would
-make each test expect. The other 4.6 items are done (Phase 0, or absorbed in
+barcode and spatial lists from the new call; `spl_grab()` dropping the year
+2000 from a range that ends there) and says what the fix would make each
+test expect. The other 4.6 items are done (Phase 0, or absorbed in
 Phases 2-3 as noted above). Phase 5: unit tests for every `sim_*`, parameter,
 schedule, saver and `magenta_sim` function and for the utilities (R-side
-line coverage 86.9% -> 95.9% over this step; 47.6% at Phase 0), an example
+line coverage 86.9% -> 98.7% over this step; 47.6% at Phase 0), an example
 on every export, `R CMD check --as-cran` clean (one pre-existing NOTE).
+`drug_list_create(number_of_resistance_loci = 1)` no longer crashes (a
+`drop = FALSE`; the table for two or more loci is unchanged).
+`generate_default_model()` is still unreferenced and untested.
 
 Still open: the Phase 4 decisions above, and the remaining Phase 5 items
 (pkgdown reference regrouping is done; coverage gate in CI is not).

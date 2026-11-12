@@ -88,3 +88,9 @@ test_that("the schedule prints its period table", {
   s <- build_schedule(years = 1, update_length = 365, plaf = 0.5)
   expect_output(print(s), "1 period\\(s\\) over 365 days")
 })
+
+test_that("the padding helpers reject empty and non-numeric inputs", {
+  expect_error(magenta:::pad_annual(numeric(0), 2, "ft"), "ft must have at least one value")
+  expect_error(magenta:::pad_annual_rows("a", 2, "plaf"), "plaf must be numeric")
+  expect_null(magenta:::pad_annual_rows(NULL, 2, "plaf"))
+})

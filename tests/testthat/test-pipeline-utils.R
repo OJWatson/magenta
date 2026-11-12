@@ -149,3 +149,17 @@ test_that("the schedule helpers read a period and recent treatment failure", {
   expect_equal(magenta:::spatial_type_code("island"), 1)
   expect_error(magenta:::spatial_type_code("metapop"), "not implemented")
 })
+
+test_that("intervention_grab falls back to zero IRS where there is no IRS series", {
+  togo <- suppressMessages(intervention_grab("Togo", "Maritime", 2010:2012))
+  expect_equal(togo$irs_cov, rep(0, 3))
+  expect_length(togo$itn_cov, 3)
+  expect_true(all(togo$itn_cov > 0))
+})
+
+test_that("spatial types map to the codes the C++ reads", {
+  expect_equal(magenta:::spatial_type_code(NULL), 0)
+  expect_equal(magenta:::spatial_type_code("island"), 1)
+  expect_equal(magenta:::spatial_type_code(1), 1)
+  expect_error(magenta:::spatial_type_code("metapop"), "not implemented")
+})
