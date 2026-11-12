@@ -25,11 +25,11 @@ parasites will get through. Default = 0.5}
 \item{gametocyte_sterilisation_flag}{Boolean for whether we are doing
 gametocye sterilisation as a result from artemisinin. Default = FALSE}
 
-\item{gametocyte_sterilisation}{Numeric for theimpact of artemisinin on 
-male gametocytes. Default = 0.5, which causes the probability that a 
+\item{gametocyte_sterilisation}{Numeric for theimpact of artemisinin on
+male gametocytes. Default = 0.5, which causes the probability that a
 wild type male gametocyte will be chosen to be in oocysts is halved.}
 
-\item{oocyst_reduction_by_artemisinin}{Numeric for reduction in oocyst 
+\item{oocyst_reduction_by_artemisinin}{Numeric for reduction in oocyst
 under artemisinin drug pressure. default = 0.2}
 }
 \description{

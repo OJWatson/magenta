@@ -43,7 +43,7 @@ barcode. Default = rep(0.5, barcode_length)}
 \item{mutation_rate}{Probability of mutation occuring and fixing}
 
 \item{mutation_treated_modifier}{Multiplier for how much more likely mutations
-are to occur in treated individuals with respect to resistance. Default = 1, i.e 
+are to occur in treated individuals with respect to resistance. Default = 1, i.e
 no difference}
 }
 \description{

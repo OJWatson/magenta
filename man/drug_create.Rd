@@ -18,22 +18,22 @@ drug_create(
 )
 }
 \arguments{
-\item{prob_of_lpf}{Vector of probabilities for the chance of late 
-parasitological failure (lpf). The vector gives the prob of lpf for 
-each relevent barcode combination for a given drug. E.g. The default is:
+\item{prob_of_lpf}{Vector of probabilities for the chance of late
+  parasitological failure (lpf). The vector gives the prob of lpf for
+  each relevent barcode combination for a given drug. E.g. The default is:
 
-\code{c(1.0, 0.97, 0.80, 0.55)} 
+  \code{c(1.0, 0.97, 0.80, 0.55)}
 
-The vector is length 4, and so 2 barcode positions change the 
-prob of lpf. If the parasite is 0,0 then the prob of lpf is 0 (1-1), 
-but if it was 0,1 it would be 0.2.}
+  The vector is length 4, and so 2 barcode positions change the
+  prob of lpf. If the parasite is 0,0 then the prob of lpf is 0 (1-1),
+  but if it was 0,1 it would be 0.2.}
 
 \item{barcode_res_pos}{Vector for which barcode positions correspond to which
-drug resistance mechanism. E.g. the default is:
+  drug resistance mechanism. E.g. the default is:
 
-\code{c(0,1)}
+  \code{c(0,1)}
 
-Resistance to drug is encoded at barcode position 0 and 1}
+  Resistance to drug is encoded at barcode position 0 and 1}
 
 \item{prophylactic_pos}{Vector for which barcode positions determine the
 impact of drug resistance in shortening the effective prophylactic period.
@@ -44,18 +44,18 @@ the prophylactic position is encoded in barcode position 1.}
 
 \item{dur_SPC}{Duration of slow parasite clearance. Default = 5.}
 
-\item{drug_clearance_max_time}{Maximum number of days to which to consider 
+\item{drug_clearance_max_time}{Maximum number of days to which to consider
 waning prophylaxis. Default = 60 days.}
 
 \item{prophylactic_probability}{Vector of changing probability of reinfection
 due to waning prophylaxis. The last element reflects the probability after
-\code{drug_clearance_max_time} and the first element is the probability at 
+\code{drug_clearance_max_time} and the first element is the probability at
 time = 0 days.}
 
-\item{prophylactic_resistant_probability}{Vector of changing probability of 
+\item{prophylactic_resistant_probability}{Vector of changing probability of
  reinfection due to waning prophylaxis when challenged by a parasite that is
 resistant to the partner drug. The last element reflects the probability after
- \code{drug_clearance_max_time} and the first element is the probability at 
+ \code{drug_clearance_max_time} and the first element is the probability at
  time = 0 days.}
 }
 \description{

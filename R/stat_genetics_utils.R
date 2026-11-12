@@ -143,40 +143,6 @@ convert_ibd_barcode <- function(b, nl) {
   return(ibd)
 }
 
-# convert population's ibd barcodes to list of int vectors
-population_ibd_barcodes <- function(barcode_vec, nl) {
-  n.strains <- lapply(barcode_vec, length) %>% unlist()
-  lapply(
-    barcode_vec[which(n.strains > 0)],
-    function(x) {
-      lapply(tail(x, 1), convert_ibd_barcode, nl) %>% unlist()
-    }
-  )
-}
-
-# covert populations' ibd barcodes to list of int vectors using c++
-population_ibd_barcodes_c <- function(barcode_vec, bl, nl, ib) {
-  n.strains <- lapply(barcode_vec, length) %>% unlist()
-  lapply(
-    barcode_vec[which(n.strains > 0)],
-    function(x) {
-      lapply(as.raw(tail(x[[1]], 1)), test_ibd_conversion, bl, nl, ib) %>% unlist()
-    }
-  )
-}
-
-
-# get the pIBD from a list of barcode numbers
-pibd_from_barcode_list <- function(barcode_list, l_factor_i) {
-  t <- rbind_list_base(barcode_list)
-  if (nrow(t) > 1) {
-    z <- mean(apply(t, 2, function(x) sum((tabulate(x, l_factor_i) / length(x))^2)))
-    return((z - (1 / nrow(t))) / (1 - (1 / nrow(t))))
-  } else {
-    return(NA)
-  }
-}
-
 #' Update saved state barcode vectors to match a target PLAF
 #'
 #' This function adjusts the barcode vectors stored in a saved simulation

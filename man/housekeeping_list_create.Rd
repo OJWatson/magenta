@@ -18,7 +18,7 @@ housekeeping_list_create(
 
 \item{cluster}{Boolean for simulation being on cluster. Default = TRUE}
 
-\item{clear_up}{Boolean for whether to clear up the memory used by the 
+\item{clear_up}{Boolean for whether to clear up the memory used by the
 simulation. Default = TRUE}
 }
 \description{

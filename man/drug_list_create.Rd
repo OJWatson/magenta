@@ -26,19 +26,19 @@ drug_list_create(
 
 \item{number_of_resistance_loci}{Numeric for number of res. loci}
 
-\item{artemisinin_loci}{Numerics for barcode positions that confer artemisinin 
+\item{artemisinin_loci}{Numerics for barcode positions that confer artemisinin
 resistance}
 
 \item{cost_of_resistance}{Numeric vector for fitness cost of each resistance loci.}
 
 \item{absolute_fitness_cost_flag}{Boolean are we simulating fitness costs as
 absolute (i.e. impactive onward transmission chance) or relative (resistant
-strains have decreases chance of being onwardly transmitted in mixed 
+strains have decreases chance of being onwardly transmitted in mixed
 infections). Default = FALSE.}
 
-\item{epistatic_logic}{Is there compensatory relationships. i.e. what loci 
-need to be true for resistance cost to exist. Default of NULL means that 
-this becomes seq_len(number_of_resistance_loci), i.e. only dependent on 
+\item{epistatic_logic}{Is there compensatory relationships. i.e. what loci
+need to be true for resistance cost to exist. Default of NULL means that
+this becomes seq_len(number_of_resistance_loci), i.e. only dependent on
 their own loci. (TODO: Change this to be a list of length norl)}
 
 \item{number_of_drugs}{Numeric for number of drugs used}

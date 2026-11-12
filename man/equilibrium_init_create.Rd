@@ -36,7 +36,7 @@ parameters. If country is NULL, the admin unit will attempt to be located,howeve
 if there is ambiguity in the admin unit an error will be thrown. If both country
 and admin are NULL then no seasonality is assumed. Default = NULL.}
 
-\item{quiet}{Whether function should be quiet. If FALSE (default) the 
+\item{quiet}{Whether function should be quiet. If FALSE (default) the
 returned country and admin are printed.}
 }
 \description{

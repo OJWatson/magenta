@@ -21,7 +21,7 @@ the age bracket considered}
 
 \item{nmf_age_brackets}{Vector for age brackets}
 
-\item{prob_of_testing_nmf}{Numeric for probability that a NMF is tested by 
+\item{prob_of_testing_nmf}{Numeric for probability that a NMF is tested by
 RDT before being treated with antimalarials.}
 }
 \description{

@@ -26,7 +26,7 @@ mu_fv_create(
 
 \item{years}{Numeric for total years}
 
-\item{int_times}{Timing of intervention changes. Default = NULL, which will 
+\item{int_times}{Timing of intervention changes. Default = NULL, which will
 assume they are 365 days apart}
 
 \item{full}{Boolean to return the whole deterministic output or just mosquito

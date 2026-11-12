@@ -7,17 +7,17 @@
 admin_match(admin = NULL, country = NULL, quiet = FALSE)
 }
 \arguments{
-\item{admin}{Character for admin region. Some fuzzy logic will be used to 
+\item{admin}{Character for admin region. Some fuzzy logic will be used to
 match. If not provided then no seasonality is introduced. Default = NULL}
 
-\item{country}{Character for country within which admin2 is in. 
+\item{country}{Character for country within which admin2 is in.
 Default = NULL}
 
-\item{quiet}{Whether function should be quiet. If FALSE (default) the 
+\item{quiet}{Whether function should be quiet. If FALSE (default) the
 returned country and admin are printed.}
 }
 \value{
-Row number of the matching region in 
+Row number of the matching region in
   \code{magenta::admin_units_seasonal}
 }
 \description{

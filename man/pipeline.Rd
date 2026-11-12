@@ -66,12 +66,12 @@ Default = 0}
 \item{irs_cov}{Vector for IRS coverages that change at update_length intervals.
 Default = 0}
 
-\item{use_historic_interventions}{Boolean as to whether to use interventions 
+\item{use_historic_interventions}{Boolean as to whether to use interventions
 on file for the admin and country specified. If TRUE then provide the years
-as a year range, e.g. 2000:2015. WARNING - Best to have this as FALSE and 
+as a year range, e.g. 2000:2015. WARNING - Best to have this as FALSE and
 manually specify the itn_cov, irs_cov and ft.}
 
-\item{survival_percentage}{Mumeric for % of sporozoites surviving. 
+\item{survival_percentage}{Mumeric for % of sporozoites surviving.
 Default = 0.2}
 
 \item{oocyst_mean}{Mean for number of oocysts formed from a bite. Default=2.5}
@@ -95,7 +95,7 @@ used to match. If not provided then no seasonality is introduced.
 Default = NULL}
 
 \item{spatial_type}{Default = NULL. If spatial is wanted then provide
-a character describing the type of spatial simulation, which must be 
+a character describing the type of spatial simulation, which must be
 one of "island" or "metapop".}
 
 \item{spatial_incidence_matrix}{Spatial incidence for humans,
@@ -103,14 +103,14 @@ i.e. importation vector}
 
 \item{spatial_mosquitoFOI_matrix}{Spatial mosquio FOI, i.e. importation
  to mosquitoes vector
-  
+
 # Genetic Params}
 
 \item{island_imports_plaf_linked_flag}{Boolean. Whether imported barcodes for
 island model are drawn dependent on other sites. Currently, if TRUE, imported
-barcodes will either be all 0 or will be 1 at all loci where plaf > 0, 
-if \code{rbinom(1, 1, plaf[plaf>0][1])} is TRUE. I.e. the first loci greater 
-than 0 is used to determine if the incoming barcode is 1 at all sites where 
+barcodes will either be all 0 or will be 1 at all loci where plaf > 0,
+if \code{rbinom(1, 1, plaf[plaf>0][1])} is TRUE. I.e. the first loci greater
+than 0 is used to determine if the incoming barcode is 1 at all sites where
 plaf is greater than 0.}
 
 \item{num_loci}{Number of loci. Default = 24}
@@ -143,13 +143,13 @@ individual at initialisation is given a unique ID for their parasites.}
 # Saving Params}
 
 \item{mutation_treated_modifier}{Multiplier for how much more likely mutations
-are to occur in treated individuals with respect to resistance. Default = 1, i.e 
+are to occur in treated individuals with respect to resistance. Default = 1, i.e
 no difference}
 
 \item{full_save}{Boolean detailing whether the entire simulation is saved.
 Default = FALSE}
 
-\item{full_update_save}{Boolean to save entire simualation at each update 
+\item{full_update_save}{Boolean to save entire simualation at each update
 save. Default = FALSE}
 
 \item{human_only_full_save}{Boolean detailing whether just the human
@@ -158,14 +158,14 @@ component of the simulation is saved within full_save. Default = FALSE}
 \item{update_save}{Boolean detailing whether the logging output is saved
 each update_length up to years. Default = FALSE}
 
-\item{update_save_func}{As opposed to having to provide arguments for the 
+\item{update_save_func}{As opposed to having to provide arguments for the
 update behaviour, you can pass in a function. See \code{update_saves}
 for the default one.}
 
 \item{human_update_save}{Boolean detailing if the human state is also
 saved during each update_length. Default = FALSE}
 
-\item{genetics_df_without_summarising}{Boolean for returning just the 
+\item{genetics_df_without_summarising}{Boolean for returning just the
 genetics data frame without summarising with \code{\link{COI_df_create}}.
 Default = FALSE}
 
@@ -173,14 +173,14 @@ Default = FALSE}
 within human yearly save only. Dataframes of age, clinical status
 binned COI.}
 
-\item{set_up_only}{Boolean for whether to return just the initialised simulation. 
+\item{set_up_only}{Boolean for whether to return just the initialised simulation.
 Default = FALSE}
 
-\item{mean_only}{Boolean for returning only the mean when summarising the 
+\item{mean_only}{Boolean for returning only the mean when summarising the
 population COI, COU etc. Default = TRUE}
 
 \item{save_lineages}{Boolean for whether we save the frequency of each strain
-when summarising with \code{genetics_df_without_summarising}=TRUE. 
+when summarising with \code{genetics_df_without_summarising}=TRUE.
 Default = FALSE}
 
 \item{saved_state_path}{Full file path to a saved model state to be
@@ -190,14 +190,14 @@ which will trigger initialisation}
 \item{seed}{Random seed. Default is Random}
 
 \item{sample_size}{Numeric for number of individuals to be sampled at the end
-of each update. Default = Inf, which samples everyone. If you provide a 
+of each update. Default = Inf, which samples everyone. If you provide a
 vector of sample sizes it will sample at each specified sample size.}
 
 \item{sample_states}{Numeric for which sample infection states are to be
-included in sampling. Default = 0:5 (i.e. all states). 1:4 for example 
+included in sampling. Default = 0:5 (i.e. all states). 1:4 for example
 would ensure only infected individuals are included.}
 
-\item{age_breaks}{What age breaks are used when summarising the population. 
+\item{age_breaks}{What age breaks are used when summarising the population.
 Default is `c(-0.001, 5, 15, 100.1)`}
 
 \item{sample_reps}{Numeric for how many sample reps are done. Default = 1.
@@ -210,7 +210,7 @@ Default is `c(-0.001, 5, 15, 100.1)`}
 
 \item{vector_adaptation_list}{List created by \code{\link{vector_adaptation_list_create}}}
 
-\item{only_allele_freqs}{Boolean for returning the summarised genetics (allele 
+\item{only_allele_freqs}{Boolean for returning the summarised genetics (allele
 frequencies and maybe strain frequencies) or the whole data frame produced
 by \code{\link{pop_strains_df}}. Default = TRUE}
 

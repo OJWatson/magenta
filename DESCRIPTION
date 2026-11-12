@@ -20,13 +20,10 @@ Depends: R (>= 2.10)
 Imports:
     dde,
     dplyr,
-    ggplot2,
     magrittr,
     odin,
     progress,
     Rcpp (>= 0.12.7),
-    redux,
-    reshape2,
     rlang,
     statmod,
     stringdist,
@@ -37,7 +34,6 @@ Remotes:
 LinkingTo: Rcpp, BH
 LazyData: TRUE
 LazyDataCompression: xz
-RoxygenNote: 7.3.2
 Config/testthat/edition: 3
 SystemRequirements: C++11
 VignetteBuilder: knitr
@@ -46,7 +42,6 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
-    lattice,
-    RColorBrewer,
-    cowplot
+    lattice
 Encoding: UTF-8
+Config/roxygen2/version: 8.1.0

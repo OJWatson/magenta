@@ -18,7 +18,7 @@ pop_strains_df(
 \item{seed}{The random seed. Probably not needed but was here for debugging
 radnomness.}
 
-\item{sample_size}{Number of indiviudals to sample. Default = 0, which 
+\item{sample_size}{Number of indiviudals to sample. Default = 0, which
 samples everyone.}
 
 \item{sample_states}{Numeric vector for which sample states are to be sampled
@@ -30,8 +30,8 @@ from Default = 0:5, which is all states.}
 Get ppopulation strain information
 }
 \details{
-R side wrapper for c++ functions that  loop through the population 
-  retrieving information about their strains using the universe state ptr. 
+R side wrapper for c++ functions that  loop through the population
+  retrieving information about their strains using the universe state ptr.
   The resulting data frame is then passed to \code{\link{COI_df_create}}.
 }
 \keyword{internal}

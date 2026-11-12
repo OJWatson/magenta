@@ -22,54 +22,35 @@ export(population_get_genetics_ibd_df_n)
 export(simulation_R)
 export(spl_grab)
 export(update_saved_state_barcode_plaf)
-importFrom(Rcpp,evalCpp)
-importFrom(Rcpp,sourceCpp)
-importFrom(ggplot2,aes)
-importFrom(ggplot2,element_blank)
-importFrom(ggplot2,geom_line)
-importFrom(ggplot2,geom_point)
-importFrom(ggplot2,geom_smooth)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,guide_legend)
-importFrom(ggplot2,guides)
-importFrom(ggplot2,scale_color_discrete)
-importFrom(ggplot2,scale_color_manual)
-importFrom(ggplot2,scale_shape_manual)
-importFrom(ggplot2,theme)
-importFrom(ggplot2,theme_bw)
-importFrom(ggplot2,xlim)
-importFrom(ggplot2,ylab)
-importFrom(ggplot2,ylim)
-importFrom(grDevices,dev.new)
-importFrom(grDevices,dev.off)
-importFrom(grDevices,hcl)
-importFrom(grDevices,tiff)
-importFrom(graphics,par)
-importFrom(graphics,plot)
+importFrom(Rcpp,
+  evalCpp,
+  sourceCpp
+)
+importFrom(dde,dopri)
 importFrom(magrittr,"%>%")
 importFrom(odin,odin)
 importFrom(rlang,.data)
 importFrom(statmod,gauss.quad.prob)
-importFrom(stats,approx)
-importFrom(stats,dexp)
-importFrom(stats,heatmap)
-importFrom(stats,na.omit)
-importFrom(stats,optim)
-importFrom(stats,pgamma)
-importFrom(stats,qexp)
-importFrom(stats,qlnorm)
-importFrom(stats,qt)
-importFrom(stats,rbinom)
-importFrom(stats,rgeom)
-importFrom(stats,rlnorm)
-importFrom(stats,rnbinom)
-importFrom(stats,runif)
-importFrom(stats,sd)
-importFrom(stats,time)
-importFrom(stats,weighted.mean)
+importFrom(stats,
+  approx,
+  dexp,
+  na.omit,
+  optim,
+  pgamma,
+  qexp,
+  qlnorm,
+  qt,
+  rbinom,
+  rgeom,
+  rnbinom,
+  runif,
+  sd,
+  weighted.mean
+)
 importFrom(stringi,stri_trans_general)
-importFrom(utils,adist)
-importFrom(utils,packageVersion)
-importFrom(utils,read.csv)
-importFrom(utils,tail)
+importFrom(utils,
+  packageVersion,
+  read.csv,
+  tail
+)
 useDynLib(magenta)

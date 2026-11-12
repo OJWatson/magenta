@@ -7,8 +7,8 @@
 simulation_R(param_list, seed)
 }
 \arguments{
-\item{param_list}{paramlist passed from 
-\code{param_list_simulation_init_create} or from 
+\item{param_list}{paramlist passed from
+\code{param_list_simulation_init_create} or from
 \code{param_list_simulation_update_create}}
 
 \item{seed}{Seed for the simulation}
