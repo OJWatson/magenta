@@ -48,10 +48,7 @@ what a set of inputs will do. One row per period, with the period's first and
 last day, the calendar year it falls in, and the yearly inputs for that year.
 
 ```{r schedule}
-sched <- build_schedule(
-  years = 3, update_length = 365,
-  ft = c(0.2, 0.5), itn_cov = 0.3, plaf = c(0.1, 0.2)
-)
+sched <- build_schedule(years = 3, update_length = 365, ft = c(0.2, 0.5), itn_cov = 0.3)
 sched
 ```
 
@@ -60,34 +57,41 @@ Three rules are worth knowing.
 1. **Last value forward.** A yearly vector shorter than `years` is padded by
    repeating its last value, so `ft = c(0.2, 0.5)` over three years is
    `0.2, 0.5, 0.5`. A vector longer than the run is an error rather than a
-   silent truncation. The padded vectors are kept as the `"annual"`
-   attribute of the schedule.
+   silent truncation.
 2. **One row per period.** With `update_save = TRUE` a period is
    `update_length` days; otherwise it is a calendar year. Either way the yearly
    inputs are looked up by the period's `year`, so a period that straddles two
-   years takes the values of the year it starts in.
+   years takes the values of the year it starts in, and the yearly value of an
+   input is simply its value in the first row of that year. Every simulated
+   year has to contain the start of a period for that to hold, so an
+   `update_length` that would skip a year (one longer than a year, say) is an
+   error.
 3. **Whole periods only.** The run is `round(years * 365)` days split into
    `round(days / update_length)` periods, which is how the package has always
    counted them: a run of 400 days in 365-day periods is one period of 365
    days.
 
-The schedule holds `ft`, `itn_cov`, `irs_cov`, `resistance_flag`,
-`mutation_flag` and `drug_choice` as plain columns and the per-year `plaf` and
-importation vectors as list columns:
+The schedule is a plain data frame of one value per period: `ft`, `itn_cov`,
+`irs_cov`, `resistance_flag`, `mutation_flag` and `drug_choice`, with the
+period's days and year. The allele frequencies `plaf` and the two importation
+inputs are a vector per year rather than a value, so they do not live in it:
+`pipeline()` pads them to a matrix with one row per year by the same rule and
+reads the row for the period's year. They come back with the run in
+`sim_params(out)` as `plaf`, `spatial_incidence` and `spatial_mosquitoFOI`.
 
 ```{r schedule-cols}
 names(sched)
-sched$plaf[[2]]
 ```
 
 `pipeline()` runs one C++ update per row. `ft` is passed to the update
 directly; `resistance_flag`, `mutation_flag`, `plaf` and the importation
 vectors are switched when a row starts a new year; `itn_cov` and `irs_cov` go
-through the mosquito model once for the whole run and come back as daily
-death and feeding rates that each period slices (see the
-[Deterministic vignette](Deterministic.html)). `drug_choice` is filled in as
-the run goes, so after a run with drug cycling the schedule records which drug
-each period used. The schedule a run followed is returned as `sim_schedule(out)`:
+through the mosquito model once for the whole run, taking the value in the
+first row of each year, and come back as daily death and feeding rates that
+each period slices (see the [Deterministic vignette](Deterministic.html)).
+`drug_choice` is filled in as the run goes, so after a run with drug cycling
+the schedule records which drug each period used. The schedule a run followed
+is returned as `sim_schedule(out)`:
 
 ```{r schedule-result}
 out <- pipeline(EIR = 5, N = 1000, years = 3, ft = c(0.2, 0.5), seed = 1L,

@@ -11,7 +11,8 @@
 * With `update_save = FALSE` a multi-year run steps year by year, so yearly inputs
   (`ft`, `plaf`, flags, importation) apply and temporal drug cycling happens.
 * Yearly inputs shorter than the run repeat their last value; longer ones are an
-  error. The schedule is built by the exported `build_schedule()`.
+  error. The schedule is built by the exported `build_schedule()`, one value per
+  period; an `update_length` that leaves a simulated year with no period is an error.
 * Sequential drug cycling reads treatment failure from the loggers, so it works
   with every saver and without periodic saving.
 * `sim_save()` and `sim_restore()` write and read a versioned saved state; old

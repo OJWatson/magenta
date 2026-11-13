@@ -123,8 +123,11 @@
 #'   \code{seed} is given.
 #' @param ... Other parameters to model_param_list_create
 #'
-#' \code{pipeline}
-#'
+#' @return What the saver kept, as a \code{\link{magenta_sim}}: the final
+#'   slot alone, or with \code{update_save = TRUE} a list with one element
+#'   per period, carrying the run's \code{params}, \code{schedule} and
+#'   \code{meta} as attributes. With \code{set_up_only = TRUE}, the
+#'   initialised model state as a plain list.
 #' @export
 #' @inheritParams spl_create
 #' @examples
@@ -338,15 +341,21 @@ pipeline <- function(EIR = 120,
     update_length = if (update_save) update_length else 365,
     ft = ft, itn_cov = itn_cov, irs_cov = irs_cov,
     resistance_flag = drug_list$resistance_flag,
-    mutation_flag = mutation_flag, plaf = plaf,
-    spatial_incidence = spatial_incidence_matrix,
-    spatial_mosquitoFOI = spatial_mosquitoFOI_matrix,
+    mutation_flag = mutation_flag,
     drug_choice = drug_list$drug_choice
+  )
+  # the allele frequencies and importation rates are a vector per year rather
+  # than a value, so they sit beside the schedule as one matrix each, padded by
+  # the same rule, and are read by the period's year
+  annual <- annual_inputs(
+    years = years, plaf = plaf,
+    spatial_incidence = spatial_incidence_matrix,
+    spatial_mosquitoFOI = spatial_mosquitoFOI_matrix
   )
   # INITIALISATION --------------------------------- ####
   state <- sim_setup(
     N = N, EIR = EIR, country = country, admin = admin, mpl = mpl,
-    schedule = schedule,
+    schedule = schedule, annual = annual,
     barcode = list(
       num_loci = num_loci, ibd_length = ibd_length,
       prob_crossover = prob_crossover, starting_ibd = starting_ibd,
@@ -367,6 +376,8 @@ pipeline <- function(EIR = 120,
     N = N, EIR = EIR, years = years,
     update_length = if (update_save) update_length else NA,
     country = country, admin = admin, seed = seed, num_loci = num_loci,
+    plaf = annual$plaf, spatial_incidence = annual$spatial_incidence,
+    spatial_mosquitoFOI = annual$spatial_mosquitoFOI,
     core = mpl, housekeeping = housekeeping_list, drug = drug_list,
     nmf = nmf_list, vector_adaptation = vector_adaptation_list,
     barcode = state$barcode_list, spatial = state$spatial_list
@@ -384,10 +395,12 @@ pipeline <- function(EIR = 120,
   }
 
   # DETERMINISTIC MOSQUITO PRE-SIMULATION ---------- ####
-  annual <- attr(schedule, "annual")
+  # the yearly coverage is the schedule's value in the first period of each
+  # year; a year with no period is not simulated (build_schedule() checks)
+  yearly <- schedule[!duplicated(schedule$year), ]
   mu_fv <- mu_fv_create(
-    eqInit = state$eqInit, ft = annual$ft * state$lpf_weight,
-    itn_cov = annual$itn_cov, irs_cov = annual$irs_cov, years = years
+    eqInit = state$eqInit, ft = yearly$ft * state$lpf_weight,
+    itn_cov = yearly$itn_cov, irs_cov = yearly$irs_cov, years = years
   )
 
   # SIMULATION ------------------------------------- ####
@@ -513,7 +526,7 @@ spatial_type_code <- function(spatial_type) {
 # The generator was seeded (or restored) by pipeline() before this is called;
 # the importation frequency vectors drawn by spl_create() and the C++
 # initialisation consume it in that order.
-sim_setup <- function(N, EIR, country, admin, mpl, schedule, barcode, spatial,
+sim_setup <- function(N, EIR, country, admin, mpl, schedule, annual, barcode, spatial,
                       housekeeping_list, drug_list, nmf_list,
                       vector_adaptation_list, saved_state = NULL) {
   validate_model_param_list(mpl)
@@ -521,7 +534,6 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, barcode, spatial,
   validate_drug_list(drug_list)
   validate_nmf_list(nmf_list)
   validate_vector_adaptation_list(vector_adaptation_list)
-  annual <- attr(schedule, "annual")
 
   # change the ft for the equilibrium and odin to reflect 28 day failure rates
   lpfs <- unlist(lapply(drug_list$drugs, function(x) x$lpf[1]))
@@ -531,7 +543,7 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, barcode, spatial,
   eqInit <- equilibrium_init_create(
     age_vector = age_brackets(100, 40, TRUE),
     het_brackets = 5,
-    ft = annual$ft[1] * lpf_weight,
+    ft = schedule$ft[1] * lpf_weight,
     EIR = EIR,
     country = country,
     admin = admin,
@@ -541,7 +553,7 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, barcode, spatial,
   eqSS <- equilibrium_ss_create(eqInit = eqInit)
 
   state <- list(
-    N = N, eqInit = eqInit, mpl = mpl, lpf_weight = lpf_weight,
+    N = N, eqInit = eqInit, mpl = mpl, lpf_weight = lpf_weight, annual = annual,
     housekeeping_list = housekeeping_list, nmf_list = nmf_list,
     vector_adaptation_list = vector_adaptation_list,
     spatial_settings = spatial,
@@ -554,7 +566,7 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, barcode, spatial,
   state$barcode_list <- barcode_list_create(
     num_loci = barcode$num_loci,
     ibd_length = barcode$ibd_length,
-    plaf = schedule$plaf[[1]],
+    plaf = annual$plaf[1, ],
     prob_crossover = barcode$prob_crossover,
     starting_ibd = barcode$starting_ibd,
     mutation_flag = schedule$mutation_flag[1],
@@ -585,19 +597,21 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, barcode, spatial,
   state
 }
 
-# The spatial list for period i of the schedule. The importation frequency
-# vectors are redrawn each time, from the generator state the previous C++
-# call left behind.
+# The spatial list for period i of the schedule: the importation rates and
+# allele frequencies of the period's year. The importation frequency vectors
+# are redrawn each time, from the generator state the previous C++ call left
+# behind.
 period_spatial_list <- function(state, schedule, i) {
+  year <- schedule$year[i]
   spl_create(
     spatial_type = state$spatial_type,
-    human_importation_rate_vector = schedule$importation_human[[i]],
-    mosquito_imporation_rate_vector = schedule$importation_mosquito[[i]],
+    human_importation_rate_vector = annual_row(state$annual$spatial_incidence, year),
+    mosquito_imporation_rate_vector = annual_row(state$annual$spatial_mosquitoFOI, year),
     cotransmission_freq_vector = ztrgeomintp(10000, 10, state$survival_percentage),
     oocyst_freq_vector = ztrnbinom(10000,
       mean = state$oocyst_mean, size = state$oocyst_shape
     ),
-    plaf = schedule$plaf[[i]],
+    plaf = state$annual$plaf[year, ],
     island_imports_plaf_linked_flag = state$island_imports_plaf_linked_flag
   )
 }

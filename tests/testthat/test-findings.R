@@ -79,7 +79,6 @@ test_that("yearly inputs apply year by year without periodic saving", {
   expect_equal(nrow(sim_schedule(out)), 10)
   expect_equal(sim_schedule(out)$ft, ramp)
   expect_equal(sim_schedule(out)$year, 1:10)
-  expect_equal(attr(sim_schedule(out), "annual")$ft, ramp)
   expect_false(sim_meta(out)$update_save)
   expect_true(is.na(sim_params(out)$update_length))
   # only the final loggers come back
@@ -253,11 +252,11 @@ test_that("a resumed island run keeps its importation rates and spatial settings
   ))
   expect_equal(sim_params(resumed)$spatial$spatial_type, 1)
   expect_equal(
-    sim_schedule(resumed)$importation_human[[1]],
+    sim_params(resumed)$spatial_incidence[1, ],
     first$saved_inputs$spatial_list$human_importation_rate_vector
   )
   expect_equal(
-    sim_schedule(resumed)$importation_mosquito[[1]],
+    sim_params(resumed)$spatial_mosquitoFOI[1, ],
     first$saved_inputs$spatial_list$mosquito_imporation_rate_vector
   )
   expect_error(
@@ -274,7 +273,8 @@ test_that("a resumed island run keeps its importation rates and spatial settings
     housekeeping_list = quiet_housekeeping_test()
   ))
   spl2 <- suppressMessages(spl_grab(cc, "Kinshasa", 2014:2015))
-  expect_equal(sim_schedule(historic)$importation_human[[1]], spl2$incidence[1, ])
+  expect_equal(sim_params(historic)$spatial_incidence[1, ], spl2$incidence[1, ])
+  expect_equal(nrow(sim_params(historic)$spatial_incidence), 2)
 })
 
 test_that("spl_grab gives all-zero rows for a range that ends before 2000", {

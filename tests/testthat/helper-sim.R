@@ -11,8 +11,11 @@ tiny_state <- function(seed = 1L, N = 50, years = 1, update_length = 365,
                        spatial_incidence = NULL, spatial_mosquitoFOI = NULL,
                        plaf = rep(0.5, 2), ibd_length = 1, saved_state = NULL) {
   schedule <- build_schedule(
-    years = years, update_length = update_length, ft = 0.4, plaf = plaf,
-    resistance_flag = drug_list$resistance_flag,
+    years = years, update_length = update_length, ft = 0.4,
+    resistance_flag = drug_list$resistance_flag
+  )
+  annual <- magenta:::annual_inputs(
+    years, plaf = plaf,
     spatial_incidence = spatial_incidence, spatial_mosquitoFOI = spatial_mosquitoFOI
   )
   # pipeline() seeds once before set up; the importation vectors drawn during
@@ -20,7 +23,7 @@ tiny_state <- function(seed = 1L, N = 50, years = 1, update_length = 365,
   set.seed(seed)
   magenta:::sim_setup(
     N = N, EIR = 1, country = NULL, admin = NULL,
-    mpl = model_param_list_create(), schedule = schedule,
+    mpl = model_param_list_create(), schedule = schedule, annual = annual,
     barcode = list(
       num_loci = length(plaf), ibd_length = ibd_length,
       prob_crossover = rep(0.5, length(plaf)),

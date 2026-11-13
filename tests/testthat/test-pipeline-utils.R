@@ -131,14 +131,13 @@ test_that("intervention_grab extends, truncates and overrides the historic serie
 })
 
 test_that("the schedule helpers read a period and a period's treatment failure", {
-  s <- build_schedule(years = 1, update_length = 100, ft = 0.3, plaf = c(0.1, 0.2))
+  s <- build_schedule(years = 1, update_length = 100, ft = 0.3)
   p <- magenta:::schedule_period(s, 2)
   expect_equal(p$i, 2)
   expect_equal(p$n, 4)
   expect_equal(p$day_start, 101)
   expect_equal(p$ft, 0.3)
-  expect_equal(p$plaf, c(0.1, 0.2))
-  expect_null(p$importation_human)
+  expect_named(p, c("i", "n", names(s)))
 
   loggers <- list(Loggers = list(Treatments = list(
     Successful_Treatments = c(3, 5), Unsuccesful_Treatments_LPF = c(1, 1)

@@ -12,9 +12,6 @@ build_schedule(
   irs_cov = 0,
   resistance_flag = FALSE,
   mutation_flag = FALSE,
-  plaf = rep(0.5, 24),
-  spatial_incidence = NULL,
-  spatial_mosquitoFOI = NULL,
   drug_choice = 0
 )
 }
@@ -36,33 +33,21 @@ per year.}
 \item{mutation_flag}{Whether mutation is simulated, one value or one per
 year.}
 
-\item{plaf}{Population level allele frequencies: a vector (one per locus)
-or a matrix with one row per year.}
-
-\item{spatial_incidence}{Human importation rates: \code{NULL}, a vector with
-one value per year, or a matrix with one row per year (as returned by
-\code{\link{spl_grab}}).}
-
-\item{spatial_mosquitoFOI}{Mosquito importation rates, in the same form as
-\code{spatial_incidence}.}
-
 \item{drug_choice}{The drug in use at the start. The column is updated by
 the pipeline as drug cycling switches drugs, so that the schedule returned
 with a simulation records the drug used in each period.}
 }
 \value{
-A data frame of class \code{magenta_schedule} with the columns
-  \code{period}, \code{day_start}, \code{day_end}, \code{year}, \code{ft},
-  \code{itn_cov}, \code{irs_cov}, \code{resistance_flag},
-  \code{mutation_flag}, \code{drug_choice} and the list columns \code{plaf},
-  \code{importation_human} and \code{importation_mosquito}. The padded
-  yearly vectors are kept in the \code{annual} attribute for the
-  deterministic mosquito model.
+A data frame of class \code{magenta_schedule} with one row per
+  period and the columns \code{period}, \code{day_start}, \code{day_end},
+  \code{year}, \code{ft}, \code{itn_cov}, \code{irs_cov},
+  \code{resistance_flag}, \code{mutation_flag} and \code{drug_choice}.
 }
 \description{
 \code{build_schedule} turns the yearly inputs to \code{\link{pipeline}} into
 one data frame with a row per update period. The main loop reads a row at a
-time and never has to recycle, pad or index the yearly vectors itself.
+time and never has to recycle, pad or index the yearly vectors itself, and
+the yearly value of an input is the value in the first row of that year.
 }
 \section{Periods}{
 
@@ -71,26 +56,29 @@ The simulation covers \code{round(years * 365)} days split into
 days. The last period is shortened if it would run past the final day, and
 any days beyond the last full period are not simulated, which is why a one
 year simulation with monthly (30 day) updates runs for 360 days. A period
-belongs to the year in which its first day falls. Setting
-\code{update_length} to the total number of days gives a single period.
+belongs to the year in which its first day falls. Every simulated year must
+contain the start of a period, because the yearly inputs are switched when a
+period starts a new year: an \code{update_length} that leaves a simulated
+year with no period starting in it (one longer than a year, or between 244
+and 364 days in some runs) is an error.
 }
 
 \section{Padding rule}{
 
 Every yearly input (\code{ft}, \code{itn_cov}, \code{irs_cov},
-\code{resistance_flag}, \code{mutation_flag}, the rows of \code{plaf} and of
-the two spatial matrices) is extended to \code{ceiling(years)} entries by
-repeating its last value. A single value therefore applies to every year,
-and a vector shorter than the simulation holds its final value to the end.
-An input longer than \code{ceiling(years)} is an error, so that a mismatch
-between the inputs and the length of the simulation is caught rather than
-silently truncated.
+\code{resistance_flag} and \code{mutation_flag}) is extended to
+\code{ceiling(years)} entries by repeating its last value. A single value
+therefore applies to every year, and a vector shorter than the simulation
+holds its final value to the end. An input longer than \code{ceiling(years)}
+is an error, so that a mismatch between the inputs and the length of the
+simulation is caught rather than silently truncated. The allele frequencies
+and importation rates, which are a vector per year rather than a value, are
+padded by the same rule and held beside the schedule (see
+\code{\link{pipeline}}); they are not columns of it.
 }
 
 \examples{
-sched <- build_schedule(
-  years = 2, update_length = 365, ft = c(0.2, 0.6), itn_cov = 0.3,
-  plaf = rep(0.5, 4)
-)
-sched[, c("period", "day_start", "day_end", "year", "ft", "itn_cov")]
+build_schedule(years = 2, update_length = 365, ft = c(0.2, 0.6), itn_cov = 0.3)
+# monthly periods: the yearly values repeat down the rows of each year
+head(build_schedule(years = 2, update_length = 30, ft = c(0.2, 0.6)), 14)
 }

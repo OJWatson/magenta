@@ -604,16 +604,21 @@ set, so the contract is visible from R and a change on either side fails a test.
 
 Everything that varies by period is one data frame built by
 `build_schedule(years, update_length, ft, itn_cov, irs_cov, resistance_flag,
-mutation_flag, plaf, spatial_incidence, spatial_mosquitoFOI, drug_choice, ...)`:
+mutation_flag, drug_choice)`:
 
-| period | day_start | day_end | year | ft | itn_cov | irs_cov | resistance_flag | mutation_flag | plaf (list col) | importation_human | importation_mosquito |
-|---|---|---|---|---|---|---|---|---|---|---|---|
+| period | day_start | day_end | year | ft | itn_cov | irs_cov | resistance_flag | mutation_flag | drug_choice |
+|---|---|---|---|---|---|---|---|---|---|
 
 Built once, with one padding rule (recycle the *last* value forward, error if a vector
 is longer than `years`), validated once (lengths, ranges, types). The main loop then
 reads row `i` and never calls `rep`, `ceiling`, `%%` or a `*_matrix_check` again.
-`mu_fv_create` consumes the schedule's `ft`/`itn`/`irs` columns. `spl_matrix_check`,
-`plaf_matrix_check` and the ad-hoc flag expansion in `pipeline()` are deleted.
+`mu_fv_create` takes the schedule's `ft`/`itn`/`irs` values in the first row of each
+year (so every simulated year must start a period; `build_schedule()` errors
+otherwise). `plaf` and the two importation inputs are a vector per year, not a
+value, so they are padded by the same rule into one matrix each (`annual_inputs()`),
+held in the run state and in `params`, and read by the period's year when a period
+starts a new year. `spl_matrix_check`, `plaf_matrix_check` and the ad-hoc flag
+expansion in `pipeline()` are deleted.
 
 ### 6.4 Run loop and savers
 
@@ -703,7 +708,11 @@ and where it departs from the plan above:
   the list is unchanged. `R/schedule.R` holds `build_schedule()` with the
   padding rule of 6.3 (last value forward, longer than `ceiling(years)` is an
   error); the behaviour changes it implies for odd inputs are in NEWS and none
-  touched a snapshot. The year change that fell on the final period, the
+  touched a snapshot. (The first version carried the padded yearly vectors
+  as an `annual` attribute and `plaf` and the importation rows as list
+  columns; OJ's review asked for scalar columns only, so the yearly values
+  are now read from the schedule itself and the per-year matrices sit beside
+  it, as 6.3 now says.) The year change that fell on the final period, the
   single-period `update_save` error and calendar-year `years` were fixed in
   passing because the schedule made the old code paths unreachable; they are
   in NEWS too. `Person::m_cA` is initialised in C++ because an uninitialised

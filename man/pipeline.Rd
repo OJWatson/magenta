@@ -207,9 +207,14 @@ at (kept in \code{meta$rng_state} and in the saved state) unless
 
 \item{nmf_list}{List created by \code{\link{nmf_list_create}}}
 
-\item{...}{Other parameters to model_param_list_create
-
-\code{pipeline}}
+\item{...}{Other parameters to model_param_list_create}
+}
+\value{
+What the saver kept, as a \code{\link{magenta_sim}}: the final
+  slot alone, or with \code{update_save = TRUE} a list with one element
+  per period, carrying the run's \code{params}, \code{schedule} and
+  \code{meta} as attributes. With \code{set_up_only = TRUE}, the
+  initialised model state as a plain list.
 }
 \description{
 \code{pipeline} steps through creating the parameter list, the equilibrium

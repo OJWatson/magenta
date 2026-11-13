@@ -253,7 +253,7 @@ mu_fv_create <- function(eqInit,
 run_odin_model <- function(eqInit, ft, itn_cov, irs_cov, years, int_times = NULL) {
   message("\nRunning Deterministic Model for ", years, " years")
 
-  # the yearly vectors come padded from build_schedule(); the first value
+  # the yearly vectors are padded by the schedule's rule; the first value
   # is repeated so that the model starts from the year-one coverage
   n_years <- ceiling(years)
   first_then <- function(x) {
