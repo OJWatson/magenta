@@ -769,6 +769,29 @@ packages (under review separately).
 Still open: the deferred `mu_fv_create()` shortcut above, and a coverage
 gate in CI (the pkgdown reference regrouping is done).
 
+Open findings, not investigated further:
+
+- The simulation sits above the deterministic model on the proportion
+  infected at every EIR (N = 20000, 10 years, ft = 0.4, EIR 1/5/20/100: year
+  10 = 0.147/0.395/0.653/0.866 against 0.102/0.279/0.504/0.758, i.e. +44%,
+  +42%, +30%, +14%), flat from about year 3, with the excess almost entirely
+  in A (0.103/0.312/0.570/0.818 against 0.067/0.197/0.384/0.637), U below the
+  deterministic value at EIR 20 and 100 and S lower to match; clinical
+  incidence 8-24% under. About two thirds of the gap is present in year 1.
+  magenta 1.3.7 shows the same gap, size and compartment, so it predates the
+  1.3.8 model fixes and the 1.4.0 changes. The Deterministic vignette shows
+  it at N = 10000 over six years.
+- A period starting on day 365k is assigned year k+1 one day early
+  (`floor(day_start / 365) + 1` with 1-based days), as the old loop did; only
+  update lengths dividing 364 or 729 (weekly, 14, 28, 52, 91, 182 days) are
+  affected.
+- A resumed run is reproducible from its file but does not equal an
+  uninterrupted run of the combined length: the saved state round-trips
+  exactly, but `Simulation_Saved_Init_cpp()` draws from the generator.
+- With `update_save = TRUE` the per-period output slots are the `Loggers`
+  list itself while the final slot is `list(Loggers = ...)`, the 1.3.x shape
+  the snapshots pin.
+
 *Parked for Phase 6.* The research-era helpers that Phase 0 removed are back
 on the branch, parked and unchanged (styled; ggplot2 calls qualified;
 `requireNamespace()` guards): `R/cluster_utils.R` (`pool_res()`,
