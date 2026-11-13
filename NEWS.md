@@ -26,6 +26,8 @@
   `mu_fv_from_coverage()`, identical to the odin model output and far faster;
   `run_deterministic_model()` runs the model itself.
 * `spl_grab()` keeps the year 2000 in a range that ends there.
+* An all-zero `itn_cov` or `irs_cov` vector takes the no-intervention shortcut
+  (`fv = 0.333`, `mu = 0.132`) as a scalar `0` always did, instead of running the model.
 * `drug_list_create(number_of_resistance_loci = 1)` works.
 * `model_param_list_create()` honours `irs_half_life` and `itn_half_life`;
   `pfpr_to_eir_heuristic(age_range = )` works; `microscopy_detected()` uses the

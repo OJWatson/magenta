@@ -779,7 +779,7 @@ on the branch, parked and unchanged (styled; ggplot2 calls qualified;
 `kl()` stay removed. They are written against the 1.3.x return value of
 `pipeline()`, are excluded from lintr and are left out of the coverage figure:
 R-side line coverage is 98.6% without `R/cluster_utils.R` and `R/plotting.R`
-and 78.3% with them (whole package 79.9% and 75.9%).
+and 78.3% with them (whole package 80.2% and 76.2%, on the rebased head).
 
 **Phase 6: workflows (not started).** Give the six recurring steps (Appendix B)
 package functions, written against `magenta_sim`, and three vignettes that show

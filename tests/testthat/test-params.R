@@ -54,8 +54,15 @@ test_that("the C++ sources read exactly the contracted fields", {
   expect_setequal(read_fields("main_init.cpp", "nmf_list"), contract$nmf$cpp)
   expect_setequal(read_fields("main_init.cpp", "core_parameter_list"), contract$core$cpp)
   expect_setequal(read_fields("main_init.cpp", "eqSS"), contract$eqss$cpp)
-  expect_true(all(read_fields("main_init.cpp", "spatial_list") %in% contract$spatial$cpp))
-  expect_true(all(read_fields("main_update.cpp", "spatial_list") %in% contract$spatial$cpp))
+  # the spatial list is read partly at initialisation and partly at each
+  # update; together they must read exactly the contracted fields
+  expect_setequal(
+    union(
+      read_fields("main_init.cpp", "spatial_list"),
+      read_fields("main_update.cpp", "spatial_list")
+    ),
+    contract$spatial$cpp
+  )
   expect_true(all(read_fields("main_update.cpp", "drug_list") %in% contract$drug$cpp))
   expect_true(all(read_fields("main_update.cpp", "barcode_list") %in% contract$barcode$cpp))
   expect_setequal(read_fields("main_saved_init.cpp", "savedState"), contract$saved_state)
