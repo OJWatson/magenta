@@ -1,0 +1,394 @@
+---
+title: "Schedules, parameters and reproducibility"
+author: "OJ Watson"
+date: "2026-11-13"
+output:
+  rmarkdown::html_vignette:
+    fig_width: 7
+    fig_height: 5
+    fig_align: center
+    keep_md: true
+vignette: >
+  %\VignetteIndexEntry{Schedules, parameters and reproducibility}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+## Overview
+
+`pipeline()` takes a handful of inputs that vary by year (treatment seeking,
+net and spray coverage, the drug in use, resistance and mutation switches,
+allele frequencies, importation) and turns them into a **schedule**: one row
+per update period, each row holding the values the simulation uses for that
+period. The parameters that do not vary are held in a set of classed,
+validated **parameter lists**. Both come back with every run inside the
+`magenta_sim` object, next to the output, so a result always carries the
+inputs that produced it.
+
+This vignette covers the schedule, the parameter lists and their validators,
+the result object, and what a seed does and does not reproduce. What the
+savers return, and how to save and restart a run, is in the
+[Loggers vignette](Loggers.html).
+
+
+``` r
+library(magenta)
+quiet <- housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+```
+
+---
+
+## The schedule
+
+`build_schedule()` is what `pipeline()` calls; you can call it yourself to see
+what a set of inputs will do. One row per period, with the period's first and
+last day, the calendar year it falls in, and the yearly inputs for that year.
+
+
+``` r
+sched <- build_schedule(
+  years = 3, update_length = 365,
+  ft = c(0.2, 0.5), itn_cov = 0.3, plaf = c(0.1, 0.2)
+)
+sched
+## <magenta_schedule> 3 period(s) over 1095 days
+##   period day_start day_end year  ft itn_cov irs_cov resistance_flag
+## 1      1         1     365    1 0.2     0.3       0           FALSE
+## 2      2       366     730    2 0.5     0.3       0           FALSE
+## 3      3       731    1095    3 0.5     0.3       0           FALSE
+##   mutation_flag drug_choice
+## 1         FALSE           0
+## 2         FALSE           0
+## 3         FALSE           0
+```
+
+Three rules are worth knowing.
+
+1. **Last value forward.** A yearly vector shorter than `years` is padded by
+   repeating its last value, so `ft = c(0.2, 0.5)` over three years is
+   `0.2, 0.5, 0.5`. A vector longer than the run is an error rather than a
+   silent truncation. The padded vectors are kept as the `"annual"`
+   attribute of the schedule.
+2. **One row per period.** With `update_save = TRUE` a period is
+   `update_length` days; otherwise it is a calendar year. Either way the yearly
+   inputs are looked up by the period's `year`, so a period that straddles two
+   years takes the values of the year it starts in.
+3. **Whole periods only.** The run is `round(years * 365)` days split into
+   `round(days / update_length)` periods, which is how the package has always
+   counted them: a run of 400 days in 365-day periods is one period of 365
+   days.
+
+The schedule holds `ft`, `itn_cov`, `irs_cov`, `resistance_flag`,
+`mutation_flag` and `drug_choice` as plain columns and the per-year `plaf` and
+importation vectors as list columns:
+
+
+``` r
+names(sched)
+##  [1] "period"               "day_start"            "day_end"             
+##  [4] "year"                 "ft"                   "itn_cov"             
+##  [7] "irs_cov"              "resistance_flag"      "mutation_flag"       
+## [10] "drug_choice"          "plaf"                 "importation_human"   
+## [13] "importation_mosquito"
+sched$plaf[[2]]
+## [1] 0.1 0.2
+```
+
+`pipeline()` runs one C++ update per row. `ft` is passed to the update
+directly; `resistance_flag`, `mutation_flag`, `plaf` and the importation
+vectors are switched when a row starts a new year; `itn_cov` and `irs_cov` go
+through the mosquito model once for the whole run and come back as daily
+death and feeding rates that each period slices (see the
+[Deterministic vignette](Deterministic.html)). `drug_choice` is filled in as
+the run goes, so after a run with drug cycling the schedule records which drug
+each period used. The schedule a run followed is returned as `out$schedule`:
+
+
+``` r
+out <- pipeline(EIR = 5, N = 1000, years = 3, ft = c(0.2, 0.5), seed = 1L,
+                housekeeping_list = quiet)
+## magenta v1.4.0
+## Seed set to 1
+## Starting Stochastic Simulation for 3 years
+## ||:|2|4|
+out$schedule
+## <magenta_schedule> 3 period(s) over 1095 days
+##   period day_start day_end year  ft itn_cov irs_cov resistance_flag
+## 1      1         1     365    1 0.2       0       0           FALSE
+## 2      2       366     730    2 0.5       0       0           FALSE
+## 3      3       731    1095    3 0.5       0       0           FALSE
+##   mutation_flag drug_choice
+## 1         FALSE           0
+## 2         FALSE           0
+## 3         FALSE           0
+```
+
+### Yearly values apply without periodic saving
+
+A run with `update_save = FALSE` still steps year by year, so a treatment
+ramp takes effect when it should. Two runs on the same seed, one with
+treatment seeking jumping from 0.1 to 0.9 after two years and one holding at
+0.1, agree for the first two years and then part:
+
+
+``` r
+ramp <- c(0.1, 0.1, 0.9, 0.9)
+with_ramp <- pipeline(EIR = 5, N = 1000, years = 4, ft = ramp, seed = 1L,
+                      update_save = TRUE, update_length = 365,
+                      housekeeping_list = quiet)
+## magenta v1.4.0
+## Seed set to 1
+## Starting Stochastic Simulation for 4 years
+## ||:|2|4|6|
+constant <- pipeline(EIR = 5, N = 1000, years = 4, ft = 0.1, seed = 1L,
+                     update_save = TRUE, update_length = 365,
+                     housekeeping_list = quiet)
+## magenta v1.4.0
+## Seed set to 1
+## Starting Stochastic Simulation for 4 years
+## ||:|2|4|6|
+
+prevalence <- function(sim) {
+  vapply(seq_len(nrow(sim$schedule)), function(i) {
+    l <- sim$output[[i]]
+    if (!is.null(l$Loggers)) l <- l$Loggers
+    sum(unlist(l[c("D", "A", "U", "T")]))
+  }, numeric(1))
+}
+rbind(ramp = prevalence(with_ramp), constant = prevalence(constant))
+##               [,1]      [,2]      [,3]      [,4]
+## ramp     0.3740986 0.4308795 0.3443671 0.2496301
+## constant 0.3740986 0.4308795 0.4622575 0.4587178
+```
+
+The periodic saves are only there to show the years. The same ramp with no
+periodic saving returns the final loggers alone, and they are identical to the
+final period above, because the periods it ran were the same:
+
+
+``` r
+final_only <- pipeline(EIR = 5, N = 1000, years = 4, ft = ramp, seed = 1L,
+                       housekeeping_list = quiet)
+## magenta v1.4.0
+## Seed set to 1
+## Starting Stochastic Simulation for 4 years
+## ||:|2|4|6|
+final_only$schedule[, c("period", "year", "ft")]
+## <magenta_schedule> 4 period(s) over NA days
+##   period year  ft
+## 1      1    1 0.1
+## 2      2    2 0.1
+## 3      3    3 0.9
+## 4      4    4 0.9
+identical(final_only$output$Loggers, with_ramp$output[[4]]$Loggers)
+## [1] TRUE
+```
+
+---
+
+## Parameter lists
+
+Everything that does not vary by year comes in through a parameter list made
+by a `*_list_create()` constructor: `model_param_list_create()`,
+`drug_list_create()`, `housekeeping_list_create()`, `nmf_list_create()`,
+`vector_adaptation_list_create()` and `barcode_list_create()` (the last is
+built for you from `pipeline()`'s `num_loci`, `plaf` and related arguments).
+Each returns a plain list underneath with a class on top, so it prints
+readably and can be validated:
+
+
+``` r
+dl <- drug_list_create()
+class(dl)
+## [1] "magenta_drug_list"  "magenta_param_list" "list"
+dl
+## <magenta_drug_list> with 15 fields
+##  $ resistance_flag           : logi FALSE
+##  $ number_of_resistance_loci : num 2
+##  $ resistance_loci           : num 0
+##  $ artemisinin_loci          : num 0
+##  $ cost_of_resistance        : num [1:4] 1 0.99 0.99 0.98
+##  $ absolute_fitness_cost_flag: logi FALSE
+##  $ drugs                     :List of 1
+##  $ mft_flag                  : logi FALSE
+##  $ temporal_cycling          : num -1
+##  $ next_temporal_cycle       : num -1
+##  $ sequential_cycling        : num -1
+##  $ sequential_update         : num 3
+##  $ number_of_drugs           : num 1
+##  $ drug_choice               : num 0
+##  $ partner_drug_ratios       : num 1
+```
+
+Each list has a matching exported `validate_*()`. The constructors call it,
+and `pipeline()` calls it again on whatever it is given, so a list that has
+been edited by hand is checked too. The message names the list and the field:
+
+
+``` r
+dl$partner_drug_ratios <- c(0.5, 0.5)
+validate_drug_list(dl)
+## Error:
+## ! drug_list$partner_drug_ratios must have length 1, not 2
+```
+
+What the validators check is the set of fields the C++ simulation reads.
+That set is recorded once, as `cpp_contract`: for each list, the fields its
+constructor produces and the subset the C++ sources read, and a test checks
+both against the sources. It is an internal object, there for reference when
+adding a field:
+
+
+``` r
+str(magenta:::cpp_contract$nmf)
+## List of 2
+##  $ fields: chr [1:4] "nmf_flag" "mean_nmf_frequency" "nmf_age_brackets" "prob_of_testing_nmf"
+##  $ cpp   : chr [1:4] "nmf_flag" "mean_nmf_frequency" "nmf_age_brackets" "prob_of_testing_nmf"
+names(magenta:::cpp_contract)
+##  [1] "init"              "update"            "saved_init"       
+##  [4] "get"               "finalizer"         "saved_state"      
+##  [7] "housekeeping"      "barcode"           "drug"             
+## [10] "drug_entry"        "vector_adaptation" "nmf"              
+## [13] "spatial"           "eqss"              "core"
+```
+
+---
+
+## The `magenta_sim` object
+
+Every run returns a `magenta_sim` with four elements:
+
+- `output`: what the saver kept (the final loggers by default; one element
+  per period with `update_save = TRUE`),
+- `params`: the inputs the run was created with, including every parameter
+  list,
+- `schedule`: the table above, with `drug_choice` filled in,
+- `meta`: the call, the seed, the package version, the saver, the timings and
+  `rng_state`, the state of R's random number generator when the run ended.
+
+
+``` r
+out
+## <magenta_sim>
+##   call:     pipeline(EIR = 5, ft = c(0.2, 0.5), N = 1000, years = 3, seed = 1L,...
+##   N: 1000   years: 3   EIR: 5
+##   output:   loggers, 1 period(s), final = loggers
+##   seed:     1   version: 1.4.0
+##   elapsed:  0.4 secs
+names(out$meta)
+## [1] "call"        "seed"        "rng_state"   "version"     "saver"      
+## [6] "final"       "update_save" "times"       "elapsed"
+out$meta$version
+## [1] '1.4.0'
+out$params
+## <magenta_params>
+##   N: 1000
+##   EIR: 5
+##   years: 3
+##   update_length: NA
+##   seed: 1
+##   num_loci: 24
+##   country: <NULL>
+##   admin: <NULL>
+##   core: <magenta_core_params>
+##   housekeeping: <magenta_housekeeping_list>
+##   drug: <magenta_drug_list>
+##   nmf: <magenta_nmf_list>
+##   vector_adaptation: <magenta_vector_adaptation_list>
+##   barcode: <magenta_barcode_list>
+##   spatial: <magenta_spatial_list>
+```
+
+`as.data.frame(out)` gives one row per period of the scalar logger values,
+and `summary(out)` the headline numbers; both are shown in the
+[Loggers vignette](Loggers.html).
+
+---
+
+## Reproducibility
+
+`pipeline()` seeds R's random number generator once, at the start of the run,
+and every call into the simulation continues from wherever the generator is.
+The seed is recorded in `out$meta$seed` and in the stored call. The same seed
+gives the same run, and a different seed a different one:
+
+
+``` r
+a <- pipeline(EIR = 5, N = 500, years = 2, seed = 3L, housekeeping_list = quiet)
+## magenta v1.4.0
+## Seed set to 3
+## Starting Stochastic Simulation for 2 years
+## ||:|2|
+b <- pipeline(EIR = 5, N = 500, years = 2, seed = 3L, housekeeping_list = quiet)
+## magenta v1.4.0
+## Seed set to 3
+## Starting Stochastic Simulation for 2 years
+## ||:|2|
+c <- pipeline(EIR = 5, N = 500, years = 2, seed = 4L, housekeeping_list = quiet)
+## magenta v1.4.0
+## Seed set to 4
+## Starting Stochastic Simulation for 2 years
+## ||:|2|
+identical(a$output, b$output)
+## [1] TRUE
+identical(a$output, c$output)
+## [1] FALSE
+```
+
+A run resumed from a saved state (`saved_state_path =`, see the
+[Loggers vignette](Loggers.html#saving-and-restarting)) restores the
+generator state the saved run stopped at, so resuming twice from the same
+file gives the same result:
+
+
+``` r
+first <- pipeline(EIR = 5, N = 500, years = 1, seed = 3L,
+                  output = save_loggers(final = "full"), housekeeping_list = quiet)
+## magenta v1.4.0
+## Seed set to 3
+state_file <- file.path(tempdir(), "schedule_state.rds")
+sim_save(first, state_file)
+again_1 <- pipeline(EIR = 5, N = 500, years = 1, saved_state_path = state_file,
+                    housekeeping_list = quiet)
+## magenta v1.4.0
+## Random number generator restored from the saved state
+again_2 <- pipeline(EIR = 5, N = 500, years = 1, saved_state_path = state_file,
+                    housekeeping_list = quiet)
+## magenta v1.4.0
+## Random number generator restored from the saved state
+identical(again_1$output, again_2$output)
+## [1] TRUE
+```
+
+What a resumed run does **not** reproduce is an uninterrupted run of the
+combined length. The saved state round-trips exactly (every population,
+strain, mosquito and parameter list comes back identical), but initialising
+from it draws random numbers that the uninterrupted run never drew, so the two
+part from the first day of the continuation:
+
+
+``` r
+identical(again_1$output$Loggers, a$output$Loggers)
+## [1] FALSE
+again_1$output$Loggers$Time == a$output$Loggers$Time
+## [1] TRUE
+```
+
+Treat a save-and-resume as its own realisation: reproducible from the file,
+not interchangeable with a longer run. Passing `seed` to the resuming call
+reseeds instead of restoring, and is reported in the messages.
+
+Because the seeding changed, every seeded run gives different numbers from
+magenta 1.3.x; see `NEWS.md`.
+
+---
+
+## Where next
+
+- The [Loggers vignette](Loggers.html) for what each saver returns and the
+  saved state format.
+- The [Introduction](Introduction.html) for a real site run from the seasonal
+  and intervention data the package carries.
+- `?build_schedule`, `?validate_drug_list` and `?pipeline` for the details.

@@ -42,6 +42,9 @@
 * odin and dde come from CRAN; R >= 4.1 is required.
 * Vignettes rebuilt against the new interface; every export has an example;
   fixed-seed characterisation tests, styler and lintr in CI; testthat edition 3.
+* Two new vignettes: `Schedule` (schedules, parameter lists, the result
+  object and reproducibility) and `Deterministic` (checks against the
+  deterministic model).
 * `Person::m_cA` is initialised, so set-up-only saves no longer carry an
   uninitialised value.
 

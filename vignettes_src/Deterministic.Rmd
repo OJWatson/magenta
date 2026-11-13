@@ -1,0 +1,187 @@
+---
+title: "Checking magenta against the deterministic model"
+author: "OJ Watson"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    fig_width: 7
+    fig_height: 5
+    fig_align: center
+    keep_md: true
+vignette: >
+  %\VignetteIndexEntry{Checking magenta against the deterministic model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo = FALSE, cache = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "##")
+```
+
+## Why the deterministic model is kept
+
+`magenta` carries a deterministic compartmental transmission model, an early
+copy of the Imperial College malaria model with bed nets and indoor spraying,
+written in [odin](https://mrc-ide.github.io/odin/) and shipped as
+`inst/extdata/odin_itn_irs.R`. It does two jobs.
+
+The first is small: the individual-based simulation does not model the
+mosquito's response to nets and spraying itself, it reads a daily mosquito
+death rate and feeding rate from the deterministic model's intervention block.
+The second is the reason the model is kept at all. With no resistance and a
+large population, the individual-based model should settle at the same
+prevalence and incidence as the deterministic one for a given EIR, and
+checking that it does is the quickest test that a change to the simulation has
+not broken the transmission dynamics. `run_deterministic_model()` runs the
+deterministic model from its equilibrium for a given setting and returns every
+output through time, so that check is a few lines.
+
+```{r setup}
+library(magenta)
+quiet <- housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+```
+
+---
+
+## Mosquito rates from coverage
+
+The deterministic model's death rate `mu` and feeding rate `fv` depend only on
+the net and spray coverage over time and the entomological parameters, not on
+any state variable, so `pipeline()` evaluates that block directly with
+`mu_fv_from_coverage()` instead of solving the whole model. It takes the
+equilibrium parameter list the run is built from and the yearly coverage
+vectors, and returns one row per day:
+
+```{r rates}
+eq <- equilibrium_init_create(
+  age_vector = magenta:::age_brackets(100, 40, TRUE), het_brackets = 5,
+  ft = 0.4, EIR = 10, model_param_list = model_param_list_create(), quiet = TRUE
+)
+itn <- c(0, 0.3, 0.6, 0.6)
+irs <- c(0, 0, 0.2, 0.2)
+rates <- magenta:::mu_fv_from_coverage(eq, ft = 0.4, itn_cov = itn, irs_cov = irs, years = 4)
+head(rates, 3)
+```
+
+Nets and spraying arrive on each anniversary and decay through the year, which
+the rates show directly:
+
+```{r rates-plot, fig.height = 4}
+day <- seq_len(nrow(rates))
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+plot(day, rates$mu, type = "l", ylab = "Mosquito death rate (mu)", xlab = "Day")
+abline(v = 365 * 1:3, lty = 3)
+plot(day, rates$fv, type = "l", ylab = "Feeding rate (fv)", xlab = "Day")
+abline(v = 365 * 1:3, lty = 3)
+```
+
+The closed form is written in the same order of operations as the model's
+generated code, so it is not an approximation: running the deterministic model
+on the same inputs gives the same numbers to the last bit. The package tests
+assert this over every configuration `pipeline()` can produce; here is one of
+them:
+
+```{r rates-check}
+det <- run_deterministic_model(EIR = 10, ft = 0.4, years = 4, itn_cov = itn,
+                               irs_cov = irs, quiet = TRUE)
+identical(rates$mu, det$mu)
+identical(rates$fv, det$fv)
+```
+
+For a two-year seasonal run the closed form takes under a millisecond where the
+solve took two seconds, which is why the model is no longer run inside
+`pipeline()`.
+
+---
+
+## EIR to prevalence and incidence
+
+`run_deterministic_model()` starts at the model's equilibrium, so with no
+interventions its outputs are flat and give the deterministic prevalence and
+clinical incidence for an EIR directly. The individual-based model starts from
+the same equilibrium, approximated for a finite population, and then does its
+own thing. The comparison below runs it at four EIRs for four years with
+`N = 5000`, one replicate each, no resistance and 40% treatment seeking, and
+records the all-age PCR prevalence (`D + A + U + T`) and the clinical incidence
+per person per day at the end of each year.
+
+```{r sweep}
+eirs <- c(1, 5, 20, 100)
+N <- 5000
+years <- 4
+
+deterministic <- t(sapply(eirs, function(e) {
+  d <- run_deterministic_model(EIR = e, ft = 0.4, years = 1, quiet = TRUE)
+  c(prevalence = with(d, (Dout + Aout + Uout + Tout)[365]), incidence = d$inc[365])
+}))
+
+ibm <- lapply(eirs, function(e) {
+  sim <- pipeline(EIR = e, N = N, years = years, ft = 0.4, seed = 1L,
+                  update_save = TRUE, update_length = 365, housekeeping_list = quiet)
+  t(sapply(seq_len(years), function(i) {
+    l <- sim$output[[i]]
+    if (!is.null(l$Loggers)) l <- l$Loggers
+    c(prevalence = sum(unlist(l[c("D", "A", "U", "T")])), incidence = l$Incidence / N)
+  }))
+})
+names(ibm) <- eirs
+```
+
+```{r sweep-table}
+comparison <- data.frame(
+  EIR = eirs,
+  deterministic = round(deterministic[, "prevalence"], 3),
+  ibm_year_1 = round(sapply(ibm, function(x) x[1, "prevalence"]), 3),
+  ibm_year_4 = round(sapply(ibm, function(x) x[years, "prevalence"]), 3),
+  det_incidence = signif(deterministic[, "incidence"], 3),
+  ibm_incidence_year_4 = signif(sapply(ibm, function(x) x[years, "incidence"]), 3)
+)
+rownames(comparison) <- NULL
+comparison
+```
+
+```{r sweep-plot, fig.height = 4.5}
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+shades <- grey(seq(0.75, 0, length.out = years))
+plot(eirs, deterministic[, "prevalence"], type = "b", log = "x", pch = 16,
+     ylim = c(0, 1), xlab = "EIR", ylab = "PCR prevalence, all ages",
+     main = "Prevalence")
+for (i in seq_len(years)) {
+  points(eirs, sapply(ibm, function(x) x[i, "prevalence"]), pch = 17, col = shades[i])
+}
+legend("bottomright", bty = "n", pch = c(16, 17, 17), col = c("black", shades[1], shades[years]),
+       legend = c("deterministic", "simulation, year 1", paste("simulation, year", years)))
+plot(eirs, deterministic[, "incidence"], type = "b", log = "x", pch = 16,
+     ylim = c(0, max(deterministic[, "incidence"]) * 1.3), xlab = "EIR",
+     ylab = "Clinical incidence per person per day", main = "Incidence")
+for (i in seq_len(years)) {
+  points(eirs, sapply(ibm, function(x) x[i, "incidence"]), pch = 17, col = shades[i])
+}
+```
+
+Read the numbers rather than the shapes. The two models agree on how
+prevalence and incidence scale with EIR, and clinical incidence lands within
+about 15% of the deterministic value at EIR 1 to 20 and 26% below it at EIR
+100. Prevalence is further off: by its
+fourth year the simulation sits above the deterministic model at every EIR, by
+0.04 at EIR 1 and 0.10 to 0.14 at the other three (a relative gap of 13% at
+EIR 100 and 45% at EIR 5), and it is still drifting upwards in that fourth
+year. That gap is a property of the two models as they stand, not of this run,
+and nothing here has been tuned to narrow it. If a change to the simulation
+moves these numbers, that is worth knowing; if it closes the gap, that is
+worth knowing too.
+
+The deterministic model also reports a microscopy prevalence in under fives
+(`prev`) and clinical incidence in under fives (`inc05`); the simulation's
+`save_summary()` reports microscopy prevalence in 2 to 10 year olds
+(`micro_2_10`). They are different age windows, so they are not compared here.
+
+---
+
+## Where next
+
+- The [Introduction](Introduction.html) runs a real site from the seasonal
+  and historic intervention data the package carries, which is where the
+  mosquito rates above come from in practice.
+- `?run_deterministic_model` for the full list of outputs the model returns,
+  and `?mu_fv_create` for the rates as `pipeline()` uses them.

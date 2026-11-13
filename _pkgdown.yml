@@ -63,12 +63,17 @@ articles:
     contents:
       - Introduction
       - Loggers
+      - Schedule
   - title: "Antimalarial resistance"
     navbar: "Resistance"
     contents:
       - Resistance
       - DrugStrategies
       - NewDrugs
+  - title: "Model checks"
+    navbar: "Model checks"
+    contents:
+      - Deterministic
 
 navbar:
   type: default
@@ -86,6 +91,8 @@ navbar:
         href: articles/Introduction.html
       - text: Model output, loggers and saved state
         href: articles/Loggers.html
+      - text: Schedules, parameters and reproducibility
+        href: articles/Schedule.html
       - text: -------
       - text: "Antimalarial resistance"
       - text: Simulating antimalarial resistance
@@ -94,6 +101,10 @@ navbar:
         href: articles/DrugStrategies.html
       - text: "Adding a new drug: single low-dose primaquine"
         href: articles/NewDrugs.html
+      - text: -------
+      - text: "Model checks"
+      - text: Checking magenta against the deterministic model
+        href: articles/Deterministic.html
     - text: News
       href: news/index.html
   right:
