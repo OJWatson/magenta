@@ -668,6 +668,11 @@ Each phase is one or two PRs; each PR leaves `R CMD check` and the tests green.
 Phase 6 starts only after `docs-revamp`, Phase 0 and `rewrite` are merged; it
 is scoped to the five PRs listed under it and nothing else.
 
+**Status (2026-11-13).** `rewrite` is rebased onto `master` at 88ffded (the
+`docs-revamp` merge) and carries Phase 0 and everything after it as one
+branch for one PR; it supersedes `worktree-r-code-review`. The characterisation
+snapshots moved once more with the three 1.3.8 model fixes and were accepted.
+
 **Status (2026-11-12).** Phase 0 is done on branch `worktree-r-code-review`, cut
 from the `docs-revamp` tip so it merges after the documentation work: snapshot
 tests (`tests/testthat/test-characterisation.R`, Linux only), styler + `.lintr` +
@@ -987,10 +992,9 @@ melts). `Suggests` gains `hipercow` and keeps `ggplot2`; loses `reshape2`,
    `setup-r-dependencies`; confirm against hipercow's own CI and vignette
    setup first.
 8. ggplot2 in `Suggests`: yes.
-The two commits on `docs-revamp` after the Phase 0 base (the asymptomatic
-discount and the sterilisation direction) change C++ results and are not on
-this branch; merging them will move the snapshots and needs a deliberate
-`snapshot_accept()`.
+The `docs-revamp` model fixes (the asymptomatic discount, the sterilisation
+direction and the zero-length strain course at initialisation) are on the
+branch since the rebase; their snapshot movement was reviewed and accepted.
 
 **Phase 0: safety net and hygiene (small PRs, no behaviour change).**
 - Characterisation snapshot tests (5.5 item 1).

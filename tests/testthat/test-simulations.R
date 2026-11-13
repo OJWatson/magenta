@@ -140,6 +140,7 @@ test_that("Seasonality Test", {
 })
 
 test_that("Gametocyte sterilisation runs and leaves the default untouched", {
+  skip_on_cran()
 
   # NOTE ON WHAT IS NOT TESTED HERE.
   #
@@ -161,7 +162,7 @@ test_that("Gametocyte sterilisation runs and leaves the default untouched", {
   # genuinely off by default.
 
   nl <- 6
-  art_locus <- 4          # kelch13 580Y, zero indexed
+  art_locus <- 4 # kelch13 580Y, zero indexed
 
   drug_list <-
     magenta:::drug_list_create(
@@ -175,13 +176,13 @@ test_that("Gametocyte sterilisation runs and leaves the default untouched", {
     )
 
   run <- function(vector_adaptation_list) {
-    magenta::pipeline(
+    suppressMessages(magenta::pipeline(
       EIR = 20, N = 500, years = 2, ft = 0.8,
       num_loci = nl, plaf = rep(0.15, nl),
       drug_list = drug_list,
       vector_adaptation_list = vector_adaptation_list,
-      seed = 1L
-    )
+      seed = 1L, housekeeping_list = quiet_housekeeping_test()
+    ))
   }
 
   off <- run(magenta:::vector_adaptation_list_create(vector_adaptation_loci = art_locus))
@@ -194,7 +195,7 @@ test_that("Gametocyte sterilisation runs and leaves the default untouched", {
 
   # both complete and report a sane prevalence
   expect_true(all(vapply(list(off, on), function(x) {
-    p <- sum(unlist(x$Loggers[c("D", "A", "U", "T")]))
+    p <- sum(unlist(x$output$Loggers[c("D", "A", "U", "T")]))
     p > 0 && p < 1
   }, logical(1))))
 
