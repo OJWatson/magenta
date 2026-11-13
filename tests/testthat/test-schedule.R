@@ -87,6 +87,11 @@ test_that("inputs longer than the simulation are an error", {
 test_that("the schedule prints its period table", {
   s <- build_schedule(years = 1, update_length = 365, plaf = 0.5)
   expect_output(print(s), "1 period\\(s\\) over 365 days")
+  # a column subset keeps the class and prints without the day count
+  sub <- s[, c("period", "year", "ft")]
+  expect_s3_class(sub, "magenta_schedule")
+  expect_output(print(sub), "1 period\\(s\\)\\n")
+  expect_output(print(sub), "year")
 })
 
 test_that("the padding helpers reject empty and non-numeric inputs", {

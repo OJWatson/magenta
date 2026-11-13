@@ -176,7 +176,7 @@ final_only <- pipeline(EIR = 5, N = 1000, years = 4, ft = ramp, seed = 1L,
 ## Starting Stochastic Simulation for 4 years
 ## ||:|2|4|6|
 final_only$schedule[, c("period", "year", "ft")]
-## <magenta_schedule> 4 period(s) over NA days
+## <magenta_schedule> 4 period(s)
 ##   period year  ft
 ## 1      1    1 0.1
 ## 2      2    2 0.1
@@ -237,16 +237,15 @@ validate_drug_list(dl)
 What the validators check is the set of fields the C++ simulation reads.
 That set is recorded once, as `cpp_contract`: for each list, the fields its
 constructor produces and the subset the C++ sources read, and a test checks
-both against the sources. It is an internal object, there for reference when
-adding a field:
+both against the sources. It is there for reference when adding a field:
 
 
 ``` r
-str(magenta:::cpp_contract$nmf)
+str(cpp_contract$nmf)
 ## List of 2
 ##  $ fields: chr [1:4] "nmf_flag" "mean_nmf_frequency" "nmf_age_brackets" "prob_of_testing_nmf"
 ##  $ cpp   : chr [1:4] "nmf_flag" "mean_nmf_frequency" "nmf_age_brackets" "prob_of_testing_nmf"
-names(magenta:::cpp_contract)
+names(cpp_contract)
 ##  [1] "init"              "update"            "saved_init"       
 ##  [4] "get"               "finalizer"         "saved_state"      
 ##  [7] "housekeeping"      "barcode"           "drug"             

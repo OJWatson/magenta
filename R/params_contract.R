@@ -23,11 +23,11 @@
 #'   \code{housekeeping}, \code{barcode}, \code{drug}, \code{drug_entry},
 #'   \code{vector_adaptation}, \code{nmf}, \code{spatial}, \code{eqss} and
 #'   \code{core} are lists with \code{fields} and \code{cpp}.
-#' @keywords internal
+#' @export
 #' @name cpp_contract
 #' @examples
-#' magenta:::cpp_contract$drug$cpp
-#' setequal(names(drug_list_create()), magenta:::cpp_contract$drug$fields)
+#' cpp_contract$drug$cpp
+#' setequal(names(drug_list_create()), cpp_contract$drug$fields)
 
 NULL
 

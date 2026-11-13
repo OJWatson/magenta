@@ -187,8 +187,8 @@ pad_annual_rows <- function(x, n_years, what) {
 
 #' @export
 print.magenta_schedule <- function(x, ...) {
-  days <- if (is.null(x$day_end)) NA else max(x$day_end)
-  cat("<magenta_schedule> ", nrow(x), " period(s) over ", days, " days\n", sep = "")
+  days <- if (is.null(x$day_end)) "" else paste0(" over ", max(x$day_end), " days")
+  cat("<magenta_schedule> ", nrow(x), " period(s)", days, "\n", sep = "")
   shown <- c(
     "period", "day_start", "day_end", "year", "ft", "itn_cov", "irs_cov",
     "resistance_flag", "mutation_flag", "drug_choice"

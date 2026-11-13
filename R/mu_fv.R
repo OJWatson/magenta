@@ -19,9 +19,10 @@
 #' the same numbers as running the model and is what \code{\link{pipeline}}
 #' uses.
 #'
-#' @param eqInit Output of \code{\link{equilibrium_init_create}}, for the
-#'   entomological and intervention parameters (it carries the model
-#'   parameter list).
+#' @param params The model parameter list from
+#'   \code{\link{model_param_list_create}}, which holds the entomological and
+#'   intervention parameters, or the equilibrium list from
+#'   \code{\link{equilibrium_init_create}}, which carries it.
 #' @param ft Treatment seeking, one value per year (only its length matters
 #'   here; it is kept so the arguments match \code{\link{mu_fv_create}}).
 #' @param itn_cov,irs_cov Bed net and spraying coverage, one value per year.
@@ -35,8 +36,15 @@
 #'   pipeline, where every simulated day is on or after it.
 #' @return Data frame with a row per day (\code{round(years * 365)} rows) and
 #'   columns \code{mu} and \code{fv}.
-#' @keywords internal
-mu_fv_from_coverage <- function(eqInit, ft, itn_cov, irs_cov, years,
+#' @export
+#' @examples
+#' # nets from year two, spraying from year three, over four years
+#' rates <- mu_fv_from_coverage(
+#'   model_param_list_create(), ft = 0.4,
+#'   itn_cov = c(0, 0.3, 0.6, 0.6), irs_cov = c(0, 0, 0.2, 0.2), years = 4
+#' )
+#' rates[c(1, 366, 731), ]
+mu_fv_from_coverage <- function(params, ft, itn_cov, irs_cov, years,
                                 int_times = NULL, itn_irs_on = 0) {
   n_years <- ceiling(years)
   first_then <- function(x, what) {
@@ -52,7 +60,7 @@ mu_fv_from_coverage <- function(eqInit, ft, itn_cov, irs_cov, years,
   if (length(int_times) != length(itn_vector)) {
     stop("int_times must have one entry per yearly value plus one", call. = FALSE)
   }
-  p <- eqInit
+  p <- params
   num_int <- p$num_int
 
   tt <- seq(1, round(years * 365), 1)

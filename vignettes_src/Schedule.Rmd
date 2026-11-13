@@ -162,12 +162,11 @@ validate_drug_list(dl)
 What the validators check is the set of fields the C++ simulation reads.
 That set is recorded once, as `cpp_contract`: for each list, the fields its
 constructor produces and the subset the C++ sources read, and a test checks
-both against the sources. It is an internal object, there for reference when
-adding a field:
+both against the sources. It is there for reference when adding a field:
 
 ```{r contract}
-str(magenta:::cpp_contract$nmf)
-names(magenta:::cpp_contract)
+str(cpp_contract$nmf)
+names(cpp_contract)
 ```
 
 ---

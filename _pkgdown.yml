@@ -33,6 +33,7 @@ reference:
       - spl_grab
       - intervention_grab
       - equilibrium_init_create
+      - mu_fv_from_coverage
       - run_deterministic_model
   - title: "Drug Functions"
     desc: "Functions to create drugs"

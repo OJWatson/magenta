@@ -5,7 +5,7 @@
 \title{Mosquito death and feeding rates from intervention coverage}
 \usage{
 mu_fv_from_coverage(
-  eqInit,
+  params,
   ft,
   itn_cov,
   irs_cov,
@@ -15,9 +15,10 @@ mu_fv_from_coverage(
 )
 }
 \arguments{
-\item{eqInit}{Output of \code{\link{equilibrium_init_create}}, for the
-entomological and intervention parameters (it carries the model
-parameter list).}
+\item{params}{The model parameter list from
+\code{\link{model_param_list_create}}, which holds the entomological and
+intervention parameters, or the equilibrium list from
+\code{\link{equilibrium_init_create}}, which carries it.}
 
 \item{ft}{Treatment seeking, one value per year (only its length matters
 here; it is kept so the arguments match \code{\link{mu_fv_create}}).}
@@ -48,4 +49,11 @@ the simulation. Neither rate depends on the model's state, so this gives
 the same numbers as running the model and is what \code{\link{pipeline}}
 uses.
 }
-\keyword{internal}
+\examples{
+# nets from year two, spraying from year three, over four years
+rates <- mu_fv_from_coverage(
+  model_param_list_create(), ft = 0.4,
+  itn_cov = c(0, 0.3, 0.6, 0.6), irs_cov = c(0, 0, 0.2, 0.2), years = 4
+)
+rates[c(1, 366, 731), ]
+}

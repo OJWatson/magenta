@@ -20,7 +20,6 @@ tests check that every constructor produces exactly the recorded set, so a
 change on either side is caught by a test rather than inside C++.
 }
 \examples{
-magenta:::cpp_contract$drug$cpp
-setequal(names(drug_list_create()), magenta:::cpp_contract$drug$fields)
+cpp_contract$drug$cpp
+setequal(names(drug_list_create()), cpp_contract$drug$fields)
 }
-\keyword{internal}

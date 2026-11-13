@@ -48,18 +48,15 @@ The deterministic model's death rate `mu` and feeding rate `fv` depend only on
 the net and spray coverage over time and the entomological parameters, not on
 any state variable, so `pipeline()` evaluates that block directly with
 `mu_fv_from_coverage()` instead of solving the whole model. It takes the
-equilibrium parameter list the run is built from and the yearly coverage
-vectors, and returns one row per day:
+model parameter list and the yearly coverage vectors, and returns one row per
+day:
 
 
 ``` r
-eq <- equilibrium_init_create(
-  age_vector = magenta:::age_brackets(100, 40, TRUE), het_brackets = 5,
-  ft = 0.4, EIR = 10, model_param_list = model_param_list_create(), quiet = TRUE
-)
 itn <- c(0, 0.3, 0.6, 0.6)
 irs <- c(0, 0, 0.2, 0.2)
-rates <- magenta:::mu_fv_from_coverage(eq, ft = 0.4, itn_cov = itn, irs_cov = irs, years = 4)
+rates <- mu_fv_from_coverage(model_param_list_create(), ft = 0.4,
+                             itn_cov = itn, irs_cov = irs, years = 4)
 head(rates, 3)
 ##      mu        fv
 ## 1 0.132 0.3333333
@@ -227,4 +224,4 @@ The deterministic model also reports a microscopy prevalence in under fives
   and historic intervention data the package carries, which is where the
   mosquito rates above come from in practice.
 - `?run_deterministic_model` for the full list of outputs the model returns,
-  and `?mu_fv_create` for the rates as `pipeline()` uses them.
+  and `?mu_fv_from_coverage` for the rates as `pipeline()` uses them.
