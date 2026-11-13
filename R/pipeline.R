@@ -147,7 +147,6 @@
 #' )
 #' head(as.data.frame(out_m))
 #' }
-
 pipeline <- function(EIR = 120,
                      ft = 0.4,
                      itn_cov = 0,
@@ -199,14 +198,18 @@ pipeline <- function(EIR = 120,
                      only_allele_freqs = TRUE,
                      nmf_list = nmf_list_create(),
                      ...) {
-  # grab the function call for reproducibility
+  # grab the function call for reproducibility, with the seed filled in so
+  # that replaying it gives the same run. Which arguments were given
+  # explicitly matters when resuming a saved run, so note them before the
+  # seed is added to the call
   args <- append(as.list(environment()), list(...))
   call <- match.call(expand.dots = TRUE)
   supplied <- setdiff(names(call), "")
   call$seed <- args$seed
   started <- Sys.time()
 
-  # the deprecated output flags, and which of them the caller set
+  # the deprecated output flags, and which of them the caller set: the output
+  # argument, or the flags, decide what is kept after each period
   flags <- list(
     full_save = full_save, full_update_save = full_update_save,
     human_only_full_save = human_only_full_save,
@@ -235,7 +238,9 @@ pipeline <- function(EIR = 120,
   # PRE-SET UP HOUSEKEEPING ------------------------ ####
   message("magenta v", utils::packageVersion("magenta"))
 
-  # historic intervention grab if asked
+  # historic intervention grab if asked: the net, spray and treatment
+  # coverage and the importation matrices on file for the admin unit, one
+  # row per calendar year in the range
   if (use_historic_interventions && length(years) > 1) {
     ints <- intervention_grab(country = country, admin = admin, year_range = years)
     spl <- spl_grab(country = country, admin = admin, year_range = years)
@@ -245,6 +250,7 @@ pipeline <- function(EIR = 120,
     irs_cov <- ints$irs_cov
     ft <- ints$ft
   }
+  # a calendar year range means its length from here on
   if (length(years) > 1) {
     years <- length(years)
   }
@@ -254,21 +260,30 @@ pipeline <- function(EIR = 120,
   # the lists it was created with and the generator state it stopped at;
   # those win over the arguments.
   if (is.null(saved_state_path)) {
+    # a fresh run: the model parameters come from the dots, and the seed is
+    # set once for the whole run
     saved_state <- NULL
     check_dots_are_model_params(...)
     mpl <- model_param_list_create(...)
     set.seed(seed)
     message("Seed set to ", seed)
   } else {
+    # a resumed run: the C++ state and the lists it was created with come
+    # from the save. Anything the caller gave explicitly has to agree with
+    # the saved value, or it is an error, so that a run cannot silently mix
+    # saved and current inputs
     saved <- read_saved_state(saved_state_path)
     saved_state <- saved$state
+    # the historic grab above counts as giving the matrices explicitly
     if (use_historic_interventions) {
       supplied <- c(supplied, "spatial_incidence_matrix", "spatial_mosquitoFOI_matrix")
     }
+    # the model parameters, if any were given, must match the saved list
     if (length(list(...))) {
       check_dots_are_model_params(...)
       check_resume_arg(
-        "...", model_param_list_create(...), saved$inputs$core_parameter_list, supplied = "..."
+        "...", model_param_list_create(...), saved$inputs$core_parameter_list,
+        supplied = "..."
       )
     }
     check_resume_arg("drug_list", drug_list, saved$inputs$drug_list, supplied,
@@ -282,12 +297,16 @@ pipeline <- function(EIR = 120,
       "vector_adaptation_list", vector_adaptation_list,
       saved$inputs$vector_adaptation_list, supplied
     )
+    # from here on the saved lists are the ones in use
     mpl <- saved$inputs$core_parameter_list
     drug_list <- saved$inputs$drug_list
     housekeeping_list <- saved$inputs$housekeeping_list
     nmf_list <- saved$inputs$nmf_list
     vector_adaptation_list <- saved$inputs$vector_adaptation_list
 
+    # the barcode list was built from separate pipeline() arguments, so each
+    # is checked and taken from the save in turn; plaf and the mutation flag
+    # are yearly inputs and may be given for the new years
     bl <- saved$inputs$barcode_list
     for (nm in c(
       "num_loci", "ibd_length", "prob_crossover", "starting_ibd", "mutation_rate",
@@ -303,6 +322,7 @@ pipeline <- function(EIR = 120,
       mutation_flag <- bl$mutation_flag
     }
 
+    # the spatial settings likewise (saves from before 1.4.0 have none)
     ss <- saved$inputs$spatial_settings
     if (!is.null(ss)) {
       for (nm in names(ss)) {
@@ -310,6 +330,7 @@ pipeline <- function(EIR = 120,
         assign(nm, ss[[nm]])
       }
     }
+    # no importation matrices given: the saved run's last vectors carry on
     sl <- saved$inputs$spatial_list
     if (!("spatial_incidence_matrix" %in% supplied) && !is.null(sl$human_importation_rate_vector)) {
       spatial_incidence_matrix <- matrix(sl$human_importation_rate_vector, nrow = 1)
@@ -319,6 +340,9 @@ pipeline <- function(EIR = 120,
       spatial_mosquitoFOI_matrix <- matrix(sl$mosquito_imporation_rate_vector, nrow = 1)
     }
 
+    # the generator: a seed given explicitly reseeds, otherwise the run
+    # carries on from exactly where the saved run stopped (saves from before
+    # 1.4.0 have no generator state and reseed too)
     if ("seed" %in% supplied || is.null(saved$rng_state)) {
       set.seed(seed)
       message("Seed set to ", seed)
@@ -353,6 +377,8 @@ pipeline <- function(EIR = 120,
     spatial_mosquitoFOI = spatial_mosquitoFOI_matrix
   )
   # INITIALISATION --------------------------------- ####
+  # build the equilibrium and the first period's lists and start the C++
+  # simulation, fresh or from the saved state
   state <- sim_setup(
     N = N, EIR = EIR, country = country, admin = admin, mpl = mpl,
     schedule = schedule, annual = annual,
@@ -372,6 +398,8 @@ pipeline <- function(EIR = 120,
     nmf_list = nmf_list, vector_adaptation_list = vector_adaptation_list,
     saved_state = saved_state
   )
+  # the record of the inputs the run was created with; it comes back with the
+  # result and goes to the savers
   params <- new_magenta_params(list(
     N = N, EIR = EIR, years = years,
     update_length = if (update_save) update_length else NA,
@@ -386,6 +414,8 @@ pipeline <- function(EIR = 120,
   # INITIALISATION ONLY ---------------------------- ####
   if (set_up_only) {
     message("Set Up Grab")
+    # copy the full state back to R, free the C++ memory, and return the
+    # state as the saver's final asks for it
     sim_save <- prepare_state_save(state)
     if (housekeeping_list$clear_up) {
       sim_free(state$sim$Ptr)
@@ -404,16 +434,21 @@ pipeline <- function(EIR = 120,
   )
 
   # SIMULATION ------------------------------------- ####
+  # run every period; the saver fills res after each one, and the schedule
+  # comes back with the drug used in each period
   run <- run_schedule(state, schedule, mu_fv, saver, params, years, save_periods = update_save)
   state <- run$state
   res <- run$res
   schedule <- run$schedule
 
+  # the last slot holds what the saver's final asks for: the loggers, the
+  # full model state so that the run can be continued, or the humans
   final <- switch(saver$final,
     loggers = state$sim,
     full = prepare_state_save(state),
     humans = collect_output(prepare_state_save(state), human_only = TRUE)
   )
+  # with no periodic saving the final slot is the whole result
   if (update_save) {
     res[[length(res)]] <- final
   } else {
@@ -421,6 +456,8 @@ pipeline <- function(EIR = 120,
   }
 
   # FINISH ----------------------------------------- ####
+  # the record of how the run was produced: the call, the seed and where the
+  # generator ended up, the version, the saver, and the timings
   meta <- list(
     call = call, seed = seed, rng_state = get_rng_state(), Ptr = state$sim$Ptr,
     version = utils::packageVersion("magenta"),
@@ -429,6 +466,7 @@ pipeline <- function(EIR = 120,
   )
   sim <- new_magenta_sim(res, params, schedule, meta)
 
+  # if we want all memory to be freed
   if (housekeeping_list$clear_up) {
     sim <- return_sim_memory(sim)
   }
@@ -473,11 +511,13 @@ check_dots_are_model_params <- function(...) {
 #'   \code{saved_inputs}), \code{rng_state} and \code{seed}.
 #' @keywords internal
 read_saved_state <- function(saved_state_path) {
+  # a path is read and checked by sim_restore(); an object is checked only
   if (is.character(saved_state_path)) {
     saved <- sim_restore(saved_state_path)
   } else {
     saved <- as_saved_state(saved_state_path)
   }
+  # the five C++ lists, then what R needs to carry on from them
   list(
     state = unclass(saved)[cpp_contract$saved_state],
     inputs = saved$saved_inputs,
@@ -502,9 +542,12 @@ read_saved_state <- function(saved_state_path) {
 #' @return \code{NULL}, invisibly.
 #' @keywords internal
 check_resume_arg <- function(name, current, saved, supplied, ignore = character()) {
+  # an argument the caller did not give cannot disagree
   if (!(name %in% supplied)) {
     return(invisible(NULL))
   }
+  # lists are compared without the fields allowed to differ (the drug
+  # cycling state the saved run moved on) and without their class
   strip <- function(x) {
     if (is.list(x)) {
       x <- unclass(x)
@@ -603,6 +646,7 @@ spatial_type_code <- function(spatial_type) {
 sim_setup <- function(N, EIR, country, admin, mpl, schedule, annual, barcode, spatial,
                       housekeeping_list, drug_list, nmf_list,
                       vector_adaptation_list, saved_state = NULL) {
+  # check every list before it goes anywhere near C++
   validate_model_param_list(mpl)
   validate_housekeeping_list(housekeeping_list)
   validate_drug_list(drug_list)
@@ -613,7 +657,7 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, annual, barcode, sp
   lpfs <- unlist(lapply(drug_list$drugs, function(x) x$lpf[1]))
   lpf_weight <- weighted.mean(lpfs, drug_list$partner_drug_ratios)
 
-  # near equilibrium initial condition
+  # near equilibrium initial condition for the first year's treatment rate
   eqInit <- equilibrium_init_create(
     age_vector = age_brackets(100, 40, TRUE),
     het_brackets = 5,
@@ -624,8 +668,10 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, annual, barcode, sp
     model_param_list = mpl
   )
 
+  # and the starting state of the population from it
   eqSS <- equilibrium_ss_create(eqInit = eqInit)
 
+  # everything the main loop and the savers need, in one list
   state <- list(
     N = N, eqInit = eqInit, mpl = mpl, lpf_weight = lpf_weight, annual = annual,
     housekeeping_list = housekeeping_list, nmf_list = nmf_list,
@@ -637,6 +683,8 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, annual, barcode, sp
     oocyst_mean = spatial$oocyst_mean, oocyst_shape = spatial$oocyst_shape
   )
 
+  # the barcode list for year one; the spatial list draws the importation
+  # and cotransmission frequency vectors, so it is built after the seed is set
   state$barcode_list <- barcode_list_create(
     num_loci = barcode$num_loci,
     ibd_length = barcode$ibd_length,
@@ -648,9 +696,13 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, annual, barcode, sp
     mutation_treated_modifier = barcode$mutation_treated_modifier
   )
   state$spatial_list <- period_spatial_list(state, schedule, 1)
+  # the resistance flag is a yearly input, so the drug list carries the
+  # year-one value from here on
   drug_list$resistance_flag <- schedule$resistance_flag[1]
   state$drug_list <- drug_list
 
+  # start the C++ simulation, fresh from the equilibrium or from the saved
+  # state, which can be large so is dropped once C++ has copied it
   if (is.null(saved_state)) {
     pl <- param_list_simulation_init_create(
       N = N, eqSS = eqSS,
@@ -725,6 +777,8 @@ apply_period_year <- function(state, schedule, i) {
 #'   and loggers after the update.
 #' @keywords internal
 run_period <- function(state, days, ft, mu_fv) {
+  # the update list is checked against the C++ contract before the call; the
+  # mosquito rates are the days' slice of the whole run's daily series
   pl <- param_list_simulation_update_create(
     years = length(days) / 365,
     ft = ft,
@@ -762,11 +816,13 @@ run_period <- function(state, days, ft, mu_fv) {
 #'   \code{schedule} with the drug used in each period filled in.
 #' @keywords internal
 run_schedule <- function(state, schedule, mu_fv, saver, params, years, save_periods) {
+  # one slot per period; the last is filled by the caller
   n_periods <- nrow(schedule)
   res <- vector("list", n_periods)
   comp_times <- rep(0, max(n_periods - 1, 0))
   treatment_failure <- rep(NA_real_, n_periods)
 
+  # messaging: the progress bar is only worth having with more than one period
   if (n_periods > 1) {
     message("Starting Stochastic Simulation for ", years, " years")
     p <- progress::progress_bar$new(
@@ -776,13 +832,18 @@ run_schedule <- function(state, schedule, mu_fv, saver, params, years, save_peri
     p_print <- progress_logging(state$housekeeping_list, res, p, initial = TRUE)
   }
 
+  # START MAIN SIMULATION LOOP
   for (i in seq_len(n_periods)) {
+    # annual updates: a period that starts a new year switches the yearly
+    # inputs before it runs
     if (i > 1 && schedule$year[i] != schedule$year[i - 1]) {
       state <- apply_period_year(state, schedule, i)
     }
+    # record the drug this period uses
     schedule$drug_choice[i] <- state$drug_list$drug_choice
     last <- i == n_periods
 
+    # messaging and timing; the last period has no save after it
     if (!last) {
       p_print <- progress_logging(state$housekeeping_list, res, p, i,
         initial = FALSE, p_print = p_print
@@ -790,15 +851,18 @@ run_schedule <- function(state, schedule, mu_fv, saver, params, years, save_peri
       comp_times[i] <- Sys.time()
     }
 
+    # carry out the period and read the treatment failure from its loggers
     days <- seq(schedule$day_start[i], schedule$day_end[i])
     state <- run_period(state, days, schedule$ft[i], mu_fv)
     treatment_failure[i] <- period_treatment_failure(state$sim)
 
     if (!last) {
+      # save what we want to save
       if (save_periods) {
         res[i] <- list(saver$fun(state, schedule_period(schedule, i), params))
       }
-      # sequential cycling looks at the failure over the last two periods
+      # drug resistance updates: sequential cycling looks at the failure
+      # over the last two periods
       state$drug_list <- drug_list_update(
         state$drug_list, schedule$year[i],
         mean(treatment_failure[seq(max(1, i - 1), i)])
@@ -817,6 +881,7 @@ run_schedule <- function(state, schedule, mu_fv, saver, params, years, save_peri
 #'   number of periods \code{n}.
 #' @keywords internal
 schedule_period <- function(schedule, i) {
+  # column by column, so a saver reads period$ft rather than a data frame row
   row <- lapply(unclass(schedule), function(col) col[[i]])
   c(list(i = i, n = nrow(schedule)), row)
 }
@@ -832,6 +897,8 @@ schedule_period <- function(schedule, i) {
 #'   and spatial settings) and \code{rng_state}.
 #' @keywords internal
 prepare_state_save <- function(state) {
+  # the five C++ lists, then the R-side lists as they stand at this point
+  # of the run, which is what a resumed run continues with
   sim_save <- sim_get_state(state$sim$Ptr)
   sim_save$saved_inputs <- list(
     barcode_list = state$barcode_list,
@@ -843,6 +910,7 @@ prepare_state_save <- function(state) {
     core_parameter_list = state$mpl,
     spatial_settings = state$spatial_settings
   )
+  # and the generator, so that the resumed run carries on from here
   sim_save$rng_state <- get_rng_state()
   sim_save
 }
@@ -859,6 +927,7 @@ collect_output <- function(sim_save, human_only,
   if (!human_only) {
     return(sim_save)
   }
+  # just the humans: their states, immunity and ages, and their strains
   strain_vars <- c(
     "Strain_infection_state_vectors",
     "Strain_day_of_infection_state_change_vectors",
@@ -877,6 +946,7 @@ collect_output <- function(sim_save, human_only,
 return_sim_memory <- function(sim) {
   meta <- sim_meta(sim)
   sim_free(meta$Ptr)
+  # the pointer is dead now, so drop it from wherever a saver kept it
   for (i in seq_along(sim)) {
     if (is.list(sim[[i]]) && "Ptr" %in% names(sim[[i]])) {
       sim[[i]]$Ptr <- NULL

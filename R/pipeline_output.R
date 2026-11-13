@@ -128,6 +128,9 @@ save_summary <- function(sample_size = Inf, sample_states = 0:5, sample_reps = 1
       sample_states = sample_states, ibd = ibd
     )
 
+    # the genetic summary asked for: the COI tables (with the barcodes
+    # themselves tabled on the chosen periods), the allele frequencies, or
+    # the strain data frame as it is
     res <- switch(genetics,
       coi = COI_df_create(df,
         barcodes = period$i %% barcodes_every == 0 && period$i >= (period$n - barcodes_last),
@@ -144,6 +147,7 @@ save_summary <- function(sample_size = Inf, sample_states = 0:5, sample_reps = 1
       },
       df = list(df = df)
     )
+    # followed by the treatment and prevalence summaries every summary save has
     c(res, treatment_and_prevalence_summary(sim_out, params$core))
   }
   new_saver(fun, name = paste0("summary (", genetics, ")"), final = final)
@@ -272,6 +276,7 @@ legacy_saver <- function(fun, final = "loggers") {
 #' @return A \code{magenta_saver}.
 #' @keywords internal
 resolve_saver <- function(output, flags, used) {
+  # a plain function is wrapped as a saver; anything else is an error
   if (!is.null(output) && !inherits(output, "magenta_saver")) {
     if (is.function(output)) {
       output <- new_saver(output, name = "user function")
@@ -283,9 +288,11 @@ resolve_saver <- function(output, flags, used) {
       )
     }
   }
+  # none of the old flags given: the saver asked for, or the loggers
   if (!any(used)) {
     return(if (is.null(output)) save_loggers() else output)
   }
+  # the old flags and a saver together is ambiguous
   if (!is.null(output)) {
     stop(
       "output was given together with the deprecated argument(s) ",
@@ -294,6 +301,7 @@ resolve_saver <- function(output, flags, used) {
       call. = FALSE
     )
   }
+  # the old flags alone map onto one saver; say which to use instead
   mapped <- saver_from_flags(flags)
   warning(
     "pipeline(): the argument(s) ", paste(names(used)[used], collapse = ", "),
@@ -311,6 +319,7 @@ resolve_saver <- function(output, flags, used) {
 #'   show in the deprecation warning.
 #' @keywords internal
 saver_from_flags <- function(f) {
+  # what the last slot held: the humans, the full state, or the loggers
   final <- if (isTRUE(f$human_only_full_save)) {
     "humans"
   } else if (isTRUE(f$full_save)) {
@@ -324,16 +333,19 @@ saver_from_flags <- function(f) {
     paste(a[nzchar(a)], collapse = ", ")
   }
 
+  # an old update function wraps as a saver
   if (!is.null(f$update_save_func)) {
     saver <- legacy_saver(f$update_save_func, final = final)
     return(list(saver = saver, replacement = "function(state, period, params)"))
   }
+  # loggers only
   if (!isTRUE(f$human_update_save)) {
     return(list(
       saver = save_loggers(final = final),
       replacement = sprintf("save_loggers(%s)", args())
     ))
   }
+  # the population each period: the full state, or the humans alone
   if (!isTRUE(f$summary_saves_only)) {
     if (isTRUE(f$full_update_save)) {
       return(list(
@@ -346,6 +358,7 @@ saver_from_flags <- function(f) {
       replacement = sprintf("save_humans(%s)", args())
     ))
   }
+  # the summary saver, with the genetic summary the old flags chose
   genetics <- if (!isTRUE(f$genetics_df_without_summarising)) {
     "coi"
   } else if (isTRUE(f$only_allele_freqs)) {
@@ -549,6 +562,7 @@ print.summary.magenta_sim <- function(x, ...) {
 #' @rdname magenta_sim
 #' @export
 as.data.frame.magenta_sim <- function(x, ...) {
+  # one row per period, every scalar in the period's output as a column
   out <- sim_output(x)
   periods <- if (isTRUE(sim_meta(x)$update_save)) out else list(out)
   rows <- lapply(periods, scalar_fields)
@@ -560,6 +574,7 @@ as.data.frame.magenta_sim <- function(x, ...) {
       if (is.null(v)) NA_real_ else as.numeric(v)
     }, numeric(1))
   }
+  # with the schedule's day and year in front when it lines up
   sched <- sim_schedule(x)
   if (!is.null(sched) && nrow(sched) == nrow(df)) {
     df <- cbind(
@@ -635,6 +650,7 @@ scalar_fields <- function(x) {
 #' }
 sim_save <- function(sim, path) {
   check_scalar_character(path, "path")
+  # a run keeps its inputs with the state; a bare set_up_only state has none
   if (inherits(sim, "magenta_sim")) {
     state <- final_full_state(sim)
     extra <- list(params = sim_params(sim), schedule = sim_schedule(sim), meta = sim_meta(sim))
@@ -646,6 +662,7 @@ sim_save <- function(sim, path) {
   } else {
     stop("sim must be a magenta_sim from pipeline() or a full model state", call. = FALSE)
   }
+  # the pointer means nothing on disk
   extra$meta$Ptr <- NULL
   obj <- new_saved_state(
     c(unclass(state), extra),
