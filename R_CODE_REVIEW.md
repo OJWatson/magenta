@@ -833,12 +833,21 @@ and that `bind_sims` carries grid columns. Delete `cluster_utils.R` in this PR;
 
 **6.2 Grid and local batch (one PR).** `R/grid.R`, `R/batch.R`.
 
-- `sim_grid(..., reps = 1, seed = NULL)` — `expand.grid` over the scalar arguments,
-  list-columns for anything that is not a scalar (a `plaf` matrix, a `drug_list`,
-  a yearly `ft` vector) wrapped with `I()`, then `rep` and a deterministic `seed`
-  column (`seed + row`), class `magenta_grid`. `grid_args(grid, i)` turns row `i`
-  into the argument list `pipeline()` takes, so the worker function is always
-  `do.call(pipeline, grid_args(grid, i))`. This replaces the `for` loops in
+- `sim_grid(..., reps = 1, seed = NULL, args = history_policy_args)` —
+  `expand.grid` over whatever columns the user likes (scalars, or list-columns
+  wrapped with `I()` for a `plaf` matrix, a `drug_list`, a yearly `ft` vector),
+  then `rep` and a deterministic `seed` column (`seed + row`), class
+  `magenta_grid`. The grid never guesses how its columns map onto `pipeline()`:
+  the user supplies an args function that turns one row into the argument
+  list, kept with the grid, and `grid_args(grid, i)` calls it on row `i`, so
+  the worker function is always `do.call(pipeline, grid_args(grid, i))`,
+  locally and on the cluster. The package ships one default,
+  `history_policy_args()`, for the common history-then-policy shape (columns
+  `years_history`, `years_policy`, `ft`, `EIR`, `seed`, plus the policy's
+  `drug_list` and starting `plaf`): it pads `resistance_flag`, `mutation_flag`,
+  `plaf` and the importation vectors to history years then policy years, so
+  the standard case (arms, the MMC runs) is a one-liner; anything beyond that
+  shape is the user's own function. This replaces the `for` loops in
   `01_dideweb.R` and `didewin.R` and the `split(pardf, pardf$seed)` in peru.
   Because 1.4.0 validates every parameter list, a bad row fails at
   `grid_args()` time, locally, not on the cluster.
@@ -965,11 +974,14 @@ melts). `Suggests` gains `hipercow` and keeps `ggplot2`; loses `reshape2`,
    to helper scripts under `submission_data/genomic_tools_data/` with
    `bootstrap()` and `kl()` in the 6.4 PR; there will be no paper-one
    compendium.
-6. **Open:** how `sim_grid()` encodes the "history years then treatment years"
-   split of the yearly inputs (`hd`/`tl` in arms, `itn_years` in peru): scalar
-   columns plus a user-supplied `args_fun(row)`, or a `years_history` argument
-   that `grid_args()` uses to pad `resistance_flag`, `mutation_flag`, `plaf` and
-   the importation vectors. OJ has asked for more detail before deciding.
+6. Grid encoding of the "history years then treatment years" split: a
+   row-to-args function. `sim_grid()` holds whatever columns the user likes;
+   the user supplies the function that turns one row into the `pipeline()`
+   argument list and `run_grid()` calls it on every row, locally and on the
+   cluster. The package ships one default for the history-then-policy shape
+   (`history_policy_args()`: history years, policy years, `ft`, `EIR`, `seed`
+   to padded flags and vectors) so the standard case is a one-liner, and never
+   guesses beyond that.
 7. hipercow in CI: yes, through the example driver for tests and vignette
    chunks, DIDE-driver chunks `eval = FALSE`, the r-universe repository in
    `setup-r-dependencies`; confirm against hipercow's own CI and vignette
