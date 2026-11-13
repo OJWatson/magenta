@@ -68,7 +68,12 @@ out <- pipeline(EIR = 10, N = 2000, years = 5, ft = 0.4, seed = 1L)
 ## Seed set to 1
 ## Starting Stochastic Simulation for 5 years
 str(out$Loggers$Treatments)
-##  NULL
+## List of 5
+##  $ Successful_Treatments         : num 478
+##  $ Unsuccesful_Treatments_LPF    : num 0
+##  $ Not_Treated                   : num 694
+##  $ daily_bite_counters           : int 1143152
+##  $ daily_infectious_bite_counters: int 15713
 ```
 
 `Unsuccesful_Treatments_LPF` counts treatments that ended in a 28 day late
@@ -344,15 +349,15 @@ out_standing <- res_pipeline(dl)
 ## Starting Stochastic Simulation for 20 years
 ```
 
-The saved elements of `out$output` hold an `af` vector, one allele frequency
+The saved elements of `out` hold an `af` vector, one allele frequency
 per locus. The final element is the loggers at the end of the run rather than
 a summary, so it is dropped when pulling results out:
 
 
 ``` r
 af_over_time <- function(out) {
-  pos <- seq_len(length(out$output) - 1)
-  af <- do.call(rbind, lapply(out$output[pos], "[[", "af"))
+  pos <- seq_len(length(out) - 1)
+  af <- do.call(rbind, lapply(out[pos], "[[", "af"))
   colnames(af) <- loci
   af
 }
@@ -494,8 +499,8 @@ expect:
 
 
 ``` r
-pos <- seq_len(length(out_mutation$output) - 1)
-mutations <- colSums(do.call(rbind, lapply(out_mutation$output[pos], "[[", "mutations")))
+pos <- seq_len(length(out_mutation) - 1)
+mutations <- colSums(do.call(rbind, lapply(out_mutation[pos], "[[", "mutations")))
 data.frame(locus = loci, mutations = mutations)
 ##                        locus mutations
 ## 1                    crt 76T        81
@@ -572,7 +577,7 @@ out_absolute <- res_pipeline(dl_absolute, years = 20)
 kelch <- function(out) af_over_time(out)[, "kelch13 580Y"]
 ppq <- function(out) af_over_time(out)[, "plasmepsin 2-3 copy number"]
 
-years_axis <- seq_len(length(out_relative$output) - 1) / 12
+years_axis <- seq_len(length(out_relative) - 1) / 12
 plot(years_axis, kelch(out_relative), type = "l", lwd = 2, col = "steelblue",
      ylim = c(0, 1), xlab = "Years", ylab = "Allele frequency")
 lines(years_axis, ppq(out_relative), lwd = 2, lty = 2, col = "steelblue")
@@ -601,7 +606,7 @@ carries a compact set of resistance relevant summaries:
 
 
 ``` r
-names(out_standing$output[[1]])
+names(out_standing[[1]])
 ##  [1] "af"                         "succesfull_treatments"     
 ##  [3] "unsuccesful_treatments_lpf" "not_treated"               
 ##  [5] "treatment_failure"          "daily_pop_eir"             
@@ -627,7 +632,7 @@ check a resistance scenario is behaving:
 
 
 ``` r
-saved <- out_standing$output[seq_len(length(out_standing$output) - 1)]
+saved <- out_standing[seq_len(length(out_standing) - 1)]
 tf <- unlist(lapply(saved, "[[", "overall_treatment_failure"))
 prev <- unlist(lapply(saved, "[[", "micro_2_10"))
 years_axis <- seq_along(tf) / 12

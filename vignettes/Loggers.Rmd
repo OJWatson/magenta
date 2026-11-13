@@ -26,10 +26,12 @@ awkward, while the default summary may not contain what you need.
 This vignette describes what each saver returns, what the individual loggers
 mean, and how to save a simulation to disk and restart it later.
 
-Every run returns a `magenta_sim` with four elements: `output` (what the saver
-kept), `params` (the inputs the run was created with), `schedule` (the
-per-period table of inputs the run followed) and `meta` (call, seed, version,
-timings).
+Every run returns what the saver kept, as a `magenta_sim`: the list has the
+shape it always had (`out$Loggers`, `out[[i]]`), and carries the run's inputs
+as attributes, read with `sim_params()` (the inputs the run was created
+with), `sim_schedule()` (the per-period table of inputs the run followed) and
+`sim_meta()` (call, seed, version, timings). Printing it shows a short header;
+`unclass(out)` shows the list itself.
 
 
 ``` r
@@ -40,9 +42,9 @@ library(magenta)
 
 ## The default: loggers only
 
-With no saving options, `pipeline()` runs to the end and its `output` is a
-single list containing `Loggers`, a snapshot of the population at the final
-time step.
+With no saving options, `pipeline()` runs to the end and returns a single
+list containing `Loggers`, a snapshot of the population at the final time
+step.
 
 
 ``` r
@@ -56,8 +58,8 @@ out
 ##   N: 1000   years: 3   EIR: 5
 ##   output:   loggers, 1 period(s), final = loggers
 ##   seed:     1   version: 1.4.0
-##   elapsed:  0.4 secs
-names(out$output$Loggers)
+##   elapsed:  0.3 secs
+names(out$Loggers)
 ##  [1] "Log_Counter"              "Incidence"               
 ##  [3] "Incidence_05"             "Treatments"              
 ##  [5] "daily_mutations_per_loci" "InfectionStates"         
@@ -78,7 +80,7 @@ subpatent, treated and prophylactic.
 
 
 ``` r
-as.data.frame(out$output$Loggers[c("S", "D", "A", "U", "T", "P")])
+as.data.frame(out$Loggers[c("S", "D", "A", "U", "T", "P")])
 ##           S           D         A          U           T          P
 ## 1 0.6022603 0.004309589 0.3011836 0.07592877 0.002742466 0.01357534
 ```
@@ -91,7 +93,7 @@ microscopy, and is needed by `convert_barcode_vectors()`.
 
 
 ``` r
-sapply(out$output$Loggers[c("Ages", "InfectionStates", "IB", "ICA", "ICM", "ID")], length)
+sapply(out$Loggers[c("Ages", "InfectionStates", "IB", "ICA", "ICM", "ID")], length)
 ##            Ages InfectionStates              IB             ICA             ICM 
 ##            1000            1000            1000            1000            1000 
 ##              ID 
@@ -107,7 +109,7 @@ rates. `daily_mutations_per_loci` counts mutations at each barcode locus.
 
 
 ``` r
-str(out$output$Loggers$Treatments)
+str(out$Loggers$Treatments)
 ## List of 5
 ##  $ Successful_Treatments         : num 205
 ##  $ Unsuccesful_Treatments_LPF    : num 0
@@ -134,7 +136,7 @@ out_u <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
 ## magenta v1.4.0
 ## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
-str(out_u$output[[1]]$Mosquitoes)
+str(out_u[[1]]$Mosquitoes)
 ## List of 3
 ##  $ Mos_S: num 2775
 ##  $ Mos_E: num 89.5
@@ -146,16 +148,16 @@ str(out_u$output[[1]]$Mosquitoes)
 ## Saving through time
 
 `update_save = TRUE` stops the simulation every `update_length` days, extracts
-what the saver asks for, and carries on. `output` is then a list with one
-element per interval, and `schedule` has one row per interval.
+what the saver asks for, and carries on. The result is then a list with one
+element per interval, and the schedule has one row per interval.
 
 
 ``` r
-length(out_u$output)
+length(out_u)
 ## [1] 12
 3 * 365 / 90
 ## [1] 12.16667
-head(out_u$schedule)
+head(sim_schedule(out_u))
 ## <magenta_schedule> 6 period(s) over 540 days
 ##   period day_start day_end year  ft itn_cov irs_cov resistance_flag
 ## 1      1         1      90    1 0.4       0       0           FALSE
@@ -180,9 +182,9 @@ drop it:
 
 
 ``` r
-pos <- seq_len(length(out_u$output) - 1)
-prev <- unlist(lapply(out_u$output[pos], function(x) sum(unlist(x[c("D", "A", "U", "T")]))))
-time <- unlist(lapply(out_u$output[pos], "[[", "Time"))
+pos <- seq_len(length(out_u) - 1)
+prev <- unlist(lapply(out_u[pos], function(x) sum(unlist(x[c("D", "A", "U", "T")]))))
+time <- unlist(lapply(out_u[pos], "[[", "Time"))
 plot(time / 365, prev, type = "l", lwd = 2, col = "steelblue",
      xlab = "Years", ylab = "PCR prevalence", ylim = c(0, max(prev)))
 ```
@@ -227,13 +229,13 @@ head(as.data.frame(out_u))
 
 ### Reproducibility metadata
 
-Every returned object carries `meta`, holding the call, the seed, the package
-version and the time taken. Keep this: it is the record of how a simulation was
+Every returned object carries a `meta` attribute, holding the call, the seed,
+the package version and the time taken. Keep this: it is the record of how a simulation was
 produced.
 
 
 ``` r
-meta <- out_u$meta
+meta <- sim_meta(out_u)
 meta$seed
 ## [1] 1
 meta$version
@@ -260,7 +262,7 @@ out_s <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
 ## magenta v1.4.0
 ## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
-names(out_s$output[[1]])
+names(out_s[[1]])
 ##  [1] "summary_coi"                "summary_coi_detected"      
 ##  [3] "summary_moi_detected"       "summary_polygenom"         
 ##  [5] "summary_ages"               "summary_unique"            
@@ -285,7 +287,7 @@ names(out_s$output[[1]])
 
 
 ``` r
-head(out_s$output[[1]]$summary_coi)
+head(out_s[[1]]$summary_coi)
 ##      age_bin     clinical   N     mean
 ## 1 (-0.001,5] Asymptomatic  50 2.100000
 ## 2 (-0.001,5]     Clinical   2 2.500000
@@ -313,14 +315,14 @@ out_af <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
 ## magenta v1.4.0
 ## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
-names(out_af$output[[1]])
+names(out_af[[1]])
 ##  [1] "af"                         "succesfull_treatments"     
 ##  [3] "unsuccesful_treatments_lpf" "not_treated"               
 ##  [5] "treatment_failure"          "daily_pop_eir"             
 ##  [7] "mutations"                  "overall_treatment_failure" 
 ##  [9] "pcr_prev"                   "dat"                       
 ## [11] "micro_2_10"
-round(out_af$output[[1]]$af, 3)
+round(out_af[[1]]$af, 3)
 ## [1] 0.215 0.203 0.203 0.166 0.198 0.235
 ```
 
@@ -351,7 +353,7 @@ out_h <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
 ## magenta v1.4.0
 ## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
-names(out_h$output[[length(out_h$output)]])
+names(out_h[[length(out_h)]])
 ## [1] "Infection_States"                            
 ## [2] "Zetas"                                       
 ## [3] "Ages"                                        
@@ -371,7 +373,7 @@ out_f <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
 ## magenta v1.4.0
 ## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
-names(out_f$output)
+names(out_f)
 ## [1] "population_List"                    "populations_event_and_strains_List"
 ## [3] "scourge_List"                       "parameters_List"                   
 ## [5] "parameter_housekeeping_List"        "saved_inputs"                      
@@ -413,7 +415,7 @@ out_cont <- pipeline(EIR = 5, N = 1000, years = 2, ft = 0.4,
 ## Starting Stochastic Simulation for 2 years
 
 # the clock carries on from where the saved state stopped
-out_cont$output[[length(out_cont$output)]]$Loggers$Time
+out_cont[[length(out_cont)]]$Loggers$Time
 ## [1] 1826
 ```
 
@@ -461,7 +463,7 @@ out_custom <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
 ## magenta v1.4.0
 ## Seed set to 1
 ## Starting Stochastic Simulation for 3 years
-str(out_custom$output[[1]])
+str(out_custom[[1]])
 ## List of 4
 ##  $ period    : int 1
 ##  $ time      : int 91

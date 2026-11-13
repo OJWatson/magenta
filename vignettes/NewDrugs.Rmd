@@ -123,8 +123,8 @@ out_new <- pipeline(
 
 
 ``` r
-pos <- seq_len(length(out_new$output) - 1)
-af <- do.call(rbind, lapply(out_new$output[pos], "[[", "af"))
+pos <- seq_len(length(out_new) - 1)
+af <- do.call(rbind, lapply(out_new[pos], "[[", "af"))
 colnames(af) <- c(paste("position", 0:5), "new marker (6)")
 years <- seq_len(nrow(af)) / 12
 
@@ -300,8 +300,8 @@ run_block <- function(va, seed = 1L) {
                   update_length = 30, update_save = TRUE,
                   output = save_summary(genetics = "allele_freqs"),
                   drug_list = dl_al, vector_adaptation_list = va, seed = seed)
-  p <- seq_len(length(out$output) - 1)
-  mean(tail(unlist(lapply(out$output[p], "[[", "micro_2_10")), 24))
+  p <- seq_len(length(out) - 1)
+  mean(tail(unlist(lapply(out[p], "[[", "micro_2_10")), 24))
 }
 
 va <- function(...) magenta:::vector_adaptation_list_create(

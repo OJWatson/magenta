@@ -84,7 +84,7 @@ run_strategy <- function(drug_list, years = 20, seed = 1L) {
 }
 
 # saved intervals, dropping the final element which holds the end-of-run loggers
-saved <- function(out) out$output[seq_len(length(out$output) - 1)]
+saved <- function(out) out[seq_len(length(out) - 1)]
 
 af_over_time <- function(out) {
   af <- do.call(rbind, lapply(saved(out), "[[", "af"))

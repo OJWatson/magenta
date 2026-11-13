@@ -116,7 +116,7 @@ constant <- pipeline(EIR = 5, N = 1000, years = 4, ft = 0.1, seed = 1L,
                      housekeeping_list = quiet)
 
 prevalence <- function(sim) {
-  vapply(seq_len(nrow(sim$schedule)), function(i) {
+  vapply(seq_len(nrow(sim_schedule(sim))), function(i) {
     l <- sim[[i]]
     if (!is.null(l$Loggers)) l <- l$Loggers
     sum(unlist(l[c("D", "A", "U", "T")]))

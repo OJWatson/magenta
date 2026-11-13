@@ -142,7 +142,7 @@ ibm <- lapply(eirs, function(e) {
   sim <- pipeline(EIR = e, N = N, years = years, ft = 0.4, seed = 1L,
                   update_save = TRUE, update_length = 365, housekeeping_list = quiet)
   t(sapply(seq_len(years), function(i) {
-    l <- sim$output[[i]]
+    l <- sim[[i]]
     if (!is.null(l$Loggers)) l <- l$Loggers
     by_state <- sapply(states, function(st) l[[st]])
     c(infected = sum(by_state[c("D", "A", "U", "T")]), incidence = l$Incidence / N, by_state)
