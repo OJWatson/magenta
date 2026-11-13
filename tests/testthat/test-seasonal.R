@@ -53,3 +53,14 @@ test_that("admin_match finds the closest admin unit without a country", {
   )
   expect_message(magenta:::admin_match("Kinshsa"), "Returned: Kinshasa")
 })
+
+test_that("country_seasonal_profiles plots every admin unit of a country", {
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  expect_error(magenta:::country_seasonal_profiles("Atlantis"), "Country is not one of")
+  expect_message(magenta:::country_seasonal_profiles("Togo"), "Returned: Maritime")
+  expect_message(
+    magenta:::country_seasonal_profiles("Democratic Republic of the Congo"),
+    "Returned: Kinshasa"
+  )
+})

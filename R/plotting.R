@@ -176,7 +176,6 @@ sample_coi <- function(sim_save, ID, sample_size, age_densities, age_breaks = se
 #' @param ylimmax ylim max
 #' @param xlimmax xlim max
 #' @param max_coi max_coi
-#' @importFrom ggplot2 ggplot aes geom_smooth theme_bw geom_point xlim ylim
 #'
 #' @keywords internal
 coi_age_plot_sample_x <- function(sample_coi_out,

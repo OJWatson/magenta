@@ -156,12 +156,12 @@ country_seasonal_profiles <- function(country) {
     max(seasonal_profile(x, country))
   }))
 
-  ret <- sapply(admins, function(x) {
+  invisible(sapply(admins, function(x) {
     invisible(plot(seasonal_profile(x, country),
       main = x,
       ylim = c(0, max_ses + 0.2),
       ylab = "Seasonal",
       xlab = "Day"
     ))
-  })
+  }))
 }
