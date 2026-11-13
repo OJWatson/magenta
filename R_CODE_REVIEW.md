@@ -577,15 +577,21 @@ replaced on their own.
 ### 6.1 Four layers
 
 ```
-R/params-*.R        parameter objects:  new_*() constructors, validate_*(), print methods
-R/schedule.R        build_schedule(): one row per update period, validated once
-R/sim-bindings.R    sim_init(), sim_update(), sim_get_state(), sim_free(), sim_restore()
-R/run.R             sim_setup(), sim_run(), sim_save(), sim_restore(); the loop
-R/savers.R          save_loggers(), save_summary(), save_humans(), save_full()
-R/magenta_sim.R     magenta_sim class: print, summary, as.data.frame, accessors
-R/equilibrium-*.R   unchanged maths, split so the 312-line function is 3-4 pieces
-R/pipeline.R        pipeline(): back-compatible wrapper, ~40 lines, deprecating old flags
+R/pipeline_param_lists.R  parameter lists: *_list_create(), validate_*(), cpp_contract, check_*()
+R/pipeline_schedule.R     build_schedule(): one row per update period, validated once
+R/mainFunctions.R         param_list_simulation_*(); sim_init(), sim_update(), sim_get_state(),
+                          sim_free(), sim_init_saved() over the C++ entry points
+R/pipeline.R              pipeline(); sim_setup(), run_schedule(), prepare_state_save(); the loop
+R/pipeline_output.R       save_loggers(), save_summary(), save_humans(), save_full();
+                          magenta_sim class: print, summary, as.data.frame, accessors;
+                          sim_save(), sim_restore()
+R/pipeline_utils.R        historic inputs, mu_fv_create(), mu_fv_from_coverage(), the odin run
+R/equilibrium_*.R         unchanged maths
+R/stat_genetics_utils.R   genetics summaries, detection, barcode conversion
 ```
+
+(As landed; the plan's first cut had these as eight small files, which OJ's
+review folded into the layout above.)
 
 ### 6.2 Parameters
 
@@ -694,18 +700,18 @@ The characterisation snapshot file is unchanged throughout (the tests read the
 result through `sim_output()`, which strips the attributes). What landed,
 and where it departs from the plan above:
 
-- *Phase 1.* `R/sim_bindings.R` holds `sim_init()`, `sim_update()`,
+- *Phase 1.* `R/mainFunctions.R` holds `sim_init()`, `sim_update()`,
   `sim_get_state()`, `sim_free()` and `sim_init_saved()`; the last is named
   that rather than `sim_restore()` because 6.5 reserves `sim_restore(path)` for
   the user-facing function. `simulation_R()` is a deprecated, unexported
   alias. `pipeline()` is a wrapper over `sim_setup()`, `run_schedule()`,
   `prepare_state_save()` and `collect_output()` (~120 lines of body).
-- *Phase 2.* `R/params_contract.R` holds `cpp_contract` and the `check_*()`
+- *Phase 2.* `R/pipeline_param_lists.R` holds `cpp_contract` and the `check_*()`
   helpers; every constructor returns a classed list and has a `validate_*()`;
   `tests/testthat/test-params.R` checks the constructors against the contract
   and the contract against the C++ sources. `model_param_list_create()` is
   `as.list(environment())` plus derived values, reordered to the contract so
-  the list is unchanged. `R/schedule.R` holds `build_schedule()` with the
+  the list is unchanged. `R/pipeline_schedule.R` holds `build_schedule()` with the
   padding rule of 6.3 (last value forward, longer than `ceiling(years)` is an
   error); the behaviour changes it implies for odd inputs are in NEWS and none
   touched a snapshot. (The first version carried the padded yearly vectors
@@ -719,11 +725,11 @@ and where it departs from the plan above:
   read showed up in the set_up_only snapshot once allocations changed.
   Exports: constructors and `build_schedule()` in, Rcpp wrappers,
   `simulation_R()`, `param_list_simulation_*()` and `%>%` out.
-- *Phase 3.* `R/savers.R` (`save_loggers()`, `save_summary()`,
+- *Phase 3.* `R/pipeline_output.R` (`save_loggers()`, `save_summary()`,
   `save_humans()`, `save_full()`, each with `final = "loggers" | "full" |
   "humans"` for the last slot; a user `function(state, period, params)` is
   accepted; the old flags map onto a saver with a warning naming the
-  replacement; `update_saves()` deleted). `R/magenta_sim.R` (`magenta_sim` with
+  replacement; `update_saves()` deleted; in the same file, `magenta_sim` with
   `print()`, `summary()`, `as.data.frame()` and the `sim_params()`,
   `sim_schedule()`, `sim_meta()`, `sim_output()` accessors; `sim_save()` / `sim_restore()`
   writing a flat, classed, `format_version`ed object that is also accepted
@@ -761,7 +767,7 @@ on every export, `R CMD check --as-cran` clean (one pre-existing NOTE).
 the odin run, and both are closed-form in `t` (the intervention block of
 `inst/extdata/odin_itn_irs.R`: ITN/IRS decay, the per-category feeding and
 repellency probabilities, `zbar`, `wbar`, `p1`); no state feeds into them.
-`R/mu_fv.R` evaluates that block directly in the generated C's order of
+`mu_fv_from_coverage()` in `R/pipeline_utils.R` evaluates that block directly in the generated C's order of
 operations, and `tests/testthat/test-mu-fv.R` shows it bit-identical to the
 model (`expect_identical`) for ITN only, IRS only, both, a five-year ramp, a
 part year, off-anniversary change times and the Kinshasa 2012-2013 seasonal
