@@ -1,7 +1,7 @@
 ---
 title: "How to use magenta"
 author: "OJ Watson"
-date: "2026-11-12"
+date: "2026-11-13"
 output: 
   rmarkdown::html_vignette:
     fig_width: 7 
@@ -54,7 +54,7 @@ For example to run the model for 10 years at an EIR of 1 and no seasonality for 
 ``` r
 out1 <- pipeline(EIR = 1, years = 10, N = 10000)
 ## magenta v1.4.0
-## Seed set to 888086293
+## Seed set to 366954738
 ## Starting Stochastic Simulation for 10 years
 ```
 
@@ -64,14 +64,14 @@ By default, magenta will run the simulation for the entire duration and return a
 ``` r
 out1
 ## <magenta_sim>
-##   call:     pipeline(EIR = 1, N = 10000, years = 10, seed = 888086293L)
+##   call:     pipeline(EIR = 1, N = 10000, years = 10, seed = 366954738L)
 ##   N: 10000   years: 10   EIR: 1
 ##   output:   loggers, 1 period(s), final = loggers
-##   seed:     888086293   version: 1.4.0
-##   elapsed:  11.4 secs
+##   seed:     366954738   version: 1.4.0
+##   elapsed:  5.3 secs
 as.data.frame(tail(out1$output$Loggers, 6))
-##           S           D         A          U           T           P
-## 1 0.8582493 0.001532603 0.0961063 0.03790466 0.001063288 0.005143836
+##           S           D          A          U           T           P
+## 1 0.8591934 0.001555616 0.09544384 0.03754301 0.001007945 0.005256164
 ```
 
 (See the [model output vignette](Loggers.html) for more info about what is returned in Loggers.) 
@@ -106,33 +106,33 @@ abline(v = 1000, col = "red")
 ``` r
 head(as.data.frame(out2))
 ##   period day_end year Log_Counter Incidence Incidence_05 Successful_Treatments
-## 1      1      30    1          30  2.866667    0.4333333                    35
-## 2      2      60    1          30  4.066667    0.4000000                    62
-## 3      3      90    1          30  3.800000    0.5333333                    42
-## 4      4     120    1          30  3.266667    0.4333333                    42
-## 5      5     150    1          30  2.866667    0.5000000                    34
-## 6      6     180    1          30  3.733333    0.4666667                    39
+## 1      1      30    1          30  2.700000    0.7000000                    38
+## 2      2      60    1          30  4.133333    0.5000000                    39
+## 3      3      90    1          30  3.900000    0.6666667                    46
+## 4      4     120    1          30  3.266667    0.3666667                    45
+## 5      5     150    1          30  3.666667    0.4333333                    35
+## 6      6     180    1          30  4.200000    0.7000000                    47
 ##   Unsuccesful_Treatments_LPF Not_Treated daily_bite_counters
-## 1                          0          41               88333
+## 1                          0          49               88333
 ## 2                          0          73               88328
-## 3                          0          68               88335
-## 4                          0          59               88335
-## 5                          0          53               88330
-## 6                          0          67               88324
+## 3                          0          78               88335
+## 4                          0          58               88335
+## 5                          0          69               88330
+## 6                          0          84               88324
 ##   daily_infectious_bite_counters    Mos_S    Mos_E    Mos_I Time         S
-## 1                            584 9346.733 195.2000 70.06667   31 0.8443500
-## 2                            539 9380.167 165.2667 66.56667   61 0.8438967
-## 3                            525 9368.967 176.7000 66.33333   91 0.8475767
-## 4                            451 9395.833 160.4000 55.76667  121 0.8497500
-## 5                            447 9389.900 167.2333 54.86667  151 0.8559200
-## 6                            428 9408.433 150.4000 53.16667  181 0.8588300
+## 1                            605 9345.167 195.0333 71.80000   31 0.8445400
+## 2                            561 9364.867 176.8333 70.30000   61 0.8436767
+## 3                            536 9385.700 160.3667 65.93333   91 0.8463700
+## 4                            468 9390.033 164.1333 57.83333  121 0.8508200
+## 5                            609 9361.133 175.9667 74.90000  151 0.8537367
+## 6                            511 9378.033 170.4000 63.56667  181 0.8549933
 ##              D          A          U            T           P
-## 1 0.0008466667 0.10137000 0.04792333 0.0008700000 0.004640000
-## 2 0.0014200000 0.09821667 0.05086333 0.0010533333 0.004550000
-## 3 0.0011233333 0.09557333 0.05106000 0.0008333333 0.003833333
-## 4 0.0011766667 0.09324333 0.05058000 0.0009033333 0.004346667
-## 5 0.0010533333 0.08805667 0.05100333 0.0007100000 0.003256667
-## 6 0.0012900000 0.08402333 0.05172333 0.0009100000 0.003223333
+## 1 0.0009633333 0.10094333 0.04805333 0.0007666667 0.004733333
+## 2 0.0015033333 0.09863000 0.05107333 0.0008233333 0.004293333
+## 3 0.0015966667 0.09521000 0.05166000 0.0007933333 0.004370000
+## 4 0.0009633333 0.09241667 0.05185667 0.0006366667 0.003306667
+## 5 0.0016100000 0.08875333 0.05189667 0.0005933333 0.003410000
+## 6 0.0014800000 0.08786333 0.05123000 0.0006466667 0.003786667
 ```
 
 `magenta` starts simulations close to the equilibrium solution, but it is not quite perfect. For example, in the above plot there is a burn in period before the red vertical line. The required burn in time varies depending on the simulation parameters and so it is best to run the model a few times first to work out a suitable burn in time. For most simulations though a 40 year burn in period is more than sufficient. 
@@ -189,12 +189,8 @@ i <- which.min(last$Infection_States %in% c(0, 5))
 last$Strain_barcode_vectors[i]
 ## [[1]]
 ## [[1]][[1]]
-##  [1] FALSE FALSE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE FALSE
-## [13] FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE
-## 
-## [[1]][[2]]
-##  [1] FALSE  TRUE  TRUE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE
-## [13]  TRUE  TRUE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE  TRUE
+##  [1] FALSE FALSE  TRUE FALSE FALSE  TRUE  TRUE FALSE  TRUE FALSE FALSE  TRUE
+## [13] FALSE  TRUE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE
 ```
 
 Above we have found the first individual who is infected and returned the barcodes for each parasite strain the individual has. For example, this individual had one parasite strain, as only one parasite barcode is returned. We can then look at the distribution of parasite strains in the population, for example, against their individual biting rate. 
@@ -215,10 +211,10 @@ With the parasite barcode information we can work out what an individual's compl
 
 m <- which.max(n_strains)
 message("Individual ", m, " has ", n_strains[m], " strains")
-## Individual 4648 has 21 strains
+## Individual 6380 has 23 strains
 un <- length(unique(last$Strain_barcode_vectors[[m]]))
 message("Individual ", m, " has ", un, " unique strains")
-## Individual 4648 has 20 unique strains
+## Individual 6380 has 21 unique strains
 ```
 The reason we also return the age and the detection immunity, `ID`, is that these are useful for when we want to estimate the COI in terms of what strains are likely to be observed based on their parasitaemia, which is inferred by their detection immunity, `ID`. These can be estimated using `convert_barcode_vectors` as follows, which below is used to show the COI of parsaites that have sufficiently high parasite density to be detected by microscopy if that was the only parasite strain in the infection. 
 
@@ -298,18 +294,18 @@ When saving summaries of the genetic information, the mean COI, % polygenomic in
 ``` r
 out6$output[[1]]$summary_coi
 ##       age_bin     clinical    N     mean
-## 1  (-0.001,5] Asymptomatic  148 4.277027
-## 2  (-0.001,5]     Clinical    2 1.000000
-## 3  (-0.001,5]            P    4 0.000000
-## 4  (-0.001,5]            S 2011 0.000000
-## 5      (5,15] Asymptomatic  409 3.119804
-## 6      (5,15]     Clinical   10 1.100000
-## 7      (5,15]            P   15 0.000000
-## 8      (5,15]            S 2542 0.000000
-## 9    (15,100] Asymptomatic  934 2.933619
-## 10   (15,100]     Clinical   13 1.307692
-## 11   (15,100]            P   17 0.000000
-## 12   (15,100]            S 3895 0.000000
+## 1  (-0.001,5] Asymptomatic  149 4.261745
+## 2  (-0.001,5]     Clinical    4 1.250000
+## 3  (-0.001,5]            P   10 0.000000
+## 4  (-0.001,5]            S 2002 0.000000
+## 5      (5,15] Asymptomatic  398 3.168342
+## 6      (5,15]     Clinical    6 1.333333
+## 7      (5,15]            P   14 0.000000
+## 8      (5,15]            S 2558 0.000000
+## 9    (15,100] Asymptomatic  934 2.936831
+## 10   (15,100]     Clinical    7 1.142857
+## 11   (15,100]            P   19 0.000000
+## 12   (15,100]            S 3899 0.000000
 ```
 
 We can then plot the population mean COI over time as follows, using the last 100 values after an approximate burnin period:
@@ -375,16 +371,16 @@ out8 <- pipeline(EIR = 1, years = 10, N = 10000,
 
 out8$output[[1]]$summary_coi
 ##     age_bin     clinical   N     mean
-## 1  (-0.1,5] Asymptomatic 148 4.277027
-## 2  (-0.1,5]     Clinical   2 1.000000
-## 3    (5,10] Asymptomatic 225 3.564444
-## 4    (5,10]     Clinical   3 1.000000
-## 5   (10,15] Asymptomatic 184 2.576087
-## 6   (10,15]     Clinical   7 1.142857
-## 7   (15,20] Asymptomatic 177 2.774011
-## 8   (15,20]     Clinical   8 1.125000
-## 9  (20,100] Asymptomatic 757 2.970938
-## 10 (20,100]     Clinical   5 1.600000
+## 1  (-0.1,5] Asymptomatic 149 4.261745
+## 2  (-0.1,5]     Clinical   4 1.250000
+## 3    (5,10] Asymptomatic 219 3.621005
+## 4    (5,10]     Clinical   1 1.000000
+## 5   (10,15] Asymptomatic 179 2.614525
+## 6   (10,15]     Clinical   5 1.400000
+## 7   (15,20] Asymptomatic 180 2.750000
+## 8   (15,20]     Clinical   1 1.000000
+## 9  (20,100] Asymptomatic 754 2.981432
+## 10 (20,100]     Clinical   6 1.166667
 ```
 
 The next is by passing your own function as `output`. See the [model output vignette](Loggers.html) for the signature required. 

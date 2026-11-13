@@ -1,7 +1,7 @@
 ---
 title: "Model output, loggers and saved state"
 author: "OJ Watson"
-date: "2026-11-12"
+date: "2026-11-13"
 output:
   rmarkdown::html_vignette:
     fig_width: 7
@@ -56,7 +56,7 @@ out
 ##   N: 1000   years: 3   EIR: 5
 ##   output:   loggers, 1 period(s), final = loggers
 ##   seed:     1   version: 1.4.0
-##   elapsed:  0.8 secs
+##   elapsed:  0.4 secs
 names(out$output$Loggers)
 ##  [1] "Log_Counter"              "Incidence"               
 ##  [3] "Incidence_05"             "Treatments"              

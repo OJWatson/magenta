@@ -1,7 +1,7 @@
 ---
 title: "Simulating antimalarial resistance"
 author: "OJ Watson"
-date: "2026-11-12"
+date: "2026-11-13"
 output:
   rmarkdown::html_vignette:
     fig_width: 7
@@ -206,11 +206,11 @@ If the draw succeeds but the individual carries a strain resistant at any of the
 drug's positions, they spend an extra `dur_SPC` days in the treated state before
 moving to prophylaxis.
 
-The code also intends to discount an asymptomatic strain's failure probability
-according to how far through its course it is. At present that discount does not
-take effect, because the fraction is computed with integer arithmetic and
-truncates to zero for any strain partway through its course. It is noted here so
-that the vignette matches the model rather than the intention.
+An asymptomatic strain's failure probability is also discounted according to how
+far through its course it is, so that a strain close to clearing on its own is
+less likely to survive treatment. Up to version 1.3.7 that discount silently did
+nothing, because the fraction was computed with integer arithmetic and truncated
+to zero for any strain partway through its course; it takes effect from 1.3.8.
 
 ### Prophylaxis
 
@@ -498,12 +498,12 @@ pos <- seq_len(length(out_mutation$output) - 1)
 mutations <- colSums(do.call(rbind, lapply(out_mutation$output[pos], "[[", "mutations")))
 data.frame(locus = loci, mutations = mutations)
 ##                        locus mutations
-## 1                    crt 76T        84
-## 2                   mdr1 86Y        94
-## 3                  mdr1 184F        85
-## 4           mdr1 copy number        83
-## 5               kelch13 580Y        88
-## 6 plasmepsin 2-3 copy number        73
+## 1                    crt 76T        81
+## 2                   mdr1 86Y        97
+## 3                  mdr1 184F        81
+## 4           mdr1 copy number        67
+## 5               kelch13 580Y        98
+## 6 plasmepsin 2-3 copy number        84
 ```
 
 ---
