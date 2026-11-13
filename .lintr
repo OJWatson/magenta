@@ -9,6 +9,8 @@ linters: linters_with_defaults(
   )
 exclusions: list(
     "R/RcppExports.R",
+    "R/cluster_utils.R",
+    "R/plotting.R",
     "R/odin.R",
     "tests/testthat.R",
     "inst/extdata/odin_itn_irs.R",

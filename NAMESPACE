@@ -46,6 +46,24 @@ importFrom(Rcpp,
   sourceCpp
 )
 importFrom(dde,dopri)
+importFrom(ggplot2,
+  aes,
+  geom_point,
+  geom_smooth,
+  ggplot,
+  theme_bw,
+  xlim,
+  ylim
+)
+importFrom(grDevices,
+  dev.off,
+  hcl,
+  tiff
+)
+importFrom(graphics,
+  par,
+  plot
+)
 importFrom(magrittr,"%>%")
 importFrom(odin,odin)
 importFrom(rlang,.data)
@@ -53,6 +71,7 @@ importFrom(statmod,gauss.quad.prob)
 importFrom(stats,
   approx,
   dexp,
+  heatmap,
   na.omit,
   optim,
   pgamma,

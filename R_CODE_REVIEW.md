@@ -760,6 +760,20 @@ packages (under review separately).
 
 Still open: the deferred `mu_fv_create()` shortcut above, and a coverage
 gate in CI (the pkgdown reference regrouping is done).
+
+**Phase 6: workflows (not started).** The research-era helpers that Phase 0
+removed are back on the branch, parked and unchanged (styled; ggplot2 calls
+qualified; `requireNamespace()` guards): `R/cluster_utils.R` (`pool_res()`,
+`create_res_list()`), `R/plotting.R` (the `plot_*()` functions,
+`heatmap_ordered_binary_plot()`, `sample_coi()`, `coi_age_plot_sample_x()`,
+`summary_data_frames_from_sims()`, `gg_color_hue()`) and
+`country_seasonal_profiles()` in `R/seasonal_utils.R`. `bootstrap()` and
+`kl()` stay removed. They are written against the 1.3.x return value of
+`pipeline()`, are excluded from lintr and are left out of the coverage figure
+(see the status above for both figures). The phase will rework the cluster
+helpers for the current DIDE cluster (hipercow), turn the plotting helpers
+into a plotting vignette, and make the seasonal profile plot useful for
+choosing an admin unit. Section to be drafted.
 The two commits on `docs-revamp` after the Phase 0 base (the asymptomatic
 discount and the sterilisation direction) change C++ results and are not on
 this branch; merging them will move the snapshots and needs a deliberate

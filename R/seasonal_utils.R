@@ -126,3 +126,42 @@ seasonal_profile <- function(admin = NULL, country = NULL) {
 
   return(y)
 }
+
+#' Plot country seasonal profiles
+#'
+#' @param country Character for country
+#'
+#' @keywords internal
+country_seasonal_profiles <- function(country) {
+  ads <- magenta::admin_units_seasonal
+  if (!is.element(country, unique(ads$country))) {
+    stop(paste0(
+      "Country is not one of ",
+      paste(unique(ads$country), collapse = ", ")
+    ))
+  }
+  admins <- as.character(ads$admin1[which(ads$country == country)])
+
+  if (length(admins) > 16) {
+    par(mfrow = c(5, 5))
+  } else if (length(admins) > 9) {
+    par(mfrow = c(4, 4))
+  } else if (length(admins) > 4) {
+    par(mfrow = c(3, 3))
+  } else {
+    par(mfrow = c(2, 2))
+  }
+
+  max_ses <- max(sapply(admins, function(x) {
+    max(seasonal_profile(x, country))
+  }))
+
+  ret <- sapply(admins, function(x) {
+    invisible(plot(seasonal_profile(x, country),
+      main = x,
+      ylim = c(0, max_ses + 0.2),
+      ylab = "Seasonal",
+      xlab = "Day"
+    ))
+  })
+}

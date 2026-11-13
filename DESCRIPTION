@@ -36,6 +36,10 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
-    lattice
+    lattice,
+    ggplot2,
+    reshape2,
+    cowplot,
+    RColorBrewer
 Encoding: UTF-8
 Config/roxygen2/version: 8.1.0

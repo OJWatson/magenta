@@ -14,6 +14,9 @@
 #' @importFrom stats weighted.mean na.omit optim pgamma dexp
 #' @importFrom utils read.csv tail packageVersion
 #' @importFrom rlang .data
+#' @importFrom stats heatmap
+#' @importFrom graphics par plot
+#' @importFrom grDevices dev.off tiff hcl
 #' @importFrom odin odin
 #' @importFrom dde dopri
 #' @keywords internal

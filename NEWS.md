@@ -184,14 +184,16 @@ rewritten, and the changes that move results are listed first.
 * `generate_default_model()`, which nothing called (the deterministic model
   is driven from `mu_fv_create()`).
 
-* The research-era analysis code (`bootstrap()`, `kl()`, `pool_res()`,
-  `create_res_list()`, the `plot_*()` functions, `heatmap_ordered_binary_plot()`,
-  `sample_coi()`, `coi_age_plot_sample_x()`, `summary_data_frames_from_sims()`,
-  `country_seasonal_profiles()` and unused IBD helpers) has been removed. It
-  was never called by the package, tests or vignettes. `convert_barcode_vectors()`
-  and `microscopy_detected()` are kept.
-* Dropped dependencies: ggplot2, reshape2, redux, cowplot and RColorBrewer.
-  odin and dde are taken from CRAN. The package now requires R >= 4.1.
+* `bootstrap()`, `kl()` and unused IBD helpers. The other research-era
+  analysis helpers (`pool_res()`, `create_res_list()`, the `plot_*()`
+  functions, `heatmap_ordered_binary_plot()`, `sample_coi()`,
+  `coi_age_plot_sample_x()`, `summary_data_frames_from_sims()`,
+  `country_seasonal_profiles()`) are retained unchanged, as internal
+  functions written against the 1.3.x return value of `pipeline()`, pending a
+  later workflows phase; the packages they draw (ggplot2, reshape2, cowplot,
+  RColorBrewer) are now Suggests and are checked for when one is called.
+* Dropped dependency: redux. odin and dde are taken from CRAN. The package
+  now requires R >= 4.1.
 
 ## Development
 
