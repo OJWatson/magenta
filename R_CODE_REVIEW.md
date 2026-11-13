@@ -665,6 +665,9 @@ saver. The attribute-based `meta` goes away.
 
 Each phase is one or two PRs; each PR leaves `R CMD check` and the tests green.
 
+Phase 6 starts only after `docs-revamp`, Phase 0 and `rewrite` are merged; it
+is scoped to the five PRs listed under it and nothing else.
+
 **Status (2026-11-12).** Phase 0 is done on branch `worktree-r-code-review`, cut
 from the `docs-revamp` tip so it merges after the documentation work: snapshot
 tests (`tests/testthat/test-characterisation.R`, Linux only), styler + `.lintr` +
@@ -761,9 +764,9 @@ packages (under review separately).
 Still open: the deferred `mu_fv_create()` shortcut above, and a coverage
 gate in CI (the pkgdown reference regrouping is done).
 
-**Phase 6: workflows (not started).** The research-era helpers that Phase 0
-removed are back on the branch, parked and unchanged (styled; ggplot2 calls
-qualified; `requireNamespace()` guards): `R/cluster_utils.R` (`pool_res()`,
+*Parked for Phase 6.* The research-era helpers that Phase 0 removed are back
+on the branch, parked and unchanged (styled; ggplot2 calls qualified;
+`requireNamespace()` guards): `R/cluster_utils.R` (`pool_res()`,
 `create_res_list()`), `R/plotting.R` (the `plot_*()` functions,
 `heatmap_ordered_binary_plot()`, `sample_coi()`, `coi_age_plot_sample_x()`,
 `summary_data_frames_from_sims()`, `gg_color_hue()`) and
@@ -771,10 +774,207 @@ qualified; `requireNamespace()` guards): `R/cluster_utils.R` (`pool_res()`,
 `kl()` stay removed. They are written against the 1.3.x return value of
 `pipeline()`, are excluded from lintr and are left out of the coverage figure:
 R-side line coverage is 98.6% without `R/cluster_utils.R` and `R/plotting.R`
-and 78.3% with them (whole package 79.9% and 75.9%). The phase will rework the cluster
-helpers for the current DIDE cluster (hipercow), turn the plotting helpers
-into a plotting vignette, and make the seasonal profile plot useful for
-choosing an admin unit. Section to be drafted.
+and 78.3% with them (whole package 79.9% and 75.9%).
+
+**Phase 6: workflows (not started).** Give the six recurring steps (Appendix B)
+package functions, written against `magenta_sim`, and three vignettes that show
+them end to end. ggplot2 and hipercow go in `Suggests`; nothing in `Imports`
+changes. Each PR leaves check and the characterisation snapshots green. The
+parked helpers in `R/cluster_utils.R`, `R/plotting.R` and
+`country_seasonal_profiles()` are the raw material and are deleted by the PR
+that replaces each. The collectors in 6.1 are checked against three code bases:
+arms, peru_hrp23 and the Lancet Microbe 2022 ("MMC") analysis, whose research
+compendium is `compendia/art_resistance_consensus_modelling` (local; its
+`analysis/` reads pre-summarised CSVs and `R/utils.R`, `R/plot_utils.R` hold only
+`rbind_list_base()` and `save_figs()`; the pooling from magenta runs happened in
+the MMC_WP2 work-package repository, which the summaries' columns describe).
+
+**6.1 Tidy collectors (one PR, pure R, no new dependencies).**
+`R/tidy.R`. One function per quantity, each taking a `magenta_sim` and returning
+a data frame with `period`, `day`, `year` (from `out$schedule`) first:
+
+- `tidy_periods(sim)` — what `as.data.frame.magenta_sim()` does now, kept as the
+  alias so the family has one name.
+- `tidy_prevalence(sim, age_range = NULL)` — `S, D, A, U, T, P`, `pcr_prev`
+  (`D+A+U+T`), `dat`, `micro_2_10` (via `microscopy_detected()`), from loggers
+  or from a `save_summary()` slot; replaces `plot_prevalence()`'s two branches
+  and `pool_res`'s `make_prevs_df`.
+- `tidy_treatment(sim)` — successful, LPF, not-treated counts, `treatment_failure`,
+  `overall_treatment_failure`, `cases = successful + lpf + not_treated` (arms
+  `get_df`, peru `get_cases`, by name not position).
+- `tidy_allele_freqs(sim)` — long (period, locus, af) from `af`; `tidy_mutations()`
+  likewise from `mutations`.
+- `tidy_lineages(sim, genotypes = NULL)` — (period, lineage as a `"011"`
+  barcode string, count, freq) from `lineage`; the `intToBits` labelling from
+  `plot_resistance_lineages`. With `genotypes = magenta::drug_table` the
+  six-locus lineages are labelled with the `Genotype` names (`"TNY0C0"`), which
+  is what the MMC `lineage_df` (`Strains, Time, rep, Genotype`) carried.
+- `tidy_mutation_events(sim)` — mutation events per locus over the run (the
+  MMC `NUMBER_OF_MUTATION_EVENTS_1..6` columns) from `mutations`, and the run
+  totals of treatments and treatment failures (`NUMBER_OF_TREATMENTS`,
+  `NUMBER_OF_TREATMENT_FAILURES`) as sums of `tidy_treatment()`.
+- `time_to(df, var, threshold)` — the first `year` at which a tidy column
+  crosses a threshold, `NA` if never: the MMC `TIME_TO_1p_580Y`,
+  `TIME_TO_10p_TF` ... milestones, computed once from `tidy_allele_freqs()` and
+  `tidy_treatment()` rather than per project.
+- `tidy_coi(sim, detected = FALSE)` — (period, metric in {COI, COU, % polygenomic,
+  % unique, pIBD, iIBD}, group_by, group, mean, N) from the `summary_*` tables.
+- `selection_coefficient(af, t, window = c(0.05, 0.975))` — arms `get_s()`, as a
+  plain function on two vectors.
+- `bind_sims(sims, grid = NULL)` — `rbind` of any `tidy_*` over a list of sims,
+  adding `run`, `seed` (from `meta$seed`) and the grid's columns. This is
+  `pool_res`'s outer loop, `create_case_df` and 02_sim_processing's `cbind(res, parms[i,])`.
+
+Tests: run the four savers once in `helper-sim.R` (already there), check column
+names and row counts per saver, check `tidy_prevalence` against the loggers by
+hand, check `selection_coefficient` recovers a known `s` from a logistic curve,
+and that `bind_sims` carries grid columns. Delete `cluster_utils.R` in this PR;
+`pool_res` has no caller once `tidy_*` exist.
+
+**6.2 Grid and local batch (one PR).** `R/grid.R`, `R/batch.R`.
+
+- `sim_grid(..., reps = 1, seed = NULL)` — `expand.grid` over the scalar arguments,
+  list-columns for anything that is not a scalar (a `plaf` matrix, a `drug_list`,
+  a yearly `ft` vector) wrapped with `I()`, then `rep` and a deterministic `seed`
+  column (`seed + row`), class `magenta_grid`. `grid_args(grid, i)` turns row `i`
+  into the argument list `pipeline()` takes, so the worker function is always
+  `do.call(pipeline, grid_args(grid, i))`. This replaces the `for` loops in
+  `01_dideweb.R` and `didewin.R` and the `split(pardf, pardf$seed)` in peru.
+  Because 1.4.0 validates every parameter list, a bad row fails at
+  `grid_args()` time, locally, not on the cluster.
+- `run_grid(grid, dir = NULL, parallel = c("none", "mclapply"), progress = TRUE)`
+  — runs every row locally, returns a list of `magenta_sim` or, with `dir`,
+  writes `dir/run_<row>.rds` and returns the paths; skips rows whose file exists
+  (restartable). `read_grid(dir)` reads them back and `bind_sims()` consumes
+  either. `parallel::mclapply` is base R; no `future` dependency.
+- `shrink_sim(sim, drop_final = TRUE)` — drops the population-length vectors
+  (`InfectionStates, Ages, IB, ICA, ICM, ID`, barcode lists) from the final slot,
+  which both arms and peru did by hand before saving. A plain helper the worker
+  function can call, not a saver option: the default stores everything, and
+  what to drop is decided afterwards (decision 3).
+
+Tests: `sim_grid` is pure (row counts, list-columns, seeds unique and
+reproducible); `run_grid` on a two-row grid with `N = 100, years = 1`; `read_grid`
+round trip; `shrink_sim` sizes.
+
+**6.3 hipercow runner and the cluster vignette (one PR).**
+
+- `run_grid(grid, backend = "hipercow", bundle_name = , resources = , environment = )`
+  — `hipercow::task_create_bulk_call(function(i) do.call(magenta::pipeline, grid_args(grid, i)), seq_len(nrow(grid)), ...)`,
+  saves `grid` as `hipercow/magenta/<bundle_name>_grid.rds` next to the bundle
+  name, returns the bundle. Results stay in the hipercow store (decision 4):
+  `collect_grid(bundle_name, tidy = list(tidy_prevalence, tidy_treatment, ...), dir = NULL)`
+  loads the bundle by name, reads each task's result with `task_result()`,
+  applies the `tidy_*` collectors and `bind_sims()` with the saved grid, and
+  returns the tidy frames; per-row `run_<row>.rds` files are written only when
+  `dir` is given. Two-stage runs are two grids: the second has a
+  `saved_state_path` column pointing at the first's files (or `sim_save()`
+  objects), which `grid_args()` passes through unchanged (`pipeline()` accepts
+  the path).
+- Vignette `vignettes/cluster.Rmd`, "Running magenta in batches": local
+  `run_grid()` first, then the hipercow section (`hipercow_init`, a
+  `pkgdepends.txt` line `github::OJWatson/magenta@v1.4.0`, `hipercow_provision()`,
+  `run_grid(backend = "hipercow")`, status, retry, `collect_grid()`), then the
+  setup-then-continue pattern from peru_hrp23 with `sim_save()` and
+  `update_saved_state_barcode_plaf()`. Chunks that touch the DIDE driver are
+  `eval = FALSE`; the rest run under hipercow's `"example"` driver, which runs
+  tasks locally in the same layout (decision 7).
+- `DESCRIPTION`: `Suggests: hipercow`, `Additional_repositories: https://mrc-ide.r-universe.dev`;
+  the `check-standard` and `test-coverage` workflows add the r-universe repo to
+  `setup-r-dependencies` so hipercow installs in CI. Before writing the test,
+  read hipercow's own CI and vignette setup (how its vignettes run under the
+  example driver, what it mocks) and record what it does here.
+
+Tests: `skip_if_not_installed("hipercow")`, `hipercow_init(driver = "example")`
+in a temp dir, two-row grid, `collect_grid()` returns the tidy frames with the
+grid columns attached.
+
+**6.4 Plot helpers and the plotting vignette (one PR).** `R/plot.R`, ggplot2
+in `Suggests`, `requireNamespace()` guard once in `check_ggplot2()`.
+
+- `plot_prevalence(sim | tidy df)`, `plot_loggers(sim, vars)`, `plot_allele_freqs()`,
+  `plot_lineages()`, `plot_treatment()`, `plot_coi(by = c("all", "age_bin", "clinical"))`,
+  each returning a ggplot built from its `tidy_*` frame with `period`/`day` on x.
+- `plot_replicates(df, y, group = "run", colour = NULL, facet = NULL)` — the
+  one plot every project draws: lines per replicate at low alpha plus the mean
+  line, faceted by scenario columns from the grid. `gen_plot()`, `cases_plot()`,
+  paper-1 Fig 3 and `faking_it.R` are all this function.
+- Vignette `vignettes/plotting.Rmd`: one `pipeline()` run per saver, each
+  `tidy_*` printed, each `plot_*` shown, then a nine-run `sim_grid()` and
+  `plot_replicates()` faceted by EIR, then the selection-coefficient fit (arms).
+  Delete `plotting.R` in this PR: `summary_data_frames_from_sims`, the `plot_*`
+  and `gg_color_hue` have replacements; `heatmap_ordered_binary_plot()` and
+  `sample_coi()` (the age-matched sampler behind paper 1's Fig 1a) are paper-one
+  only and move, unchanged, to helper scripts under
+  `submission_data/genomic_tools_data/` next to `bootstrap()` and `kl()`, out of
+  `R/` (decision 5). Remove `reshape2`, `cowplot`, `RColorBrewer` from
+  `Suggests` and the lintr exclusions from `.lintr`.
+
+Tests: `skip_if_not_installed("ggplot2")`; each helper returns a `"ggplot"` with
+the expected layers and mapping; no snapshot images.
+
+**6.5 Seasonality and site selection (one PR).** `R/seasonal_utils.R`.
+
+- Export `seasonal_profile(admin, country)` (already there) and add
+  `seasonal_profiles(country = NULL)` returning a data frame (country, admin1,
+  day, value, plus the `ft`, `a0..b3`, `theta_c` columns from
+  `admin_units_seasonal`), and `plot_seasonal_profiles(country, admins = NULL)`
+  (`facet_wrap(~ admin1)`, shared y). `admin_match()` stays internal; a
+  `find_admin(admin, country)` wrapper that returns the matched row as a data
+  frame makes the fuzzy match visible before a 20-year run depends on it.
+- Vignette `vignettes/seasonality.Rmd`, "From site to simulation": list the
+  countries and admin units in `admin_units_seasonal`, plot a country's
+  profiles, pick an admin, show how `equilibrium_init_create()` uses the curve
+  and how `use_historic_interventions = TRUE` pulls `itn_2000_2015`/`irs_2000_2015`
+  and `ft` for it, `PfPR_to_EIR_heuristic()` from a MAP prevalence (the Uganda
+  pattern in `didewin.R`), then a short run with `save_loggers()` and
+  `plot_prevalence()` showing the seasonal peak. Delete `country_seasonal_profiles()`.
+- `_pkgdown.yml`: new reference groups "Batches and grids", "Tidy results",
+  "Plotting", "Seasonality"; articles group "Workflows" with the three vignettes.
+
+Tests: `seasonal_profiles()` row counts and that `seasonal_profile()` matches
+the per-admin slice; `plot_seasonal_profiles()` guarded as in 6.4; one snapshot
+of `find_admin("Tororo", "Uganda")`.
+
+**Order.** 6.1 first (everything else consumes it, and it kills `cluster_utils.R`),
+then 6.2, then 6.3 and 6.4 in either order, 6.5 last. 6.1 and 6.2 are a few days
+each; 6.3 depends on access to the cluster to check the DIDE driver path once;
+6.4 and 6.5 are mostly vignette writing. The vignettes should be built with
+`vignettes_src/build_vignettes.R` as the others are, since 6.3 and the nine-run
+grid in 6.4 are too slow for `R CMD check`.
+
+**Dependencies after Phase 6.** `Imports` unchanged (dplyr is already there for
+`tidy_*`; `tidyr` is not needed, `stats::reshape` or a `lapply`/`rbind` does the
+melts). `Suggests` gains `hipercow` and keeps `ggplot2`; loses `reshape2`,
+`cowplot`, `RColorBrewer`. `parallel` is base; no `future` (decision 2).
+
+**Decisions (OJ, 2026-11-13).**
+
+1. The Lancet Microbe 2022 analysis is the MMC code; its compendium is
+   `compendia/art_resistance_consensus_modelling`. 6.1 is checked against it as
+   the third code base (the lineage, mutation-event, treatment-total and
+   time-to-threshold collectors above come from its summaries).
+2. Local parallelism: base `parallel::mclapply` only, no `future`.
+3. Final-slot stripping: a plain `shrink_sim()` helper the worker can call;
+   the default stores everything, so other outputs can be kept and dropped
+   later.
+4. Cluster results stay in the hipercow store, found by bundle name;
+   `collect_grid()` returns tidy frames and the grid is saved alongside the
+   bundle name. Per-row rds files are optional, not the default.
+5. The barcode heatmap and the age-matched sampler are paper-one only and move
+   to helper scripts under `submission_data/genomic_tools_data/` with
+   `bootstrap()` and `kl()` in the 6.4 PR; there will be no paper-one
+   compendium.
+6. **Open:** how `sim_grid()` encodes the "history years then treatment years"
+   split of the yearly inputs (`hd`/`tl` in arms, `itn_years` in peru): scalar
+   columns plus a user-supplied `args_fun(row)`, or a `years_history` argument
+   that `grid_args()` uses to pad `resistance_flag`, `mutation_flag`, `plaf` and
+   the importation vectors. OJ has asked for more detail before deciding.
+7. hipercow in CI: yes, through the example driver for tests and vignette
+   chunks, DIDE-driver chunks `eval = FALSE`, the r-universe repository in
+   `setup-r-dependencies`; confirm against hipercow's own CI and vignette
+   setup first.
+8. ggplot2 in `Suggests`: yes.
 The two commits on `docs-revamp` after the Phase 0 base (the asymptomatic
 discount and the sterilisation direction) change C++ results and are not on
 this branch; merging them will move the snapshots and needs a deliberate
@@ -942,3 +1142,59 @@ Verdicts by file:
 - `plotting.R`: `convert_barcode_vectors` keep+test (exported, in vignette); `q_fun`, `fd` move next to the equilibrium code; everything else move out.
 - `bootstrap.R`, `kl.R`, `cluster_utils.R`: move out.
 - `data.R`, `magenta.R`: keep; fix `globalVariables`; `@docType package` is deprecated in favour of `"_PACKAGE"` alone.
+
+
+## Appendix B. Workflow background for Phase 6
+
+What the analysis code around magenta does, from the old `scripts/` folder
+(2017-2018), the paper-one plotting script in `submission_data/genomic_tools_data/`,
+the arms (2024) and peru_hrp23 (2025) repositories and the MMC compendium.
+
+**The code bases.** The old scripts drove the DIDE cluster through `didehpc` +
+`context` + `queuer::enqueue_bulk()` over hand-built `data.frame` grids, with
+continuation runs as a second grid whose `saved_state_path` column pointed at
+the first's files; the rest of the folder was manual update loops, COI-by-age
+summaries and ggplot figures. Paper one ran with `summary_saves_only = TRUE`,
+pooled with `summary_data_frames_from_sims()`, then `bootstrap()` / `kl()`, then
+a plotting-only script. arms builds a Latin hypercube grid, turns each row into
+`pipeline()` arguments in a `for` loop (drug lists, a `plaf` matrix, history then
+treatment years), submits ten replicate bundles through didehpc with the seed
+drawn on the worker, fetches each result from the context db, strips the
+population-length vectors from the final slot and writes one rds per row; its
+processing script builds a per-period frame (`cases`, `pcr_prev`, `micro_2_10`,
+`tf`, `a_1..a_6`) and fits a selection coefficient per locus. peru_hrp23 is the
+only hipercow user: a grid with a seed column, `task_create_bulk_call()`, a
+two-stage setup-then-continue through `full_save` and
+`update_saved_state_barcode_plaf()`, per-period case and lineage frames, and
+replicate-lines-plus-mean plots. The MMC compendium reads per-run milestone
+summaries (time to 1/10/25% 580Y, time to 10/25% treatment failure, mutation
+events per locus, treatment and failure totals) and monthly lineage frames
+(`Strains, Time, rep, Genotype`), produced in the MMC_WP2 work package. Six
+steps recur in all of them, each written from scratch: build a grid, submit in
+batches, pull down, per-period data frame, bind across replicates and grid,
+plot replicate lines with a mean.
+
+**The parked helpers.** `pool_res()` reads one didehpc bundle and builds five
+tidy frames (allele frequency, mutations, treatment failure, prevalences,
+lineages) for a fixed three-strategy design; its builders are generic, its
+fetch and labels are not. `create_res_list()` recovers parameters from bundle
+names. `summary_data_frames_from_sims()` and `plot_mean_summary()` are weighted
+means of the `summary_*` tables over time; `plot_prevalence()`,
+`plot_x_loggers()` and `plot_resistance_lineages()` are the prevalence, logger
+and five-panel resistance plots; `heatmap_ordered_binary_plot()`, `sample_coi()`
+and `coi_age_plot_sample_x()` served paper one's figures; `gg_color_hue()` is the
+ggplot palette; `country_seasonal_profiles()` plots every admin unit's seasonal
+curve for a country. Phase 6 maps each onto a `tidy_*` or `plot_*` function or
+moves it out, as 6.1-6.5 say.
+
+**hipercow today.** `hipercow_init(driver = "dide-windows")`,
+`windows_authenticate()`, `hipercow_provision()` from a `pkgdepends.txt` line
+such as `github::OJWatson/magenta@v1.4.0`, `hipercow_environment_create()` for
+the worker functions, then `task_create_bulk_expr()` or
+`task_create_bulk_call()` over a grid (one task per row), `hipercow_bundle_status()`,
+`hipercow_bundle_wait()`, `hipercow_bundle_result()`, `hipercow_bundle_retry()`
+for failures and `task_log_show()`; resources through `hipercow_resources()`.
+The `"example"` driver runs tasks locally in the same layout. What hipercow
+does not do, and where magenta helps, is keep the grid next to the bundle and
+turn a bundle's results into tidy frames without holding every `magenta_sim`
+in memory at once.
