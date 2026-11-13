@@ -768,8 +768,10 @@ the odin run, and both are closed-form in `t` (the intervention block of
 `inst/extdata/odin_itn_irs.R`: ITN/IRS decay, the per-category feeding and
 repellency probabilities, `zbar`, `wbar`, `p1`); no state feeds into them.
 `mu_fv_from_coverage()` in `R/pipeline_utils.R` evaluates that block directly in the generated C's order of
-operations, and `tests/testthat/test-mu-fv.R` shows it bit-identical to the
-model (`expect_identical`) for ITN only, IRS only, both, a five-year ramp, a
+operations, and `tests/testthat/test-mu-fv.R` shows it equal to the model
+to floating-point rounding (identical on Windows and locally, within an ulp
+on the CRAN-style Linux and macOS runners; `expect_equal` with a relative
+tolerance of 1e-14) for ITN only, IRS only, both, a five-year ramp, a
 part year, off-anniversary change times and the Kinshasa 2012-2013 seasonal
 run; the characterisation snapshots did not move. The `t < ITN_IRS_on`
 branch is implemented but cannot be reached from the pipeline, which fixes

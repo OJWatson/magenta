@@ -1,6 +1,10 @@
 # The closed-form mosquito rates against the deterministic model they come
 # from. The model is run here (slowly) and its mu and fv compared with
 # mu_fv_from_coverage() over every configuration the pipeline can produce.
+# The two agree to floating-point rounding: identical on some platforms, and
+# within an ulp on others (the generated C is compiled with contraction or a
+# different libm on the CRAN-style Linux and macOS runners), so the comparison
+# allows a relative tolerance of 1e-14, about 45 ulps.
 
 eq_for <- function(EIR = 5, ft = 0.4, country = NULL, admin = NULL) {
   equilibrium_init_create(
@@ -14,8 +18,8 @@ expect_same_rates <- function(eq, ft, itn_cov, irs_cov, years, int_times = NULL)
   odin <- suppressMessages(magenta:::run_odin_model(eq, ft, itn_cov, irs_cov, years, int_times))
   direct <- magenta:::mu_fv_from_coverage(eq, ft, itn_cov, irs_cov, years, int_times)
   testthat::expect_equal(nrow(direct), round(years * 365))
-  testthat::expect_identical(direct$mu, odin$mu)
-  testthat::expect_identical(direct$fv, odin$fv)
+  testthat::expect_equal(direct$mu, odin$mu, tolerance = 1e-14)
+  testthat::expect_equal(direct$fv, odin$fv, tolerance = 1e-14)
   invisible(direct)
 }
 
@@ -62,7 +66,7 @@ test_that("mu_fv_create uses the closed form, the shortcut, or the full model", 
     ft = 0.4, itn_cov = 0.5, irs_cov = 0.2, years = 1, full = TRUE
   ))
   expect_true(all(c("t", "mu", "fv", "Sout", "prev") %in% names(full)))
-  expect_identical(full$mu, direct$mu)
+  expect_equal(full$mu, direct$mu, tolerance = 1e-14)
 
   det <- suppressMessages(run_deterministic_model(
     EIR = 5, ft = 0.4, years = 1, itn_cov = 0.5, irs_cov = 0.2, quiet = TRUE

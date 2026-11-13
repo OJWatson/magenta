@@ -46,8 +46,8 @@ Evaluates the intervention block of the deterministic model (the one in
 per-category feeding and repellency probabilities, and from them the
 mosquito feeding rate \code{fv} and death rate \code{mu}, for every day of
 the simulation. Neither rate depends on the model's state, so this gives
-the same numbers as running the model and is what \code{\link{pipeline}}
-uses.
+the numbers running the model would, to floating-point rounding, and is
+what \code{\link{pipeline}} uses.
 }
 \details{
 The deterministic model in \code{inst/extdata/odin_itn_irs.R}
@@ -56,9 +56,10 @@ the repeat and successful feeding probabilities, \code{zbar} and
 \code{wbar}) from the time \code{t} and the parameters alone; no state
 variable feeds into \code{mu} or \code{fv}. This evaluates that block at
 the same daily time points \code{\link{mu_fv_create}} returns, in the
-same order of operations as the generated C, which makes the result
-bit-identical to the odin output (\code{tests/testthat/test-mu-fv.R}
-checks this against the model).
+same order of operations as the generated C, so the result equals the
+odin output to floating-point rounding: identical on some platforms and
+within an ulp on others, depending on how the generated C was compiled
+(\code{tests/testthat/test-mu-fv.R} checks this against the model).
 }
 \examples{
 # nets from year two, spraying from year three, over four years

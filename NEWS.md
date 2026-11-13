@@ -25,7 +25,8 @@
 * `barcode_list_create()` defaults `plaf`, `prob_crossover` and `mutation_rate`
   to `num_loci` entries.
 * Mosquito death and feeding rates under ITN/IRS come from the closed form
-  `mu_fv_from_coverage()`, identical to the odin model output and far faster;
+  `mu_fv_from_coverage()`, equal to the odin model output to floating-point
+  rounding and far faster;
   `run_deterministic_model()` runs the model itself.
 * `spl_grab()` keeps the year 2000 in a range that ends there.
 * An all-zero `itn_cov` or `irs_cov` vector takes the no-intervention shortcut
