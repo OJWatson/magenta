@@ -18,7 +18,7 @@ pool_res <- function(grp, nl = 3, N = 100000, reps = 10,
                      list_returns = 1:5,
                      remove_zeros = TRUE) {
   pop_alf <- function(nums, nl = 3) {
-    if (class(nums %>% unlist()) == "raw") {
+    if (is.raw(unlist(nums))) {
       colMeans(matrix(as.numeric(do.call(rbind, nums)), ncol = nl))
     } else {
       rep(NA, nl)

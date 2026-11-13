@@ -769,8 +769,9 @@ qualified; `requireNamespace()` guards): `R/cluster_utils.R` (`pool_res()`,
 `summary_data_frames_from_sims()`, `gg_color_hue()`) and
 `country_seasonal_profiles()` in `R/seasonal_utils.R`. `bootstrap()` and
 `kl()` stay removed. They are written against the 1.3.x return value of
-`pipeline()`, are excluded from lintr and are left out of the coverage figure
-(see the status above for both figures). The phase will rework the cluster
+`pipeline()`, are excluded from lintr and are left out of the coverage figure:
+R-side line coverage is 98.6% without `R/cluster_utils.R` and `R/plotting.R`
+and 78.3% with them (whole package 79.9% and 75.9%). The phase will rework the cluster
 helpers for the current DIDE cluster (hipercow), turn the plotting helpers
 into a plotting vignette, and make the seasonal profile plot useful for
 choosing an admin unit. Section to be drafted.

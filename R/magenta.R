@@ -11,7 +11,7 @@
 #' @useDynLib magenta
 #' @importFrom Rcpp sourceCpp
 #' @importFrom stats runif qt sd approx qexp qlnorm rbinom rgeom rnbinom
-#' @importFrom stats weighted.mean na.omit optim pgamma dexp
+#' @importFrom stats weighted.mean na.omit optim pgamma dexp time
 #' @importFrom utils read.csv tail packageVersion
 #' @importFrom rlang .data
 #' @importFrom stats heatmap

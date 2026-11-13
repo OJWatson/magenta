@@ -74,6 +74,7 @@ importFrom(stats,
   rnbinom,
   runif,
   sd,
+  time,
   weighted.mean
 )
 importFrom(stringi,stri_trans_general)
