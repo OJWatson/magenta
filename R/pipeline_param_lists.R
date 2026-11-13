@@ -865,6 +865,19 @@ cpp_contract <- list(
 # "drug_list$drug_choice must be a single number", and returns the value
 # invisibly so the validators read as a list of requirements.
 
+#' Check a parameter list against the contract
+#'
+#' The generic checks used by every \code{validate_*()}. Each reports the
+#' list and field it is looking at, e.g.
+#' \code{"drug_list$drug_choice must be a single number"}, and returns the
+#' value invisibly so the validators read as a list of requirements.
+#'
+#' @param x The list.
+#' @param contract The entry of \code{\link{cpp_contract}} for it.
+#' @param what Name used for the list in error messages.
+#' @return \code{x}, invisibly; an error names the missing or unexpected
+#'   fields.
+#' @keywords internal
 check_fields <- function(x, contract, what) {
   if (!is.list(x)) {
     stop(sprintf("%s must be a list", what), call. = FALSE)
@@ -884,6 +897,13 @@ check_fields <- function(x, contract, what) {
   invisible(x)
 }
 
+#' Check for a logical without NAs
+#'
+#' @param x The value.
+#' @param what Name used in the error message.
+#' @param n Required length, or \code{NULL} for any.
+#' @return \code{x}, invisibly.
+#' @keywords internal
 check_flag <- function(x, what, n = 1L) {
   if (!is.logical(x) || anyNA(x) || (!is.null(n) && length(x) != n)) {
     stop(sprintf(
@@ -894,6 +914,15 @@ check_flag <- function(x, what, n = 1L) {
   invisible(x)
 }
 
+#' Check for a number, or a vector of them, in a range
+#'
+#' @param x The value.
+#' @param what Name used in the error message.
+#' @param min,max Bounds, inclusive.
+#' @param n Required length, or \code{NULL} for any.
+#' @param integer Whether whole numbers are required (logicals pass too).
+#' @return \code{x}, invisibly.
+#' @keywords internal
 check_number <- function(x, what, min = -Inf, max = Inf, n = 1L,
                          integer = FALSE) {
   kind <- if (integer) "whole number" else "number"
@@ -926,6 +955,13 @@ check_number <- function(x, what, min = -Inf, max = Inf, n = 1L,
   invisible(x)
 }
 
+#' Check a length
+#'
+#' @param x The value.
+#' @param what Name used in the error message.
+#' @param n Required length.
+#' @return \code{x}, invisibly.
+#' @keywords internal
 check_length <- function(x, what, n) {
   if (length(x) != n) {
     stop(sprintf("%s must have length %d, not %d", what, n, length(x)),
@@ -935,6 +971,14 @@ check_length <- function(x, what, n) {
   invisible(x)
 }
 
+#' Check that a list came from its constructor
+#'
+#' @param x The value.
+#' @param class The class the constructor gives, e.g.
+#'   \code{"magenta_drug_list"}.
+#' @param what Name used in the error message.
+#' @return \code{x}, invisibly; the error names the constructor to use.
+#' @keywords internal
 check_class <- function(x, class, what) {
   if (!inherits(x, class)) {
     stop(sprintf(
@@ -945,12 +989,26 @@ check_class <- function(x, class, what) {
   invisible(x)
 }
 
-# Stamp a parameter list with its class, keeping it a plain list underneath so
-# that the C++ side and existing code that treats it as a list are unaffected.
+#' Stamp a parameter list with its class
+#'
+#' The list stays a plain list underneath, so that the C++ side and existing
+#' code that treats it as a list are unaffected.
+#'
+#' @param x The list.
+#' @param class The class, e.g. \code{"magenta_drug_list"}.
+#' @return \code{x} with class \code{c(class, "magenta_param_list", "list")}.
+#' @keywords internal
 new_param_list <- function(x, class) {
   structure(x, class = c(class, "magenta_param_list", "list"))
 }
 
+#' Print a parameter list
+#'
+#' @param x A parameter list from one of the \code{*_list_create()}
+#'   constructors.
+#' @param ... Ignored.
+#' @return \code{x}, invisibly.
+#' @keywords internal
 #' @export
 print.magenta_param_list <- function(x, ...) {
   cat("<", class(x)[1], "> with ", length(x), " fields\n", sep = "")

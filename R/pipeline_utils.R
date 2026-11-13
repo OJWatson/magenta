@@ -247,17 +247,6 @@ mu_fv_create <- function(eqInit,
   out
 }
 
-# Mosquito death and feeding rates under ITN/IRS, in closed form.
-#
-# The deterministic model in inst/extdata/odin_itn_irs.R computes its
-# intervention block (coverage categories, net and spray decay, the repeat and
-# successful feeding probabilities, zbar and wbar) from the time t and the
-# parameters alone; no state variable feeds into mu or fv. pipeline() only
-# needs those two rates, so this evaluates that block directly at the same
-# daily time points mu_fv_create() returns, in the same order of operations as
-# the generated C, which makes the result bit-identical to the odin output
-# (tests/testthat/test-mu-fv.R checks this against the model).
-
 #' Mosquito death and feeding rates from intervention coverage
 #'
 #' Evaluates the intervention block of the deterministic model (the one in
@@ -267,6 +256,16 @@ mu_fv_create <- function(eqInit,
 #' the simulation. Neither rate depends on the model's state, so this gives
 #' the same numbers as running the model and is what \code{\link{pipeline}}
 #' uses.
+#'
+#' @details The deterministic model in \code{inst/extdata/odin_itn_irs.R}
+#' computes its intervention block (coverage categories, net and spray decay,
+#' the repeat and successful feeding probabilities, \code{zbar} and
+#' \code{wbar}) from the time \code{t} and the parameters alone; no state
+#' variable feeds into \code{mu} or \code{fv}. This evaluates that block at
+#' the same daily time points \code{\link{mu_fv_create}} returns, in the
+#' same order of operations as the generated C, which makes the result
+#' bit-identical to the odin output (\code{tests/testthat/test-mu-fv.R}
+#' checks this against the model).
 #'
 #' @param params The model parameter list from
 #'   \code{\link{model_param_list_create}}, which holds the entomological and
@@ -373,9 +372,23 @@ mu_fv_from_coverage <- function(params, ft, itn_cov, irs_cov, years,
   data.frame(mu = mu, fv = fv)
 }
 
-# Run the deterministic model over the simulation and return every output
-# (transformed variables, including t, mu and fv), as the pipeline did
-# before the closed form.
+#' Run the deterministic model over a simulation
+#'
+#' Sets the equilibrium list up with the yearly intervention vectors and
+#' change times, builds the odin model and runs it for the length of the
+#' simulation, returning every output (the transformed variables, including
+#' \code{t}, \code{mu} and \code{fv}) as the pipeline did before the closed
+#' form \code{\link{mu_fv_from_coverage}}.
+#'
+#' @param eqInit Output of \code{\link{equilibrium_init_create}}.
+#' @param ft Treatment seeking, one value per year.
+#' @param itn_cov,irs_cov Bed net and spraying coverage, one value per year.
+#' @param years Length of the simulation in years.
+#' @param int_times Days at which the yearly values start; \code{NULL} for
+#'   the year-one values from before the start and a change each anniversary.
+#' @return The list of model outputs, one vector (or array) per output with
+#'   a value per day.
+#' @keywords internal
 run_odin_model <- function(eqInit, ft, itn_cov, irs_cov, years, int_times = NULL) {
   message("\nRunning Deterministic Model for ", years, " years")
 
@@ -483,6 +496,22 @@ run_deterministic_model <- function(EIR, ft, years,
 }
 
 
+#' Drug cycling between periods
+#'
+#' Applies the sequential and temporal cycling rules of a drug list between
+#' two periods of the simulation. Sequential cycling moves to the next drug
+#' when the treatment failure exceeds the threshold and the last switch is
+#' far enough back; temporal cycling moves on a fixed year. Neither applies
+#' under multiple first-line therapies or without resistance.
+#'
+#' @param drug_list The drug list as it stands.
+#' @param year The year the finished period belongs to.
+#' @param tf Treatment failure over the last two periods, from
+#'   \code{\link{period_treatment_failure}}; \code{NA} never triggers a
+#'   switch.
+#' @return The drug list, with \code{drug_choice} and
+#'   \code{next_temporal_cycle} moved on if a rule fired.
+#' @keywords internal
 drug_list_update <- function(drug_list, year, tf) {
   if (drug_list$resistance_flag) {
     if (!drug_list$mft_flag) {
@@ -517,7 +546,16 @@ drug_list_update <- function(drug_list, year, tf) {
   return(drug_list)
 }
 
-# convert allele frequencies
+#' Population allele frequencies from barcodes
+#'
+#' @param nums List of the barcodes as raw vectors, one element per
+#'   individual, as \code{\link{pop_strains_df}} returns them.
+#' @param nl Number of loci.
+#' @param weighted Whether each individual contributes equally (the mean of
+#'   their strains) rather than each strain. Default = FALSE
+#' @return A vector of \code{nl} frequencies, or of \code{NA} when there are
+#'   no barcodes.
+#' @keywords internal
 pop_alf <- function(nums, nl, weighted = FALSE) {
   if (is.raw(unlist(nums))) {
     if (weighted) {
@@ -534,7 +572,16 @@ pop_alf <- function(nums, nl, weighted = FALSE) {
   return(unlist(res))
 }
 
-# convert to lineages frequencies
+#' Lineage frequencies from barcodes
+#'
+#' Tables the distinct barcodes (each read as an integer) over every possible
+#' barcode of \code{nl} loci.
+#'
+#' @param nums List of the barcodes as raw vectors.
+#' @param nl Number of loci.
+#' @return A table of \code{2^nl} counts, or a vector of \code{NA} when
+#'   there are no barcodes.
+#' @keywords internal
 lineages <- function(nums, nl) {
   if (is.raw(unlist(nums))) {
     res <- table(

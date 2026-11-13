@@ -239,6 +239,9 @@ pad_annual_rows <- function(x, n_years, what) {
   unname(x)
 }
 
+#' @param x,... A schedule, and arguments passed on to the data frame
+#'   \code{print()} method.
+#' @rdname build_schedule
 #' @export
 print.magenta_schedule <- function(x, ...) {
   days <- if (is.null(x$day_end)) "" else paste0(" over ", max(x$day_end), " days")

@@ -152,14 +152,15 @@ simulation_R <- function(param_list, seed) {
   stop("No matching parameter list handler found within simulation_R")
 }
 
-# Thin R bindings over the five Rcpp entry points.
-#
-# The simulation draws its random numbers from R's generator. The bindings do
-# not seed it: pipeline() seeds once at the start of a run (or restores the
-# generator state a saved run stopped at) and every call continues from
-# wherever the generator is.
-
 #' Initialise a simulation from an equilibrium parameter list
+#'
+#' The first of the five thin bindings over the Rcpp entry points
+#' (\code{sim_init()}, \code{\link{sim_update}}, \code{\link{sim_get_state}},
+#' \code{\link{sim_free}} and \code{\link{sim_init_saved}}). The simulation
+#' draws its random numbers from R's generator and the bindings do not seed
+#' it: \code{\link{pipeline}} seeds once at the start of a run (or restores
+#' the generator state a saved run stopped at) and every call continues from
+#' wherever the generator is.
 #'
 #' @param param_list List created by \code{param_list_simulation_init_create}.
 #' @return List with the state pointer (\code{Ptr}) and the \code{Loggers}.
@@ -210,6 +211,11 @@ sim_init_saved <- function(saved_state) {
   Simulation_Saved_Init_cpp(list(savedState = saved_state))
 }
 
+#' Check for a simulation state pointer
+#'
+#' @param ptr The value.
+#' @return \code{ptr}, invisibly, if it is an external pointer.
+#' @keywords internal
 assert_state_ptr <- function(ptr) {
   if (!inherits(ptr, "externalptr")) {
     stop("statePtr must be an external pointer to a simulation state")
@@ -217,6 +223,12 @@ assert_state_ptr <- function(ptr) {
   invisible(ptr)
 }
 
+#' Check a saved state before handing it to C++
+#'
+#' @param saved_state The value.
+#' @return \code{saved_state}, invisibly, if it is a list with the five lists
+#'   \code{\link{sim_get_state}} returns.
+#' @keywords internal
 assert_saved_state <- function(saved_state) {
   required <- c(
     "population_List",

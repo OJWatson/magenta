@@ -3,6 +3,21 @@
 #' @noRd
 NULL
 
+#' Progress messages for the main loop
+#'
+#' Ticks the progress bar, or on a cluster (where a bar cannot redraw) prints
+#' the percentage done every two percent, as \code{pipeline()} has always
+#' done.
+#'
+#' @param housekeeping_list The housekeeping list, for \code{quiet_print} and
+#'   \code{cluster}.
+#' @param res The results list, for the number of periods.
+#' @param progress_bar A \code{progress::progress_bar}.
+#' @param i The period just started.
+#' @param initial Whether this is the call before the loop.
+#' @param p_print The next percentage to print.
+#' @return The next percentage to print, to pass back in.
+#' @keywords internal
 progress_logging <- function(housekeeping_list, res, progress_bar,
                              i = 1, initial = FALSE, p_print = 2) {
   if (initial) {
@@ -37,7 +52,11 @@ progress_logging <- function(housekeeping_list, res, progress_bar,
   return(p_print)
 }
 
-#' @noRd
+#' Bind a list of data frames by row
+#'
+#' @param x List of data frames with the same columns.
+#' @return One data frame with the rows renumbered.
+#' @keywords internal
 rbind_list_base <- function(x) {
   x2 <- do.call(
     rbind.data.frame,
@@ -47,7 +66,13 @@ rbind_list_base <- function(x) {
   x2
 }
 
-#' @noRd
+#' Consecutive index ranges
+#'
+#' @param diff Length of each range.
+#' @param end Total length.
+#' @return List of integer vectors \code{1:diff}, \code{(diff + 1):(2 * diff)}
+#'   and so on.
+#' @keywords internal
 ranges <- function(diff, end) {
   r <- list()
   for (i in 1:(end / diff)) {
@@ -70,14 +95,25 @@ bitsToInt <- function(x, big_endian = FALSE) {
   }
 }
 
-#' @noRd
+#' Apply a check unless the value is NULL
+#'
+#' @param x The value.
+#' @param func A check such as \code{\link{assert_scalar_character}}.
+#' @param name Name used in the error message.
+#' @return What \code{func} returns, or \code{NULL}.
+#' @keywords internal
 assert_null_and_func <- function(x, func, name = deparse(substitute(x))) {
   if (!is.null(x)) {
     func(x, name)
   }
 }
 
-#' @noRd
+#' Check for a single string
+#'
+#' @param x The value.
+#' @param name Name used in the error message.
+#' @return \code{x}, invisibly.
+#' @keywords internal
 assert_scalar_character <- function(x, name = deparse(substitute(x))) {
   if (!(is.character(x) && length(x) == 1L && !is.na(x))) {
     stop(sprintf("'%s' must be a scalar character", name))
@@ -85,7 +121,12 @@ assert_scalar_character <- function(x, name = deparse(substitute(x))) {
   invisible(x)
 }
 
-#' @noRd
+#' Check for a single TRUE or FALSE
+#'
+#' @param x The value.
+#' @param name Name used in the error message.
+#' @return \code{x}, invisibly.
+#' @keywords internal
 assert_scalar_logical <- function(x, name = deparse(substitute(x))) {
   if (!(is.logical(x) && length(x) == 1L && !is.na(x))) {
     stop(sprintf("'%s' must be a scalar logical", name))
@@ -93,7 +134,12 @@ assert_scalar_logical <- function(x, name = deparse(substitute(x))) {
   invisible(x)
 }
 
-#' @noRd
+#' Check for a single number
+#'
+#' @param x The value.
+#' @param name Name used in the error message.
+#' @return \code{x}, invisibly.
+#' @keywords internal
 assert_scalar_numeric <- function(x, name = deparse(substitute(x))) {
   if (!(is.numeric(x) && length(x) == 1L && !is.na(x))) {
     stop(sprintf("'%s' must be a scalar numeric", name))

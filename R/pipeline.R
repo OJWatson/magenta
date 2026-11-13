@@ -435,8 +435,16 @@ pipeline <- function(EIR = 120,
   sim
 }
 
-# The dots of pipeline() go to model_param_list_create(); anything else is
-# almost always a misspelt pipeline() argument, so say so.
+#' Check that the dots of pipeline() are model parameters
+#'
+#' The \code{...} of \code{\link{pipeline}} go to
+#' \code{\link{model_param_list_create}}; anything else is almost always a
+#' misspelt \code{pipeline()} argument, so say so rather than let it pass
+#' silently.
+#'
+#' @param ... The dots as given to \code{pipeline()}.
+#' @return \code{NULL}, invisibly; an error names the unknown arguments.
+#' @keywords internal
 check_dots_are_model_params <- function(...) {
   dots <- names(list(...))
   unknown <- setdiff(dots, names(formals(model_param_list_create)))
@@ -451,9 +459,19 @@ check_dots_are_model_params <- function(...) {
   invisible(NULL)
 }
 
-# Read a saved state from disk and split it into the C++ state, the R-side
-# parameter lists it was created with, and the generator state and seed of
-# the run that saved it (absent from saves made before 1.4.0).
+#' Read a saved model state for a resumed run
+#'
+#' Reads a saved state from disk, or takes the object itself, and splits it
+#' into the C++ state, the R-side parameter lists it was created with, and the
+#' generator state and seed of the run that saved it (absent from saves made
+#' before 1.4.0).
+#'
+#' @param saved_state_path Path to an \code{.rds} file written by
+#'   \code{\link{sim_save}} or kept by a saver with \code{final = "full"},
+#'   or the saved state itself.
+#' @return List with \code{state} (the five C++ lists), \code{inputs} (the
+#'   \code{saved_inputs}), \code{rng_state} and \code{seed}.
+#' @keywords internal
 read_saved_state <- function(saved_state_path) {
   if (is.character(saved_state_path)) {
     saved <- sim_restore(saved_state_path)
@@ -468,9 +486,21 @@ read_saved_state <- function(saved_state_path) {
   )
 }
 
-# A resumed run uses the parameter lists of the saved run. An argument the
-# caller supplied that differs from the saved one is an error rather than a
-# silent override: say which, and that the saved run's value is the one used.
+#' Check an argument against the saved run's value
+#'
+#' A resumed run uses the parameter lists of the saved run. An argument the
+#' caller supplied that differs from the saved one is an error rather than a
+#' silent override: the message says which, and that the saved value is the
+#' one used. Arguments the caller did not supply are not checked.
+#'
+#' @param name Name of the argument, as in the call.
+#' @param current The value in this call.
+#' @param saved The value the saved run used.
+#' @param supplied Names of the arguments the caller gave explicitly.
+#' @param ignore Fields of a list argument that may differ, such as the drug
+#'   cycling state the saved run moved on.
+#' @return \code{NULL}, invisibly.
+#' @keywords internal
 check_resume_arg <- function(name, current, saved, supplied, ignore = character()) {
   if (!(name %in% supplied)) {
     return(invisible(NULL))
@@ -493,18 +523,36 @@ check_resume_arg <- function(name, current, saved, supplied, ignore = character(
   invisible(NULL)
 }
 
-# The state of R's random number generator, so that a run can be continued
-# from exactly where it stopped.
+#' Read the state of R's random number generator
+#'
+#' \code{.Random.seed} as it stands, so that a run can be continued from
+#' exactly where it stopped. Kept in \code{meta$rng_state} and in every full
+#' save.
+#'
+#' @return The integer vector \code{.Random.seed}, or \code{NULL} before the
+#'   generator has been used.
+#' @keywords internal
 get_rng_state <- function() {
   get0(".Random.seed", envir = globalenv(), inherits = FALSE)
 }
 
+#' Restore the state of R's random number generator
+#'
+#' @param state A vector as returned by \code{\link{get_rng_state}}.
+#' @return \code{state}, invisibly.
+#' @keywords internal
 set_rng_state <- function(state) {
   assign(".Random.seed", state, envir = globalenv())
   invisible(state)
 }
 
-# Map the user-facing spatial_type to the integer code the C++ reads.
+#' Spatial type as the integer code the C++ reads
+#'
+#' @param spatial_type \code{NULL} for no spatial structure, \code{"island"}
+#'   or \code{"metapop"} (not implemented), as given to \code{pipeline()}.
+#' @return \code{0} for none, \code{1} for island; a numeric input is
+#'   returned as it is.
+#' @keywords internal
 spatial_type_code <- function(spatial_type) {
   if (is.null(spatial_type)) {
     return(0)
@@ -518,14 +566,40 @@ spatial_type_code <- function(spatial_type) {
   spatial_type
 }
 
-# Build the equilibrium, barcode and spatial inputs for the first period of
-# the schedule and start the simulation, fresh or from a saved state. Returns
-# the simulation "state": the C++ handle plus every R-side list the main loop
-# and the savers need.
-#
-# The generator was seeded (or restored) by pipeline() before this is called;
-# the importation frequency vectors drawn by spl_create() and the C++
-# initialisation consume it in that order.
+#' Initialise the simulation state for a run
+#'
+#' Builds the equilibrium, barcode and spatial inputs for the first period of
+#' the schedule and starts the simulation, fresh or from a saved state. The
+#' generator was seeded (or restored) by \code{\link{pipeline}} before this
+#' is called; the importation frequency vectors drawn by
+#' \code{\link{spl_create}} and the C++ initialisation consume it in that
+#' order.
+#'
+#' @param N Population size.
+#' @param EIR Annual EIR the equilibrium is set up for.
+#' @param country,admin Country and admin unit for seasonality, or
+#'   \code{NULL}.
+#' @param mpl Model parameter list from \code{\link{model_param_list_create}}.
+#' @param schedule The schedule from \code{\link{build_schedule}}.
+#' @param annual The per-year matrices from \code{\link{annual_inputs}}.
+#' @param barcode List of the barcode arguments to \code{pipeline()}:
+#'   \code{num_loci}, \code{ibd_length}, \code{prob_crossover},
+#'   \code{starting_ibd}, \code{mutation_rate} and
+#'   \code{mutation_treated_modifier}.
+#' @param spatial List of the spatial arguments to \code{pipeline()}:
+#'   \code{spatial_type}, \code{island_imports_plaf_linked_flag},
+#'   \code{survival_percentage}, \code{oocyst_mean} and \code{oocyst_shape}.
+#' @param housekeeping_list,drug_list,nmf_list,vector_adaptation_list The
+#'   parameter lists.
+#' @param saved_state The five C++ lists of a saved run to continue from, or
+#'   \code{NULL} to initialise from the equilibrium.
+#' @return The simulation state: a list with the C++ handle and loggers
+#'   (\code{sim}), the equilibrium (\code{eqInit}), the parameter lists as
+#'   they stand (\code{barcode_list}, \code{spatial_list},
+#'   \code{drug_list} and the rest), the per-year matrices (\code{annual})
+#'   and the spatial settings, which is everything the main loop and the
+#'   savers need.
+#' @keywords internal
 sim_setup <- function(N, EIR, country, admin, mpl, schedule, annual, barcode, spatial,
                       housekeeping_list, drug_list, nmf_list,
                       vector_adaptation_list, saved_state = NULL) {
@@ -597,10 +671,18 @@ sim_setup <- function(N, EIR, country, admin, mpl, schedule, annual, barcode, sp
   state
 }
 
-# The spatial list for period i of the schedule: the importation rates and
-# allele frequencies of the period's year. The importation frequency vectors
-# are redrawn each time, from the generator state the previous C++ call left
-# behind.
+#' The spatial list for a period of the schedule
+#'
+#' The importation rates and allele frequencies of the period's year, with
+#' the co-transmission and oocyst frequency vectors redrawn from the generator
+#' state the previous C++ call left behind, as the old loop did at every year
+#' change.
+#'
+#' @param state The simulation state from \code{\link{sim_setup}}.
+#' @param schedule The schedule.
+#' @param i The period.
+#' @return A spatial list from \code{\link{spl_create}}.
+#' @keywords internal
 period_spatial_list <- function(state, schedule, i) {
   year <- schedule$year[i]
   spl_create(
@@ -616,7 +698,14 @@ period_spatial_list <- function(state, schedule, i) {
   )
 }
 
-# Switch the yearly inputs when period i starts a new year.
+#' Switch the yearly inputs when a period starts a new year
+#'
+#' @param state The simulation state.
+#' @param schedule The schedule.
+#' @param i The period that starts the new year.
+#' @return The state with the resistance flag, mutation flag and spatial list
+#'   of the new year.
+#' @keywords internal
 apply_period_year <- function(state, schedule, i) {
   state$drug_list$resistance_flag <- schedule$resistance_flag[i]
   state$barcode_list$mutation_flag <- schedule$mutation_flag[i]
@@ -624,7 +713,17 @@ apply_period_year <- function(state, schedule, i) {
   state
 }
 
-# Run the simulation forward over one block of days.
+#' Run the simulation forward over one block of days
+#'
+#' @param state The simulation state.
+#' @param days The days to simulate, as a contiguous integer vector indexing
+#'   the rows of \code{mu_fv}.
+#' @param ft Treatment seeking rate for the block.
+#' @param mu_fv Daily mosquito death and feeding rates for the whole run, from
+#'   \code{\link{mu_fv_create}}.
+#' @return The state with its \code{sim} element replaced by the C++ handle
+#'   and loggers after the update.
+#' @keywords internal
 run_period <- function(state, days, ft, mu_fv) {
   pl <- param_list_simulation_update_create(
     years = length(days) / 365,
@@ -640,12 +739,28 @@ run_period <- function(state, days, ft, mu_fv) {
   state
 }
 
-# Step through the schedule one period at a time, calling the saver after
-# every period but the last when save_periods is TRUE. The last period is run
-# without a save so that the caller can decide what to put in the final slot.
-# The drug cycling rules run between periods on the treatment failure the
-# loggers report, whatever the saver. The schedule is returned with the drug
-# used in each period filled in.
+#' Step through the schedule one period at a time
+#'
+#' The main loop of \code{\link{pipeline}}. Every period is run with
+#' \code{\link{run_period}}; the saver is called after every period but the
+#' last when \code{save_periods} is \code{TRUE}, the last being left for the
+#' caller to fill with the saver's \code{final} choice. The drug cycling
+#' rules run between periods on the treatment failure the loggers report,
+#' whatever the saver.
+#'
+#' @param state The simulation state from \code{\link{sim_setup}}.
+#' @param schedule The schedule.
+#' @param mu_fv Daily mosquito death and feeding rates for the whole run.
+#' @param saver The \code{magenta_saver} in use.
+#' @param params The \code{magenta_params} recorded with the run, passed to
+#'   the saver.
+#' @param years Length of the run in years, for the progress message.
+#' @param save_periods Whether to call the saver after each period.
+#' @return List with the final \code{state}, the per-period results
+#'   \code{res} (empty slots when \code{save_periods} is \code{FALSE}), the
+#'   \code{comp_times} at which each period started and the
+#'   \code{schedule} with the drug used in each period filled in.
+#' @keywords internal
 run_schedule <- function(state, schedule, mu_fv, saver, params, years, save_periods) {
   n_periods <- nrow(schedule)
   res <- vector("list", n_periods)
@@ -694,15 +809,28 @@ run_schedule <- function(state, schedule, mu_fv, saver, params, years, save_peri
   list(state = state, res = res, comp_times = comp_times, schedule = schedule)
 }
 
-# Period i of the schedule as a list, with its index and the number of
-# periods, for the savers.
+#' One period of the schedule as a list, for the savers
+#'
+#' @param schedule The schedule.
+#' @param i The period.
+#' @return The row as a named list, preceded by its index \code{i} and the
+#'   number of periods \code{n}.
+#' @keywords internal
 schedule_period <- function(schedule, i) {
   row <- lapply(unclass(schedule), function(col) col[[i]])
   c(list(i = i, n = nrow(schedule)), row)
 }
 
-# Copy the full model state back to R and attach the R-side parameter lists
-# and the generator state that a later call needs to continue the simulation.
+#' The full model state, ready to be saved
+#'
+#' Copies the full model state back from C++ and attaches the R-side parameter
+#' lists and the generator state that a later call needs to continue the
+#' simulation.
+#'
+#' @param state The simulation state.
+#' @return The five C++ lists plus \code{saved_inputs} (the parameter lists
+#'   and spatial settings) and \code{rng_state}.
+#' @keywords internal
 prepare_state_save <- function(state) {
   sim_save <- sim_get_state(state$sim$Ptr)
   sim_save$saved_inputs <- list(
@@ -719,8 +847,13 @@ prepare_state_save <- function(state) {
   sim_save
 }
 
-# Reduce a full state save to the human and strain components when only those
-# are wanted.
+#' Reduce a full state save to the human population
+#'
+#' @param sim_save A full state save from \code{\link{prepare_state_save}}.
+#' @param human_only Whether to keep only the human and strain components.
+#' @param human_vars The elements of the population list kept.
+#' @return \code{sim_save} as given, or the human and strain vectors alone.
+#' @keywords internal
 collect_output <- function(sim_save, human_only,
                            human_vars = c("Infection_States", "Zetas", "Ages", "ID")) {
   if (!human_only) {
@@ -735,7 +868,12 @@ collect_output <- function(sim_save, human_only,
   c(sim_save$population_List[human_vars], strains)
 }
 
-#' @noRd
+#' Free the simulation's memory and drop the pointers from the result
+#'
+#' @param sim The \code{magenta_sim} with its C++ pointer still live.
+#' @return \code{sim} with every \code{Ptr} removed, including from
+#'   \code{meta}.
+#' @keywords internal
 return_sim_memory <- function(sim) {
   meta <- sim_meta(sim)
   sim_free(meta$Ptr)

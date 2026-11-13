@@ -1,4 +1,14 @@
-#' @noRd
+#' Match names ignoring case, accents and punctuation
+#'
+#' Matches each of \code{a} in \code{b} after stripping accents, case,
+#' punctuation and spaces; names with no exact match take the closest by
+#' string distance.
+#'
+#' @param a Names to look up.
+#' @param b Names to look in.
+#' @param quiet If \code{FALSE}, the fuzzy matches are printed.
+#' @return The positions of \code{a} in \code{b}.
+#' @keywords internal
 match_clean <- function(a, b, quiet = TRUE) {
   a <- gsub("[[:punct:][:space:]]", "", tolower(stringi::stri_trans_general(a, "latin-ascii")))
   b <- gsub("[[:punct:][:space:]]", "", tolower(stringi::stri_trans_general(b, "latin-ascii")))

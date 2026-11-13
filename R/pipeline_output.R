@@ -8,6 +8,22 @@
 # constructors below wrap such a function with a name and a choice of what
 # the final slot of the output holds.
 
+#' Construct a saver
+#'
+#' A saver is a \code{function(state, period, params)} returning whatever
+#' should be kept for a period, wrapped with a name and a choice of what the
+#' final slot of the output holds. See \code{\link{savers}} for the four
+#' constructors built on this.
+#'
+#' @param fun The function. \code{state} is the internal simulation state
+#'   (its \code{sim} element holds the C++ pointer and the loggers),
+#'   \code{period} the schedule row for the period with its index \code{i}
+#'   and the number of periods \code{n}, and \code{params} the
+#'   \code{magenta_params} recorded with the run.
+#' @param name Name shown by \code{print()} and kept in \code{meta$saver}.
+#' @param final What the last element of the output holds.
+#' @return A \code{magenta_saver}.
+#' @keywords internal
 new_saver <- function(fun, name, final = c("loggers", "full", "humans")) {
   final <- match.arg(final, c("loggers", "full", "humans"))
   if (!is.function(fun) || length(formals(fun)) < 3) {
@@ -155,14 +171,25 @@ save_full <- function(final = c("full", "loggers", "humans")) {
   )
 }
 
+#' @param x,... A saver, and arguments ignored by \code{print()}.
+#' @rdname savers
 #' @export
 print.magenta_saver <- function(x, ...) {
   cat("<magenta_saver> ", x$name, ", final = ", x$final, "\n", sep = "")
   invisible(x)
 }
 
-# The treatment outcome and prevalence summaries appended to every
-# save_summary() result, in the order the output has always had.
+#' Treatment outcome and prevalence summaries for a period
+#'
+#' The summaries appended to every \code{\link{save_summary}} result, in the
+#' order the output has always had: treatment counts and failure, the daily
+#' population EIR, mutations, and the PCR, patent and microscopy (2 to 10 year
+#' olds) prevalence.
+#'
+#' @param sim_out The C++ handle and loggers after an update.
+#' @param mpl Model parameter list, for the detection parameters.
+#' @return A named list of the summaries.
+#' @keywords internal
 treatment_and_prevalence_summary <- function(sim_out, mpl) {
   loggers <- sim_out$Loggers
   res <- list()
@@ -193,9 +220,16 @@ treatment_and_prevalence_summary <- function(sim_out, mpl) {
   res
 }
 
-# The proportion of treatments in a period that failed (late parasitological
-# failure), from the loggers every update returns; 0 when nobody was treated.
-# The sequential cycling rule in drug_list_update() reads this.
+#' Treatment failure in a period
+#'
+#' The proportion of treatments in a period that failed (late parasitological
+#' failure), from the loggers every update returns; \code{0} when nobody was
+#' treated. The sequential cycling rule in \code{\link{drug_list_update}}
+#' reads this.
+#'
+#' @param sim_out The C++ handle and loggers after an update.
+#' @return A single number between 0 and 1.
+#' @keywords internal
 period_treatment_failure <- function(sim_out) {
   t <- sim_out$Loggers$Treatments
   tf <- sum(t$Unsuccesful_Treatments_LPF) /
@@ -203,9 +237,16 @@ period_treatment_failure <- function(sim_out) {
   if (is.na(tf)) 0 else tf
 }
 
-# Wrap a function written for the old update_save_func argument,
-# function(res, i, sim.out, mpl, num_loci) returning the whole results list,
-# as a saver.
+#' Wrap an old update_save_func as a saver
+#'
+#' The deprecated \code{update_save_func} argument took a
+#' \code{function(res, i, sim.out, mpl, num_loci)} returning the whole
+#' results list. This calls it that way and keeps its slot for the period.
+#'
+#' @param fun The old-style function.
+#' @param final What the last element of the output holds.
+#' @return A \code{magenta_saver}.
+#' @keywords internal
 legacy_saver <- function(fun, final = "loggers") {
   res <- list()
   new_saver(
@@ -218,9 +259,18 @@ legacy_saver <- function(fun, final = "loggers") {
   )
 }
 
-# Turn the `output` argument of pipeline(), or the deprecated flags it
-# replaces, into a saver. `flags` holds the values of the old arguments and
-# `used` which of them the caller set.
+#' The saver for a pipeline() call
+#'
+#' Turns the \code{output} argument of \code{\link{pipeline}}, or the
+#' deprecated flags it replaces, into a saver. Giving both is an error; the
+#' flags alone give a warning naming the saver that replaces them.
+#'
+#' @param output The \code{output} argument: \code{NULL}, a
+#'   \code{magenta_saver} or a function.
+#' @param flags Named list of the values of the deprecated arguments.
+#' @param used Named logical vector saying which of them the caller set.
+#' @return A \code{magenta_saver}.
+#' @keywords internal
 resolve_saver <- function(output, flags, used) {
   if (!is.null(output) && !inherits(output, "magenta_saver")) {
     if (is.function(output)) {
@@ -253,7 +303,13 @@ resolve_saver <- function(output, flags, used) {
   mapped$saver
 }
 
-# The old flag combinations and the saver each one means.
+#' The saver that a combination of the old output flags means
+#'
+#' @param f Named list of the values of the deprecated arguments, as
+#'   \code{\link{resolve_saver}} collects them.
+#' @return List with the \code{saver} and the \code{replacement} call to
+#'   show in the deprecation warning.
+#' @keywords internal
 saver_from_flags <- function(f) {
   final <- if (isTRUE(f$human_only_full_save)) {
     "humans"
@@ -316,14 +372,31 @@ saver_from_flags <- function(f) {
 
 # The object pipeline() returns, and saving and restoring a run.
 
+#' Construct the object pipeline() returns
+#'
+#' @param output What the run kept: the per-period results, or the final slot
+#'   alone.
+#' @param params The \code{magenta_params} of the run.
+#' @param schedule The schedule the run followed.
+#' @param meta The metadata list.
+#' @return \code{output} with the three as attributes and class
+#'   \code{magenta_sim}; see \code{\link{magenta_sim}}.
+#' @keywords internal
 new_magenta_sim <- function(output, params, schedule, meta) {
   structure(output, params = params, schedule = schedule, meta = meta, class = "magenta_sim")
 }
 
+#' Construct the record of a run's inputs
+#'
+#' @param x Named list of the inputs: the scalar settings and every parameter
+#'   list.
+#' @return \code{x} with class \code{magenta_params}.
+#' @keywords internal
 new_magenta_params <- function(x) {
   structure(x, class = c("magenta_params", "list"))
 }
 
+#' @rdname magenta_sim
 #' @export
 print.magenta_params <- function(x, ...) {
   cat("<magenta_params>\n")
@@ -369,7 +442,9 @@ print.magenta_params <- function(x, ...) {
 #' \code{summary()} prints the run's settings and the distribution of those
 #' columns.
 #'
-#' @param x,object A \code{magenta_sim}.
+#' @param x,object A \code{magenta_sim} (for \code{print.magenta_params()},
+#'   a \code{magenta_params}; for \code{print.summary.magenta_sim()}, the
+#'   summary).
 #' @param ... Unused.
 #' @return \code{sim_output()} the result as a plain list; \code{sim_params()}
 #'   the \code{magenta_params}; \code{sim_schedule()} the schedule;
@@ -432,6 +507,12 @@ print.magenta_sim <- function(x, ...) {
   invisible(x)
 }
 
+#' A call on one line, cut to a width
+#'
+#' @param call The call.
+#' @param width Characters to keep.
+#' @return A single string, ending in \code{...} if cut.
+#' @keywords internal
 abbreviate_call <- function(call, width = 70) {
   txt <- paste(deparse(call, width.cutoff = 500), collapse = " ")
   txt <- gsub("\\s+", " ", txt)
@@ -450,6 +531,7 @@ summary.magenta_sim <- function(object, ...) {
   )
 }
 
+#' @rdname magenta_sim
 #' @export
 print.summary.magenta_sim <- function(x, ...) {
   print(x$sim)
@@ -489,8 +571,16 @@ as.data.frame.magenta_sim <- function(x, ...) {
   df
 }
 
-# Every length-one number in a period's output, looking inside the loggers
-# and their Mosquitoes and Treatments sub-lists.
+#' Every length-one number in a period's output
+#'
+#' Looks inside the loggers (a period kept as \code{list(Loggers = ...)} or
+#' as the loggers themselves) and their \code{Mosquitoes} and
+#' \code{Treatments} sub-lists, which is what \code{as.data.frame()} turns
+#' into columns.
+#'
+#' @param x One period's output.
+#' @return A named list of single numbers, empty if \code{x} is not a list.
+#' @keywords internal
 scalar_fields <- function(x) {
   if (!is.list(x)) {
     return(list())
@@ -575,6 +665,12 @@ sim_restore <- function(path) {
   as_saved_state(readRDS(path))
 }
 
+#' Check for a single string
+#'
+#' @param x The value.
+#' @param what Name used in the error message.
+#' @return \code{x}, invisibly.
+#' @keywords internal
 check_scalar_character <- function(x, what) {
   if (!is.character(x) || length(x) != 1 || is.na(x)) {
     stop(what, " must be a single string", call. = FALSE)
@@ -582,11 +678,22 @@ check_scalar_character <- function(x, what) {
   invisible(x)
 }
 
+#' Is this a full model state?
+#'
+#' @param x Any object.
+#' @return \code{TRUE} if \code{x} is a list with the five lists the C++
+#'   returns, named in \code{cpp_contract$saved_state}.
+#' @keywords internal
 is_full_state <- function(x) {
   is.list(x) && all(cpp_contract$saved_state %in% names(x))
 }
 
-# The final full state of a run, or an error saying how to get one.
+#' The final full state of a run
+#'
+#' @param sim A \code{magenta_sim}.
+#' @return The full model state in its final slot, or an error saying how to
+#'   get one.
+#' @keywords internal
 final_full_state <- function(sim) {
   out <- sim_output(sim)
   final <- if (isTRUE(sim_meta(sim)$update_save)) out[[length(out)]] else out
@@ -600,15 +707,31 @@ final_full_state <- function(sim) {
   final
 }
 
+#' Stamp a saved state with its format and version
+#'
+#' @param x The saved state as a list.
+#' @param format_version Format of the object: \code{0} for the plain full
+#'   saves of earlier versions, \code{1} for what \code{\link{sim_save}}
+#'   writes.
+#' @param version The magenta version that wrote it.
+#' @return \code{x} with the two fields and class
+#'   \code{magenta_saved_state}.
+#' @keywords internal
 new_saved_state <- function(x, format_version, version) {
   x$format_version <- format_version
   x$version <- version
   structure(x, class = c("magenta_saved_state", "list"))
 }
 
-# Check a saved state read from disk or passed directly, accepting both the
-# versioned object sim_save() writes and the plain list older full saves
-# were.
+#' Check a saved state read from disk or passed directly
+#'
+#' Accepts both the versioned object \code{\link{sim_save}} writes and the
+#' plain list older full saves were, upgrading the latter.
+#'
+#' @param x The object.
+#' @return A \code{magenta_saved_state}, or an error saying what is wrong
+#'   with it.
+#' @keywords internal
 as_saved_state <- function(x) {
   if (!is_full_state(x)) {
     stop(
@@ -637,6 +760,9 @@ as_saved_state <- function(x) {
   x
 }
 
+#' @param x,... A \code{magenta_saved_state}, and arguments ignored by
+#'   \code{print()}.
+#' @rdname sim_save
 #' @export
 print.magenta_saved_state <- function(x, ...) {
   cat("<magenta_saved_state> format ", x$format_version, ", magenta ",
