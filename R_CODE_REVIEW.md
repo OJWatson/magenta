@@ -582,7 +582,7 @@ R/schedule.R        build_schedule(): one row per update period, validated once
 R/sim-bindings.R    sim_init(), sim_update(), sim_get_state(), sim_free(), sim_restore()
 R/run.R             sim_setup(), sim_run(), sim_save(), sim_restore(); the loop
 R/savers.R          save_loggers(), save_summary(), save_humans(), save_full()
-R/results.R         magenta_sim class: print, summary, as.data.frame, meta accessors
+R/magenta_sim.R     magenta_sim class: print, summary, as.data.frame, accessors
 R/equilibrium-*.R   unchanged maths, split so the 312-line function is 3-4 pieces
 R/pipeline.R        pipeline(): back-compatible wrapper, ~40 lines, deprecating old flags
 ```
@@ -654,10 +654,14 @@ the period index and store it in the schedule; never reuse the master seed.
 
 ### 6.7 Results
 
-`magenta_sim` object with `$output` (list of per-period saver results),
-`$params`, `$schedule`, `$meta`; `print()` shows the call, N, years, EIR, saver, seed,
-version, elapsed; `as.data.frame()` for the loggers saver; `summary()` for the summary
-saver. The attribute-based `meta` goes away.
+`magenta_sim` object: the list `pipeline()` has always returned (the per-period
+saver results, or the final slot alone), with `params`, `schedule` and `meta` as
+attributes read by `sim_params()`, `sim_schedule()` and `sim_meta()`, so that
+`out[[i]]`, `out$Loggers` and `attr(out, "meta")` keep working; `print()` shows the
+call, N, years, EIR, saver, seed, version, elapsed; `as.data.frame()` for the
+loggers saver; `summary()` for the summary saver. (The plan first put the four in a
+list, `out$output` and so on; OJ's review of the code sent it back to the attribute
+shape, so that old scripts run unchanged.)
 
 ---
 
@@ -681,8 +685,8 @@ date, the plain bug fixes in 4.6 with tests, version 1.4.0 with NEWS.
 
 Phases 1-3 are done on branch `rewrite`, cut from the
 Phase 0 tip, as one commit per step with the tests and lints green after each.
-The characterisation snapshot file is unchanged throughout; the tests read
-`out$output` instead of `out` because of the new return object. What landed,
+The characterisation snapshot file is unchanged throughout (the tests read the
+result through `sim_output()`, which strips the attributes). What landed,
 and where it departs from the plan above:
 
 - *Phase 1.* `R/sim_bindings.R` holds `sim_init()`, `sim_update()`,
@@ -710,8 +714,9 @@ and where it departs from the plan above:
   `save_humans()`, `save_full()`, each with `final = "loggers" | "full" |
   "humans"` for the last slot; a user `function(state, period, params)` is
   accepted; the old flags map onto a saver with a warning naming the
-  replacement; `update_saves()` deleted). `R/results.R` (`magenta_sim` with
-  `print()`, `summary()`, `as.data.frame()`; `sim_save()` / `sim_restore()`
+  replacement; `update_saves()` deleted). `R/magenta_sim.R` (`magenta_sim` with
+  `print()`, `summary()`, `as.data.frame()` and the `sim_params()`,
+  `sim_schedule()`, `sim_meta()`, `sim_output()` accessors; `sim_save()` / `sim_restore()`
   writing a flat, classed, `format_version`ed object that is also accepted
   by `pipeline(saved_state_path = )`, as are the old plain full saves). The
   saver's `final` replaces `full_save` / `human_only_full_save` for

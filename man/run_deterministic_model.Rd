@@ -81,6 +81,6 @@ sim <- pipeline(
   EIR = 10, ft = 0.4, years = 2, N = 10000, itn_cov = 0.3,
   update_save = TRUE, update_length = 365, output = save_loggers()
 )
-sapply(sim$output, function(x) x$Loggers$Incidence)
+sapply(sim, function(x) x$Loggers$Incidence)
 }
 }

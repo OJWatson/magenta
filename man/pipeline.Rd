@@ -228,7 +228,7 @@ out <- pipeline(
   housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
 )
 out
-out$output$Loggers$S
+out$Loggers$S
 
 # monthly saves of the loggers, as a data frame
 out_m <- pipeline(

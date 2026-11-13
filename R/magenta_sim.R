@@ -1,10 +1,7 @@
 # The object pipeline() returns, and saving and restoring a run.
 
 new_magenta_sim <- function(output, params, schedule, meta) {
-  structure(
-    list(output = output, params = params, schedule = schedule, meta = meta),
-    class = "magenta_sim"
-  )
+  structure(output, params = params, schedule = schedule, meta = meta, class = "magenta_sim")
 }
 
 new_magenta_params <- function(x) {
@@ -26,14 +23,28 @@ print.magenta_params <- function(x, ...) {
 
 #' Simulation results
 #'
-#' \code{\link{pipeline}} returns a \code{magenta_sim}: a list with the
-#' elements \code{output} (what the saver kept after each period, with the
-#' final slot as chosen by the saver's \code{final}; or, when
-#' \code{update_save = FALSE}, the final slot alone), \code{params} (the
-#' inputs the run was created with), \code{schedule} (the
+#' \code{\link{pipeline}} returns what the run kept, in the shape it has
+#' always had: with \code{update_save = FALSE} the final slot alone (by
+#' default \code{list(Loggers = ...)}, or the full model state or the human
+#' population if the saver's \code{final} asks for them); with
+#' \code{update_save = TRUE} a list with one element per period, the last
+#' being that final slot. So \code{out$Loggers}, \code{out[[i]]} and
+#' \code{length(out)} work as they did before 1.4.0.
+#'
+#' The object has class \code{magenta_sim} and carries the run's inputs as
+#' attributes: \code{params} (the \code{magenta_params} the run was created
+#' with, every parameter list included), \code{schedule} (the
 #' \code{\link{build_schedule}} data frame the run followed, with the drug
-#' used in each period) and \code{meta} (the call, seed, package version,
-#' saver and timings).
+#' used in each period filled in) and \code{meta} (the call, seed, package
+#' version, saver, timings and the state of the random number generator at
+#' the end). \code{sim_params()}, \code{sim_schedule()} and
+#' \code{sim_meta()} read them; \code{attr(out, "meta")} works as it did
+#' before 1.4.0.
+#'
+#' Printing a \code{magenta_sim} shows a short header rather than the whole
+#' list. \code{unclass(out)} prints the list and its attributes, and
+#' \code{sim_output(out)} is the bare list with no attributes at all, which
+#' is what to compare when checking that two runs gave the same result.
 #'
 #' \code{as.data.frame()} gives one row per period holding every scalar in
 #' that period's output: with \code{save_loggers()} these are the prevalence
@@ -44,15 +55,56 @@ print.magenta_params <- function(x, ...) {
 #'
 #' @param x,object A \code{magenta_sim}.
 #' @param ... Unused.
+#' @return \code{sim_output()} the result as a plain list; \code{sim_params()}
+#'   the \code{magenta_params}; \code{sim_schedule()} the schedule;
+#'   \code{sim_meta()} the metadata list.
 #' @name magenta_sim
+#' @examples
+#' \donttest{
+#' out <- pipeline(
+#'   EIR = 2, years = 1, N = 100, seed = 1L,
+#'   housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+#' )
+#' out
+#' names(out)
+#' sim_meta(out)$seed
+#' sim_schedule(out)
+#' }
 NULL
 
 #' @rdname magenta_sim
 #' @export
+sim_output <- function(x) {
+  nms <- names(x)
+  attributes(x) <- NULL
+  names(x) <- nms
+  x
+}
+
+#' @rdname magenta_sim
+#' @export
+sim_params <- function(x) {
+  attr(x, "params", exact = TRUE)
+}
+
+#' @rdname magenta_sim
+#' @export
+sim_schedule <- function(x) {
+  attr(x, "schedule", exact = TRUE)
+}
+
+#' @rdname magenta_sim
+#' @export
+sim_meta <- function(x) {
+  attr(x, "meta", exact = TRUE)
+}
+
+#' @rdname magenta_sim
+#' @export
 print.magenta_sim <- function(x, ...) {
-  p <- x$params
-  m <- x$meta
-  n_out <- if (isTRUE(m$update_save)) length(x$output) else 1L
+  p <- sim_params(x)
+  m <- sim_meta(x)
+  n_out <- if (isTRUE(m$update_save)) length(x) else 1L
   cat("<magenta_sim>\n")
   cat("  call:     ", abbreviate_call(m$call), "\n", sep = "")
   cat("  N: ", p$N, "   years: ", p$years, "   EIR: ", p$EIR, "\n", sep = "")
@@ -99,7 +151,8 @@ print.summary.magenta_sim <- function(x, ...) {
 #' @rdname magenta_sim
 #' @export
 as.data.frame.magenta_sim <- function(x, ...) {
-  periods <- if (isTRUE(x$meta$update_save)) x$output else list(x$output)
+  out <- sim_output(x)
+  periods <- if (isTRUE(sim_meta(x)$update_save)) out else list(out)
   rows <- lapply(periods, scalar_fields)
   cols <- unique(unlist(lapply(rows, names)))
   df <- data.frame(period = seq_along(periods))
@@ -109,7 +162,7 @@ as.data.frame.magenta_sim <- function(x, ...) {
       if (is.null(v)) NA_real_ else as.numeric(v)
     }, numeric(1))
   }
-  sched <- x$schedule
+  sched <- sim_schedule(x)
   if (!is.null(sched) && nrow(sched) == nrow(df)) {
     df <- cbind(
       df[, "period", drop = FALSE],
@@ -178,8 +231,8 @@ sim_save <- function(sim, path) {
   check_scalar_character(path, "path")
   if (inherits(sim, "magenta_sim")) {
     state <- final_full_state(sim)
-    extra <- list(params = sim$params, schedule = sim$schedule, meta = sim$meta)
-    version <- sim$meta$version
+    extra <- list(params = sim_params(sim), schedule = sim_schedule(sim), meta = sim_meta(sim))
+    version <- sim_meta(sim)$version
   } else if (is_full_state(sim)) {
     state <- sim
     extra <- list(params = NULL, schedule = NULL, meta = NULL)
@@ -219,8 +272,8 @@ is_full_state <- function(x) {
 
 # The final full state of a run, or an error saying how to get one.
 final_full_state <- function(sim) {
-  out <- sim$output
-  final <- if (isTRUE(sim$meta$update_save)) out[[length(out)]] else out
+  out <- sim_output(sim)
+  final <- if (isTRUE(sim_meta(sim)$update_save)) out[[length(out)]] else out
   if (!is_full_state(final)) {
     stop(
       "this run did not keep its final state; run pipeline() with a saver",

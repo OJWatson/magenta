@@ -41,7 +41,7 @@ out <- pipeline(
   output = save_loggers(final = "humans"),
   housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
 )
-humans <- out$output[[length(out$output)]]
+humans <- out[[length(out)]]
 coi <- convert_barcode_vectors(humans, humans$ID, nl = 4)
 table(coi$COI)
 }

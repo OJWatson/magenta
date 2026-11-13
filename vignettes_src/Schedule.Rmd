@@ -87,12 +87,12 @@ through the mosquito model once for the whole run and come back as daily
 death and feeding rates that each period slices (see the
 [Deterministic vignette](Deterministic.html)). `drug_choice` is filled in as
 the run goes, so after a run with drug cycling the schedule records which drug
-each period used. The schedule a run followed is returned as `out$schedule`:
+each period used. The schedule a run followed is returned as `sim_schedule(out)`:
 
 ```{r schedule-result}
 out <- pipeline(EIR = 5, N = 1000, years = 3, ft = c(0.2, 0.5), seed = 1L,
                 housekeeping_list = quiet)
-out$schedule
+sim_schedule(out)
 ```
 
 ### Yearly values apply without periodic saving
@@ -113,7 +113,7 @@ constant <- pipeline(EIR = 5, N = 1000, years = 4, ft = 0.1, seed = 1L,
 
 prevalence <- function(sim) {
   vapply(seq_len(nrow(sim$schedule)), function(i) {
-    l <- sim$output[[i]]
+    l <- sim[[i]]
     if (!is.null(l$Loggers)) l <- l$Loggers
     sum(unlist(l[c("D", "A", "U", "T")]))
   }, numeric(1))
@@ -128,8 +128,8 @@ final period above, because the periods it ran were the same:
 ```{r ramp-no-save}
 final_only <- pipeline(EIR = 5, N = 1000, years = 4, ft = ramp, seed = 1L,
                        housekeeping_list = quiet)
-final_only$schedule[, c("period", "year", "ft")]
-identical(final_only$output$Loggers, with_ramp$output[[4]]$Loggers)
+sim_schedule(final_only)[, c("period", "year", "ft")]
+identical(final_only$Loggers, with_ramp[[4]]$Loggers)
 ```
 
 ---
@@ -173,21 +173,29 @@ names(cpp_contract)
 
 ## The `magenta_sim` object
 
-Every run returns a `magenta_sim` with four elements:
+Every run returns what the saver kept, in the shape magenta has always
+returned it: the final loggers by default (`out$Loggers`), or one element per
+period with `update_save = TRUE` (`out[[i]]`). The object has class
+`magenta_sim` and carries three attributes, each with an accessor:
 
-- `output`: what the saver kept (the final loggers by default; one element
-  per period with `update_save = TRUE`),
-- `params`: the inputs the run was created with, including every parameter
-  list,
-- `schedule`: the table above, with `drug_choice` filled in,
-- `meta`: the call, the seed, the package version, the saver, the timings and
-  `rng_state`, the state of R's random number generator when the run ended.
+- `sim_params(out)`: the inputs the run was created with, including every
+  parameter list,
+- `sim_schedule(out)`: the table above, with `drug_choice` filled in,
+- `sim_meta(out)`: the call, the seed, the package version, the saver, the
+  timings and `rng_state`, the state of R's random number generator when the
+  run ended. `attr(out, "meta")` is the same thing, as in earlier versions.
+
+Printing the object gives a short header rather than the whole list;
+`unclass(out)` prints the list and its attributes, and `sim_output(out)` is
+the bare list with no attributes, which is the thing to compare when checking
+that two runs agree.
 
 ```{r sim-object}
 out
-names(out$meta)
-out$meta$version
-out$params
+names(out)
+names(sim_meta(out))
+sim_meta(out)$version
+sim_params(out)
 ```
 
 `as.data.frame(out)` gives one row per period of the scalar logger values,
@@ -200,15 +208,15 @@ and `summary(out)` the headline numbers; both are shown in the
 
 `pipeline()` seeds R's random number generator once, at the start of the run,
 and every call into the simulation continues from wherever the generator is.
-The seed is recorded in `out$meta$seed` and in the stored call. The same seed
+The seed is recorded in `sim_meta(out)$seed` and in the stored call. The same seed
 gives the same run, and a different seed a different one:
 
 ```{r seed}
 a <- pipeline(EIR = 5, N = 500, years = 2, seed = 3L, housekeeping_list = quiet)
 b <- pipeline(EIR = 5, N = 500, years = 2, seed = 3L, housekeeping_list = quiet)
 c <- pipeline(EIR = 5, N = 500, years = 2, seed = 4L, housekeeping_list = quiet)
-identical(a$output, b$output)
-identical(a$output, c$output)
+identical(sim_output(a), sim_output(b))
+identical(sim_output(a), sim_output(c))
 ```
 
 A run resumed from a saved state (`saved_state_path =`, see the
@@ -225,7 +233,7 @@ again_1 <- pipeline(EIR = 5, N = 500, years = 1, saved_state_path = state_file,
                     housekeeping_list = quiet)
 again_2 <- pipeline(EIR = 5, N = 500, years = 1, saved_state_path = state_file,
                     housekeeping_list = quiet)
-identical(again_1$output, again_2$output)
+identical(sim_output(again_1), sim_output(again_2))
 ```
 
 What a resumed run does **not** reproduce is an uninterrupted run of the
@@ -235,8 +243,8 @@ from it draws random numbers that the uninterrupted run never drew, so the two
 part from the first day of the continuation:
 
 ```{r resume-vs-uninterrupted}
-identical(again_1$output$Loggers, a$output$Loggers)
-again_1$output$Loggers$Time == a$output$Loggers$Time
+identical(again_1$Loggers, a$Loggers)
+again_1$Loggers$Time == a$Loggers$Time
 ```
 
 Treat a save-and-resume as its own realisation: reproducible from the file,

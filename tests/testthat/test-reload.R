@@ -31,9 +31,9 @@ test_that("pipeline full saves contain restart metadata", {
 
   full_run <- run_saved_state_simulation()
   expect_s3_class(full_run, "magenta_sim")
-  expect_gt(length(full_run$output), 0)
+  expect_gt(length(full_run), 0)
 
-  final_state <- full_run$output[[length(full_run$output)]]
+  final_state <- full_run[[length(full_run)]]
   expect_true(is.list(final_state$saved_inputs))
   expect_true(all(c(
     "barcode_list",
@@ -51,18 +51,18 @@ test_that("saved state can be reloaded for continuation or inspection", {
   skip_on_cran()
 
   full_run <- run_saved_state_simulation()
-  final_state <- full_run$output[[length(full_run$output)]]
+  final_state <- full_run[[length(full_run)]]
 
   tf <- tempfile(fileext = ".rds")
   on.exit(unlink(tf), add = TRUE)
   saveRDS(final_state, tf)
 
   resumed <- run_saved_state_simulation(saved_state_path = tf)
-  meta <- resumed$meta
+  meta <- sim_meta(resumed)
   expect_true(is.list(meta))
   expect_equal(meta$seed, 42L)
   expect_equal(meta$call$saved_state_path, tf)
-  expect_gt(length(resumed$output), 0)
+  expect_gt(length(resumed), 0)
 
   # the versioned object written by sim_save() restarts the same way
   tf2 <- tempfile(fileext = ".rds")
@@ -73,9 +73,9 @@ test_that("saved state can be reloaded for continuation or inspection", {
   expect_equal(saved$format_version, 1L)
   expect_equal(saved$population_List, final_state$population_List)
   resumed2 <- run_saved_state_simulation(saved_state_path = tf2)
-  expect_equal(resumed2$output[[1]]$af, resumed$output[[1]]$af)
+  expect_equal(resumed2[[1]]$af, resumed[[1]]$af)
   resumed3 <- run_saved_state_simulation(saved_state_path = saved)
-  expect_equal(resumed3$output[[1]]$af, resumed$output[[1]]$af)
+  expect_equal(resumed3[[1]]$af, resumed[[1]]$af)
 
   setup_only <- run_saved_state_simulation(saved_state_path = tf, set_up_only = TRUE)
   expect_equal(setup_only$population_List, final_state$population_List)

@@ -60,7 +60,7 @@ test_that("dependent plaf draws with 100% importation fixes plaf", {
     drug_list = resistance_drug_list(1, 5), ft = 0.2,
     seed = as.integer(runif(1, 1, 1000000000))
   )
-  res <- out$output
+  res <- sim_output(out)
   expect_equal(as.numeric(which(res[[1]]$lineage > 0)), c(1, 4))
   expect_false(identical(as.numeric(which(res[[length(res) - 1]]$lineage > 0)), c(1, 4)))
 })
@@ -92,7 +92,7 @@ test_that("Fitness Test", {
     hd = 1, tl = 10, plaf_row = c(0.5, 0.5, 0, 0, 0.5, 0),
     drug_list = dl, ft = 1, seed = seed
   )
-  expect_true(sum(out$output[[100]]$af) > sum(out2$output[[100]]$af))
+  expect_true(sum(out[[100]]$af) > sum(out2[[100]]$af))
 })
 
 test_that("Seasonality Test", {
@@ -125,7 +125,7 @@ test_that("Seasonality Test", {
   out_no_seas <- seasonal_run(FALSE)
 
   incidence <- function(sim) {
-    unlist(lapply(sim$output, function(x) sum(unlist(x$Incidence))))
+    unlist(lapply(sim_output(sim), function(x) sum(unlist(x$Incidence))))
   }
   inc_ses <- incidence(out12)
   inc <- incidence(out_no_seas)
@@ -195,7 +195,7 @@ test_that("Gametocyte sterilisation runs and leaves the default untouched", {
 
   # both complete and report a sane prevalence
   expect_true(all(vapply(list(off, on), function(x) {
-    p <- sum(unlist(x$output$Loggers[c("D", "A", "U", "T")]))
+    p <- sum(unlist(x$Loggers[c("D", "A", "U", "T")]))
     p > 0 && p < 1
   }, logical(1))))
 

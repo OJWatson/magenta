@@ -3,8 +3,9 @@
 * Results change for every seeded stochastic run: the random number generator
   is seeded once per run instead of before every C++ call, and 1.4.0 carries
   the 1.3.8 model fixes.
-* `pipeline()` returns a `magenta_sim` (`output`, `params`, `schedule`, `meta`)
-  with `print()`, `summary()` and `as.data.frame()`; the old return value is `out$output`.
+* `pipeline()` returns the same list as 1.3.x, now classed `magenta_sim` with the run's
+  `params`, `schedule` and `meta` as attributes (`sim_params()`, `sim_schedule()`,
+  `sim_meta()`) and `print()`, `summary()` and `as.data.frame()` methods.
 * `output =` takes a saver: `save_loggers()`, `save_summary()`, `save_humans()`,
   `save_full()` or your own function. The old output flags still work, with a warning.
 * With `update_save = FALSE` a multi-year run steps year by year, so yearly inputs

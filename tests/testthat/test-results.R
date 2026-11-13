@@ -6,30 +6,30 @@ test_that("save_humans and save_full keep the population after every period", {
     EIR = 1, years = 1, N = 60, seed = 31L, num_loci = 2, update_save = TRUE,
     update_length = 180, output = save_humans(), housekeeping_list = quiet()
   ))
-  expect_named(h$output[[1]], c(
+  expect_named(h[[1]], c(
     "Infection_States", "Zetas", "Ages", "ID", "Strain_infection_state_vectors",
     "Strain_day_of_infection_state_change_vectors", "Strain_barcode_vectors"
   ))
-  expect_named(h$output[[2]], "Loggers")
+  expect_named(h[[2]], "Loggers")
 
   f <- suppressMessages(pipeline(
     EIR = 1, years = 1, N = 60, seed = 31L, num_loci = 2, update_save = TRUE,
     update_length = 180, output = save_full(), housekeeping_list = quiet()
   ))
-  expect_true(magenta:::is_full_state(f$output[[1]]))
-  expect_true(magenta:::is_full_state(f$output[[2]]))
-  expect_named(f$output[[1]]$saved_inputs, c(
+  expect_true(magenta:::is_full_state(f[[1]]))
+  expect_true(magenta:::is_full_state(f[[2]]))
+  expect_named(f[[1]]$saved_inputs, c(
     "barcode_list", "spatial_list", "housekeeping_list", "drug_list",
     "vector_adaptation_list", "nmf_list", "core_parameter_list", "spatial_settings"
   ))
-  expect_equal(f$meta$saver, "full")
+  expect_equal(sim_meta(f)$saver, "full")
 
   hf <- suppressMessages(pipeline(
     EIR = 1, years = 1, N = 60, seed = 31L, num_loci = 2, update_save = TRUE,
     update_length = 180, output = save_loggers(final = "humans"), housekeeping_list = quiet()
   ))
-  expect_true("Zetas" %in% names(hf$output[[2]]))
-  expect_false("Loggers" %in% names(hf$output[[2]]))
+  expect_true("Zetas" %in% names(hf[[2]]))
+  expect_false("Loggers" %in% names(hf[[2]]))
 })
 
 test_that("save_summary keeps COI tables or the raw data frame", {
@@ -40,9 +40,9 @@ test_that("save_summary keeps COI tables or the raw data frame", {
     housekeeping_list = quiet()
   ))
   expect_true(all(
-    c("summary_coi", "barcodes", "pcr_prev", "micro_2_10") %in% names(coi$output[[1]])
+    c("summary_coi", "barcodes", "pcr_prev", "micro_2_10") %in% names(coi[[1]])
   ))
-  expect_equal(coi$meta$saver, "summary (coi)")
+  expect_equal(sim_meta(coi)$saver, "summary (coi)")
   df <- as.data.frame(coi)
   expect_true(all(c("pcr_prev", "micro_2_10", "overall_treatment_failure") %in% names(df)))
   expect_equal(nrow(df), 3)
@@ -52,8 +52,8 @@ test_that("save_summary keeps COI tables or the raw data frame", {
     EIR = 2, years = 1, N = 80, seed = 32L, num_loci = 2, update_save = TRUE,
     update_length = 120, output = save_summary(genetics = "df"), housekeeping_list = quiet()
   ))
-  expect_s3_class(raw$output[[1]]$df, "data.frame")
-  expect_equal(raw$meta$saver, "summary (df)")
+  expect_s3_class(raw[[1]]$df, "data.frame")
+  expect_equal(sim_meta(raw)$saver, "summary (df)")
 })
 
 test_that("set_up_only honours the saver's final choice", {
@@ -72,11 +72,11 @@ test_that("clear_up = FALSE leaves the pointer for the caller to free", {
     EIR = 1, years = 1, N = 50, seed = 34L, num_loci = 2,
     housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE, clear_up = FALSE)
   ))
-  expect_type(out$meta$Ptr, "externalptr")
-  expect_type(out$output$Ptr, "externalptr")
-  state <- magenta:::sim_get_state(out$meta$Ptr)
+  expect_type(sim_meta(out)$Ptr, "externalptr")
+  expect_type(out$Ptr, "externalptr")
+  state <- magenta:::sim_get_state(sim_meta(out)$Ptr)
   expect_equal(state$parameters_List$g_current_time, 366)
-  magenta:::sim_free(out$meta$Ptr)
+  magenta:::sim_free(sim_meta(out)$Ptr)
 })
 
 test_that("a calendar year range with historic interventions runs", {
@@ -87,10 +87,10 @@ test_that("a calendar year range with historic interventions runs", {
     use_historic_interventions = TRUE, spatial_type = "island",
     update_save = TRUE, update_length = 365, housekeeping_list = quiet()
   ))
-  expect_equal(nrow(out$schedule), 2)
-  expect_equal(out$params$years, 2)
-  expect_gt(out$schedule$itn_cov[1], 0)
-  expect_equal(out$output[[2]]$Loggers$Time, 731)
+  expect_equal(nrow(sim_schedule(out)), 2)
+  expect_equal(sim_params(out)$years, 2)
+  expect_gt(sim_schedule(out)$itn_cov[1], 0)
+  expect_equal(out[[2]]$Loggers$Time, 731)
 })
 
 test_that("sim_save fails cleanly on the wrong input and sim_restore rejects bad files", {

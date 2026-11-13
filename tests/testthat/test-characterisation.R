@@ -14,10 +14,10 @@ test_that("characterisation: default single-run loggers", {
   ))
 
   expect_s3_class(out, "magenta_sim")
-  expect_named(out$output, c("Loggers"))
-  expect_type(out$meta, "list")
-  expect_equal(out$meta$seed, 1L)
-  expect_snapshot_value(snapshot_summary(out$output), style = "deparse", tolerance = 1e-6)
+  expect_named(out, "Loggers")
+  expect_type(sim_meta(out), "list")
+  expect_equal(sim_meta(out)$seed, 1L)
+  expect_snapshot_value(snapshot_summary(sim_output(out)), style = "deparse", tolerance = 1e-6)
 })
 
 test_that("characterisation: update_save loggers over monthly periods", {
@@ -30,9 +30,9 @@ test_that("characterisation: update_save loggers over monthly periods", {
     housekeeping_list = quiet_housekeeping()
   ))
 
-  expect_length(out$output, round(365 / 30))
-  expect_equal(nrow(out$schedule), round(365 / 30))
-  expect_snapshot_value(snapshot_summary(out$output), style = "deparse", tolerance = 1e-6)
+  expect_length(out, round(365 / 30))
+  expect_equal(nrow(sim_schedule(out)), round(365 / 30))
+  expect_snapshot_value(snapshot_summary(sim_output(out)), style = "deparse", tolerance = 1e-6)
 })
 
 test_that("characterisation: summary saves with COI summaries", {
@@ -45,13 +45,13 @@ test_that("characterisation: summary saves with COI summaries", {
     housekeeping_list = quiet_housekeeping()
   ))
 
-  first <- out$output[[1]]
+  first <- out[[1]]
   expect_true(all(c(
     "summary_coi", "summary_coi_detected", "summary_polygenom",
     "summary_unique", "summary_cou", "clonality", "barcode_freq",
     "overall_treatment_failure", "pcr_prev", "micro_2_10"
   ) %in% names(first)))
-  expect_snapshot_value(snapshot_summary(out$output), style = "deparse", tolerance = 1e-6)
+  expect_snapshot_value(snapshot_summary(sim_output(out)), style = "deparse", tolerance = 1e-6)
 })
 
 test_that("characterisation: resistance, importation, mutation and lineages", {
@@ -88,9 +88,9 @@ test_that("characterisation: resistance, importation, mutation and lineages", {
     housekeeping_list = quiet_housekeeping()
   ))
 
-  expect_true(all(c("af", "lineage", "mutations") %in% names(out$output[[1]])))
-  expect_length(out$output[[1]]$lineage, 2^nl)
-  expect_snapshot_value(snapshot_summary(out$output), style = "deparse", tolerance = 1e-6)
+  expect_true(all(c("af", "lineage", "mutations") %in% names(out[[1]])))
+  expect_length(out[[1]]$lineage, 2^nl)
+  expect_snapshot_value(snapshot_summary(sim_output(out)), style = "deparse", tolerance = 1e-6)
 })
 
 test_that("characterisation: seasonal admin unit with historic interventions", {
@@ -119,7 +119,7 @@ test_that("characterisation: seasonal admin unit with historic interventions", {
     housekeeping_list = quiet_housekeeping()
   ))
 
-  expect_snapshot_value(snapshot_summary(out$output), style = "deparse", tolerance = 1e-6)
+  expect_snapshot_value(snapshot_summary(sim_output(out)), style = "deparse", tolerance = 1e-6)
 })
 
 test_that("characterisation: set_up_only state and full save inputs", {
@@ -143,7 +143,7 @@ test_that("characterisation: set_up_only state and full save inputs", {
     output = save_loggers(final = "full"),
     housekeeping_list = quiet_housekeeping()
   ))
-  final <- full$output[[length(full$output)]]
+  final <- full[[length(full)]]
   expect_named(
     final$saved_inputs,
     c(

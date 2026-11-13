@@ -30,10 +30,12 @@ awkward, while the default summary may not contain what you need.
 This vignette describes what each saver returns, what the individual loggers
 mean, and how to save a simulation to disk and restart it later.
 
-Every run returns a `magenta_sim` with four elements: `output` (what the saver
-kept), `params` (the inputs the run was created with), `schedule` (the
-per-period table of inputs the run followed) and `meta` (call, seed, version,
-timings).
+Every run returns what the saver kept, as a `magenta_sim`: the list has the
+shape it always had (`out$Loggers`, `out[[i]]`), and carries the run's inputs
+as attributes, read with `sim_params()` (the inputs the run was created
+with), `sim_schedule()` (the per-period table of inputs the run followed) and
+`sim_meta()` (call, seed, version, timings). Printing it shows a short header;
+`unclass(out)` shows the list itself.
 
 ```{r setup}
 library(magenta)
@@ -43,14 +45,14 @@ library(magenta)
 
 ## The default: loggers only
 
-With no saving options, `pipeline()` runs to the end and its `output` is a
-single list containing `Loggers`, a snapshot of the population at the final
-time step.
+With no saving options, `pipeline()` runs to the end and returns a single
+list containing `Loggers`, a snapshot of the population at the final time
+step.
 
 ```{r default}
 out <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L)
 out
-names(out$output$Loggers)
+names(out$Loggers)
 ```
 
 The entries fall into four groups.
@@ -60,7 +62,7 @@ people in each infection state: susceptible, clinical disease, asymptomatic,
 subpatent, treated and prophylactic.
 
 ```{r states}
-as.data.frame(out$output$Loggers[c("S", "D", "A", "U", "T", "P")])
+as.data.frame(out$Loggers[c("S", "D", "A", "U", "T", "P")])
 ```
 
 **Per individual vectors.** `Ages` (in days), `InfectionStates` coded `0:5` in
@@ -70,7 +72,7 @@ the order above, and the four immunity functions: `IB` (pre-erythrocytic),
 microscopy, and is needed by `convert_barcode_vectors()`.
 
 ```{r individual-vectors}
-sapply(out$output$Loggers[c("Ages", "InfectionStates", "IB", "ICA", "ICM", "ID")], length)
+sapply(out$Loggers[c("Ages", "InfectionStates", "IB", "ICA", "ICM", "ID")], length)
 ```
 
 **Counters.** `Incidence` and `Incidence_05` are clinical cases over the logging
@@ -81,7 +83,7 @@ rates. `daily_mutations_per_loci` counts mutations at each barcode locus.
 **Sub-lists.** `Treatments` records treatment outcomes and biting:
 
 ```{r treatments}
-str(out$output$Loggers$Treatments)
+str(out$Loggers$Treatments)
 ```
 
 `Successful_Treatments` and `Unsuccesful_Treatments_LPF` are counts of
@@ -98,7 +100,7 @@ the simulation is run with update saves:
 ```{r mosquitoes}
 out_u <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   update_save = TRUE, update_length = 90)
-str(out_u$output[[1]]$Mosquitoes)
+str(out_u[[1]]$Mosquitoes)
 ```
 
 ---
@@ -106,13 +108,13 @@ str(out_u$output[[1]]$Mosquitoes)
 ## Saving through time
 
 `update_save = TRUE` stops the simulation every `update_length` days, extracts
-what the saver asks for, and carries on. `output` is then a list with one
-element per interval, and `schedule` has one row per interval.
+what the saver asks for, and carries on. The result is then a list with one
+element per interval, and the schedule has one row per interval.
 
 ```{r update-save}
-length(out_u$output)
+length(out_u)
 3 * 365 / 90
-head(out_u$schedule)
+head(sim_schedule(out_u))
 ```
 
 The **final element is not a summary**. It holds the loggers at the end of the
@@ -121,9 +123,9 @@ interrogated. Every piece of code that loops over the output therefore needs to
 drop it:
 
 ```{r drop-last}
-pos <- seq_len(length(out_u$output) - 1)
-prev <- unlist(lapply(out_u$output[pos], function(x) sum(unlist(x[c("D", "A", "U", "T")]))))
-time <- unlist(lapply(out_u$output[pos], "[[", "Time"))
+pos <- seq_len(length(out_u) - 1)
+prev <- unlist(lapply(out_u[pos], function(x) sum(unlist(x[c("D", "A", "U", "T")]))))
+time <- unlist(lapply(out_u[pos], "[[", "Time"))
 plot(time / 365, prev, type = "l", lwd = 2, col = "steelblue",
      xlab = "Years", ylab = "PCR prevalence", ylim = c(0, max(prev)))
 ```
@@ -137,12 +139,12 @@ head(as.data.frame(out_u))
 
 ### Reproducibility metadata
 
-Every returned object carries `meta`, holding the call, the seed, the package
-version and the time taken. Keep this: it is the record of how a simulation was
+Every returned object carries a `meta` attribute, holding the call, the seed,
+the package version and the time taken. Keep this: it is the record of how a simulation was
 produced.
 
 ```{r meta}
-meta <- out_u$meta
+meta <- sim_meta(out_u)
 meta$seed
 meta$version
 meta$call
@@ -161,7 +163,7 @@ condense them into summary tables:
 out_s <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   update_save = TRUE, update_length = 90,
                   output = save_summary(final = "full"))
-names(out_s$output[[1]])
+names(out_s[[1]])
 ```
 
 * `summary_coi` and `summary_coi_detected` are mean complexity of infection by
@@ -175,7 +177,7 @@ names(out_s$output[[1]])
 * `barcode_freq` is the allele frequency at each barcode locus.
 
 ```{r coi-table}
-head(out_s$output[[1]]$summary_coi)
+head(out_s[[1]]$summary_coi)
 ```
 
 Age bins come from `age_breaks` and the infection states included come from
@@ -192,8 +194,8 @@ out_af <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                    num_loci = 6, plaf = rep(0.2, 6),
                    update_save = TRUE, update_length = 90,
                    output = save_summary(genetics = "allele_freqs"))
-names(out_af$output[[1]])
-round(out_af$output[[1]]$af, 3)
+names(out_af[[1]])
+round(out_af[[1]]$af, 3)
 ```
 
 `genetics = "df"` returns the whole sampled data frame from `pop_strains_df()`
@@ -219,7 +221,7 @@ there rather than the loggers:
 out_h <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   update_save = TRUE, update_length = 365,
                   output = save_loggers(final = "humans"))
-names(out_h$output[[length(out_h$output)]])
+names(out_h[[length(out_h)]])
 ```
 
 `final = "full"` goes further and keeps everything needed to reconstruct the
@@ -228,7 +230,7 @@ simulation:
 ```{r full-save}
 out_f <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                   output = save_loggers(final = "full"))
-names(out_f$output)
+names(out_f)
 ```
 
 `save_humans()` and `save_full()` keep the same two things after *every*
@@ -259,7 +261,7 @@ out_cont <- pipeline(EIR = 5, N = 1000, years = 2, ft = 0.4,
                      update_save = TRUE, update_length = 365)
 
 # the clock carries on from where the saved state stopped
-out_cont$output[[length(out_cont$output)]]$Loggers$Time
+out_cont[[length(out_cont)]]$Loggers$Time
 ```
 
 Three days of work are saved by knowing the following.
@@ -302,7 +304,7 @@ my_saves <- function(state, period, params) {
 out_custom <- pipeline(EIR = 5, N = 1000, years = 3, ft = 0.4, seed = 1L,
                        update_save = TRUE, update_length = 90,
                        output = my_saves)
-str(out_custom$output[[1]])
+str(out_custom[[1]])
 ```
 
 The source of `save_summary()` is the reference implementation and is worth

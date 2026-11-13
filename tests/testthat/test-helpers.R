@@ -75,7 +75,9 @@ test_that("magenta_sim prints without timings and with a long call", {
   expect_output(print(sim), "\\.\\.\\.")
   expect_output(print(summary(sim)), "Time")
   empty <- sim
-  empty$output <- list(Loggers = list(Ages = 1:3))
+  empty <- magenta:::new_magenta_sim(
+    list(Loggers = list(Ages = 1:3)), sim_params(sim), NULL, sim_meta(sim)
+  )
   expect_output(print(summary(empty)), "No scalar per-period output")
 })
 

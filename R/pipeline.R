@@ -135,7 +135,7 @@
 #'   housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
 #' )
 #' out
-#' out$output$Loggers$S
+#' out$Loggers$S
 #'
 #' # monthly saves of the loggers, as a data frame
 #' out_m <- pipeline(
@@ -723,18 +723,18 @@ collect_output <- function(sim_save, human_only,
 
 #' @noRd
 return_sim_memory <- function(sim) {
-  sim_free(sim$meta$Ptr)
-  out <- sim$output
-  for (i in seq_along(out)) {
-    if (is.list(out[[i]]) && "Ptr" %in% names(out[[i]])) {
-      out[[i]]$Ptr <- NULL
+  meta <- sim_meta(sim)
+  sim_free(meta$Ptr)
+  for (i in seq_along(sim)) {
+    if (is.list(sim[[i]]) && "Ptr" %in% names(sim[[i]])) {
+      sim[[i]]$Ptr <- NULL
     }
   }
-  if ("Ptr" %in% names(out)) {
-    out$Ptr <- NULL
+  if ("Ptr" %in% names(sim)) {
+    sim$Ptr <- NULL
   }
-  sim$output <- out
-  sim$meta$Ptr <- NULL
+  meta$Ptr <- NULL
+  attr(sim, "meta") <- meta
   gc()
   sim
 }

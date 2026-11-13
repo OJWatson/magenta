@@ -2,11 +2,23 @@
 % Please edit documentation in R/magenta_sim.R
 \name{magenta_sim}
 \alias{magenta_sim}
+\alias{sim_output}
+\alias{sim_params}
+\alias{sim_schedule}
+\alias{sim_meta}
 \alias{print.magenta_sim}
 \alias{summary.magenta_sim}
 \alias{as.data.frame.magenta_sim}
 \title{Simulation results}
 \usage{
+sim_output(x)
+
+sim_params(x)
+
+sim_schedule(x)
+
+sim_meta(x)
+
 \method{print}{magenta_sim}(x, ...)
 
 \method{summary}{magenta_sim}(object, ...)
@@ -18,21 +30,52 @@
 
 \item{...}{Unused.}
 }
+\value{
+\code{sim_output()} the result as a plain list; \code{sim_params()}
+  the \code{magenta_params}; \code{sim_schedule()} the schedule;
+  \code{sim_meta()} the metadata list.
+}
 \description{
-\code{\link{pipeline}} returns a \code{magenta_sim}: a list with the
-elements \code{output} (what the saver kept after each period, with the
-final slot as chosen by the saver's \code{final}; or, when
-\code{update_save = FALSE}, the final slot alone), \code{params} (the
-inputs the run was created with), \code{schedule} (the
-\code{\link{build_schedule}} data frame the run followed, with the drug
-used in each period) and \code{meta} (the call, seed, package version,
-saver and timings).
+\code{\link{pipeline}} returns what the run kept, in the shape it has
+always had: with \code{update_save = FALSE} the final slot alone (by
+default \code{list(Loggers = ...)}, or the full model state or the human
+population if the saver's \code{final} asks for them); with
+\code{update_save = TRUE} a list with one element per period, the last
+being that final slot. So \code{out$Loggers}, \code{out[[i]]} and
+\code{length(out)} work as they did before 1.4.0.
 }
 \details{
+The object has class \code{magenta_sim} and carries the run's inputs as
+attributes: \code{params} (the \code{magenta_params} the run was created
+with, every parameter list included), \code{schedule} (the
+\code{\link{build_schedule}} data frame the run followed, with the drug
+used in each period filled in) and \code{meta} (the call, seed, package
+version, saver, timings and the state of the random number generator at
+the end). \code{sim_params()}, \code{sim_schedule()} and
+\code{sim_meta()} read them; \code{attr(out, "meta")} works as it did
+before 1.4.0.
+
+Printing a \code{magenta_sim} shows a short header rather than the whole
+list. \code{unclass(out)} prints the list and its attributes, and
+\code{sim_output(out)} is the bare list with no attributes at all, which
+is what to compare when checking that two runs gave the same result.
+
 \code{as.data.frame()} gives one row per period holding every scalar in
 that period's output: with \code{save_loggers()} these are the prevalence
 by state, incidence, time and mosquito and treatment counts; with
 \code{save_summary()} the prevalence and treatment failure measures.
 \code{summary()} prints the run's settings and the distribution of those
 columns.
+}
+\examples{
+\donttest{
+out <- pipeline(
+  EIR = 2, years = 1, N = 100, seed = 1L,
+  housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+)
+out
+names(out)
+sim_meta(out)$seed
+sim_schedule(out)
+}
 }

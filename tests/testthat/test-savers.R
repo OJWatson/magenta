@@ -67,8 +67,8 @@ test_that("pipeline warns about the old flags and gives the same output", {
     )),
     "deprecated; use output = save_summary\\("
   )
-  expect_equal(old$output, new$output)
-  expect_equal(new$meta$saver, "summary (allele_freqs)")
+  expect_equal(sim_output(old), sim_output(new))
+  expect_equal(sim_meta(new)$saver, "summary (allele_freqs)")
 })
 
 test_that("a user function is accepted as the saver", {
@@ -80,10 +80,10 @@ test_that("a user function is accepted as the saver", {
     EIR = 1, years = 1, N = 100, seed = 8L, update_save = TRUE, update_length = 90,
     output = mine, housekeeping_list = quiet()
   ))
-  expect_equal(out$output[[1]], list(period = 1, day_end = 90, time = 91))
-  expect_equal(out$output[[3]]$period, 3)
-  expect_named(out$output[[4]], "Loggers")
-  expect_equal(out$meta$saver, "user function")
+  expect_equal(out[[1]], list(period = 1, day_end = 90, time = 91))
+  expect_equal(out[[3]]$period, 3)
+  expect_named(out[[4]], "Loggers")
+  expect_equal(sim_meta(out)$saver, "user function")
 
   # the old update_save_func signature still works, with a warning
   legacy <- function(res, i, sim.out, mpl, num_loci) {
@@ -97,7 +97,7 @@ test_that("a user function is accepted as the saver", {
     )),
     "update_save_func"
   )
-  expect_equal(out2$output[[2]], list(i = 2, time = 181))
+  expect_equal(out2[[2]], list(i = 2, time = 181))
 })
 
 test_that("magenta_sim prints, summarises and converts to a data frame", {
@@ -107,15 +107,20 @@ test_that("magenta_sim prints, summarises and converts to a data frame", {
     housekeeping_list = quiet()
   ))
   expect_s3_class(out, "magenta_sim")
-  expect_named(out, c("output", "params", "schedule", "meta"))
-  expect_s3_class(out$params, "magenta_params")
-  expect_s3_class(out$schedule, "magenta_schedule")
-  expect_equal(out$params$N, 100)
-  expect_equal(out$params$seed, 9L)
-  expect_null(out$meta$Ptr)
+  # the 1.3.x shape: the periods, with the run's inputs as attributes
+  expect_length(out, 4)
+  expect_null(names(out))
+  expect_identical(attr(out, "meta"), sim_meta(out))
+  expect_identical(attr(out, "params"), sim_params(out))
+  expect_null(attributes(sim_output(out)))
+  expect_s3_class(sim_params(out), "magenta_params")
+  expect_s3_class(sim_schedule(out), "magenta_schedule")
+  expect_equal(sim_params(out)$N, 100)
+  expect_equal(sim_params(out)$seed, 9L)
+  expect_null(sim_meta(out)$Ptr)
   expect_output(print(out), "N: 100   years: 1   EIR: 1")
   expect_output(print(out), "loggers, 4 period\\(s\\), final = loggers")
-  expect_output(print(out$params), "<magenta_params>")
+  expect_output(print(sim_params(out)), "<magenta_params>")
 
   df <- as.data.frame(out)
   expect_equal(nrow(df), 4)
@@ -128,7 +133,8 @@ test_that("magenta_sim prints, summarises and converts to a data frame", {
   single <- suppressMessages(pipeline(
     EIR = 1, years = 1, N = 100, seed = 9L, housekeeping_list = quiet()
   ))
-  expect_named(single$output, "Loggers")
+  expect_named(single, "Loggers")
+  expect_named(sim_output(single), "Loggers")
   expect_equal(nrow(as.data.frame(single)), 1)
   expect_output(print(single), "1 period\\(s\\)")
 })
@@ -162,7 +168,7 @@ test_that("sim_save writes a versioned state that sim_restore reads back", {
     saved_state_path = path, update_save = TRUE, update_length = 180,
     housekeeping_list = quiet()
   ))
-  expect_gt(cont$output[[1]]$Time, 365)
+  expect_gt(cont[[1]]$Time, 365)
 
   # a run without a full final state cannot be saved
   loggers_only <- suppressMessages(pipeline(
