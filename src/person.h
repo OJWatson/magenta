@@ -140,7 +140,7 @@ private:
   // Person's blood stage immunity (I.D), i.e. reducing probability of detectiona ond onwards contribution to infectiousness
   double m_ID;                // infection-blocking immunity 
   double m_ID_last_boost_time = runif1(0.0, 1.0);       // time that ID was last boosted
-  double m_cA;                // individuals contribution to onwards infection from asymptomatic case
+  double m_cA = 0.0;              // individuals contribution to onwards infection from asymptomatic case
   
   // Important to note the above runifs as these are key in ensuring that the last boost times represent random times in the day
   // that biting occurs

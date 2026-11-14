@@ -16,6 +16,7 @@ pipeline(
   N = 1e+05,
   years = 20,
   update_length = 365,
+  output = NULL,
   country = NULL,
   admin = NULL,
   spatial_type = NULL,
@@ -66,12 +67,12 @@ Default = 0}
 \item{irs_cov}{Vector for IRS coverages that change at update_length intervals.
 Default = 0}
 
-\item{use_historic_interventions}{Boolean as to whether to use interventions 
+\item{use_historic_interventions}{Boolean as to whether to use interventions
 on file for the admin and country specified. If TRUE then provide the years
-as a year range, e.g. 2000:2015. WARNING - Best to have this as FALSE and 
+as a year range, e.g. 2000:2015. WARNING - Best to have this as FALSE and
 manually specify the itn_cov, irs_cov and ft.}
 
-\item{survival_percentage}{Mumeric for % of sporozoites surviving. 
+\item{survival_percentage}{Mumeric for % of sporozoites surviving.
 Default = 0.2}
 
 \item{oocyst_mean}{Mean for number of oocysts formed from a bite. Default=2.5}
@@ -84,8 +85,14 @@ Default = 0.2}
 
 \item{years}{Lenth of simulation. Default = 20}
 
-\item{update_length}{How long each update is run for in days.
-Default = 365}
+\item{update_length}{How long each update is run for in days when
+\code{update_save = TRUE}. Default = 365}
+
+\item{output}{What to keep after each update period and at the end: a
+saver from \code{\link{save_loggers}}, \code{\link{save_summary}},
+\code{\link{save_humans}} or \code{\link{save_full}}, or a
+\code{function(state, period, params)} of your own (see
+\code{\link{savers}}). Default = NULL, which means \code{save_loggers()}.}
 
 \item{country}{Character for country within which admin2 is in.
 Default = NULL}
@@ -95,7 +102,7 @@ used to match. If not provided then no seasonality is introduced.
 Default = NULL}
 
 \item{spatial_type}{Default = NULL. If spatial is wanted then provide
-a character describing the type of spatial simulation, which must be 
+a character describing the type of spatial simulation, which must be
 one of "island" or "metapop".}
 
 \item{spatial_incidence_matrix}{Spatial incidence for humans,
@@ -103,14 +110,14 @@ i.e. importation vector}
 
 \item{spatial_mosquitoFOI_matrix}{Spatial mosquio FOI, i.e. importation
  to mosquitoes vector
-  
+
 # Genetic Params}
 
 \item{island_imports_plaf_linked_flag}{Boolean. Whether imported barcodes for
 island model are drawn dependent on other sites. Currently, if TRUE, imported
-barcodes will either be all 0 or will be 1 at all loci where plaf > 0, 
-if \code{rbinom(1, 1, plaf[plaf>0][1])} is TRUE. I.e. the first loci greater 
-than 0 is used to determine if the incoming barcode is 1 at all sites where 
+barcodes will either be all 0 or will be 1 at all loci where plaf > 0,
+if \code{rbinom(1, 1, plaf[plaf>0][1])} is TRUE. I.e. the first loci greater
+than 0 is used to determine if the incoming barcode is 1 at all sites where
 plaf is greater than 0.}
 
 \item{num_loci}{Number of loci. Default = 24}
@@ -140,69 +147,57 @@ individual at initialisation is given a unique ID for their parasites.}
 
 \item{mutation_flag}{Boolean for simulating mutations
 
-# Saving Params}
+# Output}
 
 \item{mutation_treated_modifier}{Multiplier for how much more likely mutations
-are to occur in treated individuals with respect to resistance. Default = 1, i.e 
+are to occur in treated individuals with respect to resistance. Default = 1, i.e
 no difference}
 
-\item{full_save}{Boolean detailing whether the entire simulation is saved.
-Default = FALSE}
+\item{full_save}{Deprecated: \code{output = save_loggers(final = "full")}.}
 
-\item{full_update_save}{Boolean to save entire simualation at each update 
-save. Default = FALSE}
+\item{full_update_save}{Deprecated: \code{output = save_full()}.}
 
-\item{human_only_full_save}{Boolean detailing whether just the human
-component of the simulation is saved within full_save. Default = FALSE}
+\item{human_only_full_save}{Deprecated: \code{final = "humans"}.}
 
-\item{update_save}{Boolean detailing whether the logging output is saved
-each update_length up to years. Default = FALSE}
+\item{update_save}{Boolean detailing whether the simulation stops every
+\code{update_length} days to extract the saver's output. Default = FALSE,
+which runs year by year, so that the yearly inputs (\code{ft},
+\code{plaf}, the flags, the importation matrices) still change when they
+should, and returns the final slot alone.}
 
-\item{update_save_func}{As opposed to having to provide arguments for the 
-update behaviour, you can pass in a function. See \code{update_saves}
-for the default one.}
-
-\item{human_update_save}{Boolean detailing if the human state is also
-saved during each update_length. Default = FALSE}
-
-\item{genetics_df_without_summarising}{Boolean for returning just the 
-genetics data frame without summarising with \code{\link{COI_df_create}}.
-Default = FALSE}
-
-\item{summary_saves_only}{Boolean if summary tables about COI are saved
-within human yearly save only. Dataframes of age, clinical status
-binned COI.}
-
-\item{set_up_only}{Boolean for whether to return just the initialised simulation. 
-Default = FALSE}
-
-\item{mean_only}{Boolean for returning only the mean when summarising the 
-population COI, COU etc. Default = TRUE}
-
-\item{save_lineages}{Boolean for whether we save the frequency of each strain
-when summarising with \code{genetics_df_without_summarising}=TRUE. 
-Default = FALSE}
-
-\item{saved_state_path}{Full file path to a saved model state to be
-loaded and continued. Default = NULL,
-which will trigger initialisation}
-
-\item{seed}{Random seed. Default is Random}
-
-\item{sample_size}{Numeric for number of individuals to be sampled at the end
-of each update. Default = Inf, which samples everyone. If you provide a 
-vector of sample sizes it will sample at each specified sample size.}
-
-\item{sample_states}{Numeric for which sample infection states are to be
-included in sampling. Default = 0:5 (i.e. all states). 1:4 for example 
-would ensure only infected individuals are included.}
-
-\item{age_breaks}{What age breaks are used when summarising the population. 
-Default is `c(-0.001, 5, 15, 100.1)`}
-
-\item{sample_reps}{Numeric for how many sample reps are done. Default = 1.
+\item{update_save_func}{Deprecated: pass the function as \code{output}.
 
 # Parameter Lists}
+
+\item{human_update_save, summary_saves_only, genetics_df_without_summarising, only_allele_freqs}{Deprecated: \code{output = save_humans()} or
+\code{output = save_summary(genetics = )}.}
+
+\item{set_up_only}{Boolean for whether to return just the initialised
+simulation state, as a full save, without running it. Default = FALSE}
+
+\item{mean_only, save_lineages, sample_size, sample_states, age_breaks, sample_reps}{Deprecated: the arguments of \code{\link{save_summary}}.}
+
+\item{saved_state_path}{Full file path to a saved model state to be
+  loaded and continued (as written by \code{\link{sim_save}} or kept by a
+  saver with \code{final = "full"}), or the object itself. Default = NULL,
+  which will trigger initialisation. A resumed run continues with the
+  parameter lists the saved run was using (core, drug, housekeeping, nmf,
+  vector adaptation, barcode and spatial settings): passing a different
+  one is an error. The yearly inputs (\code{ft}, \code{itn_cov},
+  \code{irs_cov}, \code{plaf}, \code{mutation_flag} and the importation
+  matrices) are for the new years and may be given; \code{plaf},
+  \code{mutation_flag} and the importation vectors default to the saved
+  run's last values.
+
+# Deprecated output flags
+
+These arguments are kept for one release and map onto a saver with a
+warning saying which: pass \code{output = } instead.}
+
+\item{seed}{Random seed, set once at the start of the run. Default is
+random. A resumed run restores the generator state the saved run stopped
+at (kept in \code{meta$rng_state} and in the saved state) unless
+\code{seed} is given.}
 
 \item{housekeeping_list}{List created by  \code{\link{housekeeping_list_create}}}
 
@@ -210,15 +205,16 @@ Default is `c(-0.001, 5, 15, 100.1)`}
 
 \item{vector_adaptation_list}{List created by \code{\link{vector_adaptation_list_create}}}
 
-\item{only_allele_freqs}{Boolean for returning the summarised genetics (allele 
-frequencies and maybe strain frequencies) or the whole data frame produced
-by \code{\link{pop_strains_df}}. Default = TRUE}
-
 \item{nmf_list}{List created by \code{\link{nmf_list_create}}}
 
-\item{...}{Other parameters to model_param_list_create
-
-\code{pipeline}}
+\item{...}{Other parameters to model_param_list_create}
+}
+\value{
+What the saver kept, as a \code{\link{magenta_sim}}: the final
+  slot alone, or with \code{update_save = TRUE} a list with one element
+  per period, carrying the run's \code{params}, \code{schedule} and
+  \code{meta} as attributes. With \code{set_up_only = TRUE}, the
+  initialised model state as a plain list.
 }
 \description{
 \code{pipeline} steps through creating the parameter list, the equilibrium
@@ -228,4 +224,22 @@ savedState is provided then this state is loaded and continued.
 }
 \details{
 # Main Params
+}
+\examples{
+\donttest{
+# a small, fast run: 100 people for one year, loggers only
+out <- pipeline(
+  EIR = 2, years = 1, N = 100, seed = 1L,
+  housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+)
+out
+out$Loggers$S
+
+# monthly saves of the loggers, as a data frame
+out_m <- pipeline(
+  EIR = 2, years = 1, N = 100, seed = 1L, update_save = TRUE, update_length = 30,
+  housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+)
+head(as.data.frame(out_m))
+}
 }

@@ -2,17 +2,22 @@
 % Please edit documentation in R/mainFunctions.R
 \name{simulation_R}
 \alias{simulation_R}
-\title{simulation_R function}
+\title{Deprecated dispatcher for the simulation bindings}
 \usage{
 simulation_R(param_list, seed)
 }
 \arguments{
-\item{param_list}{paramlist passed from 
-\code{param_list_simulation_init_create} or from 
+\item{param_list}{paramlist passed from
+\code{param_list_simulation_init_create} or from
 \code{param_list_simulation_update_create}}
 
 \item{seed}{Seed for the simulation}
 }
 \description{
-This function triggers the main magenta simulation from the R side
+\code{simulation_R} used to inspect the shape of \code{param_list} to decide
+which C++ entry point to call. It is kept for one release so that scripts
+which call it directly keep working, and now forwards to the plainly named
+bindings \code{sim_init()}, \code{sim_update()}, \code{sim_get_state()},
+\code{sim_free()} and \code{sim_init_saved()}.
 }
+\keyword{internal}

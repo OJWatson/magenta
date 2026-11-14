@@ -6,13 +6,19 @@
 \usage{
 drug_create_asaq()
 }
+\value{
+A \code{magenta_drug}, see \code{\link{drug_create}}.
+}
 \description{
 ASAQ Drug Create
 }
 \note{
-We have curves of the longest and shortest duration of ASAQ prophylaxis from 
-Bretscher et al. However, we have multiple types of partner drug resistance. 
+We have curves of the longest and shortest duration of ASAQ prophylaxis from
+Bretscher et al. However, we have multiple types of partner drug resistance.
 At the moment we will say that any loci associated with AQ resistance
 yield the resistant curve but it may be better to have a distinct curve for each
 AQ resistant genotype with the T0.5 aligned to the prob of lpf.
+}
+\examples{
+drug_create_asaq()$lpf
 }

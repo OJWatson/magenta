@@ -16,3 +16,7 @@ spl_grab(country, admin, year_range)
 \description{
 Grabs spatial incidence and mosquitoFOI matrix from database
 }
+\examples{
+spl <- spl_grab("Democratic Republic of the Congo", "Kinshasa", 2010:2012)
+dim(spl$incidence)
+}

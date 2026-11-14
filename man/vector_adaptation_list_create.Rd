@@ -2,6 +2,7 @@
 % Please edit documentation in R/pipeline_param_lists.R
 \name{vector_adaptation_list_create}
 \alias{vector_adaptation_list_create}
+\alias{validate_vector_adaptation_list}
 \title{Create vector adaptation list}
 \usage{
 vector_adaptation_list_create(
@@ -12,6 +13,8 @@ vector_adaptation_list_create(
   gametocyte_sterilisation = 0.5,
   oocyst_reduction_by_artemisinin = 0.2
 )
+
+validate_vector_adaptation_list(x)
 }
 \arguments{
 \item{vector_adaptation_loci}{Vector of integers detailing which loci
@@ -25,13 +28,26 @@ parasites will get through. Default = 0.5}
 \item{gametocyte_sterilisation_flag}{Boolean for whether we are doing
 gametocye sterilisation as a result from artemisinin. Default = FALSE}
 
-\item{gametocyte_sterilisation}{Numeric for theimpact of artemisinin on 
-male gametocytes. Default = 0.5, which causes the probability that a 
+\item{gametocyte_sterilisation}{Numeric for theimpact of artemisinin on
+male gametocytes. Default = 0.5, which causes the probability that a
 wild type male gametocyte will be chosen to be in oocysts is halved.}
 
-\item{oocyst_reduction_by_artemisinin}{Numeric for reduction in oocyst 
+\item{oocyst_reduction_by_artemisinin}{Numeric for reduction in oocyst
 under artemisinin drug pressure. default = 0.2}
+
+\item{x}{List to validate.}
+}
+\value{
+A \code{magenta_vector_adaptation_list}: a list with the fields the
+  simulation reads, see \code{\link{cpp_contract}}.
 }
 \description{
 List for vector adaptations relating to oocyst success
+}
+\examples{
+va <- vector_adaptation_list_create(
+  vector_adaptation_loci = 5, vector_adaptation_flag = TRUE,
+  local_oocyst_advantage = 0.6
+)
+va$vector_adaptation_flag
 }

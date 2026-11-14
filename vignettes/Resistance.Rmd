@@ -1,7 +1,7 @@
 ---
 title: "Simulating antimalarial resistance"
 author: "OJ Watson"
-date: "2026-11-11"
+date: "2026-11-14"
 output:
   rmarkdown::html_vignette:
     fig_width: 7
@@ -64,15 +64,16 @@ treatment:
 
 ``` r
 out <- pipeline(EIR = 10, N = 2000, years = 5, ft = 0.4, seed = 1L)
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
+## Starting Stochastic Simulation for 5 years
 str(out$Loggers$Treatments)
 ## List of 5
-##  $ Successful_Treatments         : num 1939
+##  $ Successful_Treatments         : num 478
 ##  $ Unsuccesful_Treatments_LPF    : num 0
-##  $ Not_Treated                   : num 2827
-##  $ daily_bite_counters           : int 5716049
-##  $ daily_infectious_bite_counters: int 70846
+##  $ Not_Treated                   : num 694
+##  $ daily_bite_counters           : int 1143152
+##  $ daily_infectious_bite_counters: int 15713
 ```
 
 `Unsuccesful_Treatments_LPF` counts treatments that ended in a 28 day late
@@ -181,6 +182,7 @@ str(dhappq)
 ##  $ hill_kA               : num 0.227
 ##  $ hill_res_n            : num 9.27
 ##  $ hill_res_kA           : num 0.493
+##  - attr(*, "class")= chr [1:3] "magenta_drug" "magenta_param_list" "list"
 ```
 
 Each element does the following.
@@ -337,20 +339,19 @@ res_pipeline <- function(drug_list, years = 20, plaf = rep(0.1, 6),
   pipeline(EIR = EIR, N = N, years = years, ft = ft,
            num_loci = 6, plaf = plaf,
            update_length = 30, update_save = TRUE,
-           human_update_save = TRUE, summary_saves_only = TRUE,
-           genetics_df_without_summarising = TRUE,
+           output = save_summary(genetics = "allele_freqs"),
            drug_list = drug_list, seed = seed, ...)
 }
 
 out_standing <- res_pipeline(dl)
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
 ## Starting Stochastic Simulation for 20 years
 ```
 
-The saved elements hold an `af` vector, one allele frequency per locus. The
-final element of the returned list is the simulation itself rather than a
-summary, so it is dropped when pulling results out:
+The saved elements of `out` hold an `af` vector, one allele frequency
+per locus. The final element is the loggers at the end of the run rather than
+a summary, so it is dropped when pulling results out:
 
 
 ``` r
@@ -399,8 +400,8 @@ dl_staged <- drug_list_create(
 )
 
 out_staged <- res_pipeline(dl_staged, years = 30)
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
 ## Starting Stochastic Simulation for 30 years
 plot_af(af_over_time(out_staged), main = "Resistance switched on at year 10")
 abline(v = 10, lty = 3)
@@ -438,8 +439,8 @@ out_import <- res_pipeline(
   spatial_incidence_matrix = c(rep(1, import_years), rep(0, years - import_years)),
   spatial_mosquitoFOI_matrix = c(rep(1, import_years), rep(0, years - import_years))
 )
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
 ## Starting Stochastic Simulation for 30 years
 
 plot_af(af_over_time(out_import), main = "Imported resistance, selection from year 10")
@@ -478,8 +479,8 @@ out_mutation <- res_pipeline(
   mutation_rate = rep(1e-4, 6),
   mutation_treated_modifier = 10
 )
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
 ## Starting Stochastic Simulation for 30 years
 
 plot_af(af_over_time(out_mutation), main = "De novo emergence under DHA-PPQ")
@@ -502,12 +503,12 @@ pos <- seq_len(length(out_mutation) - 1)
 mutations <- colSums(do.call(rbind, lapply(out_mutation[pos], "[[", "mutations")))
 data.frame(locus = loci, mutations = mutations)
 ##                        locus mutations
-## 1                    crt 76T        73
-## 2                   mdr1 86Y        85
-## 3                  mdr1 184F        88
-## 4           mdr1 copy number        94
-## 5               kelch13 580Y        77
-## 6 plasmepsin 2-3 copy number        81
+## 1                    crt 76T        81
+## 2                   mdr1 86Y        97
+## 3                  mdr1 184F        81
+## 4           mdr1 copy number        67
+## 5               kelch13 580Y        98
+## 6 plasmepsin 2-3 copy number        84
 ```
 
 ---
@@ -565,12 +566,12 @@ dl_absolute <- drug_list_create(
 )
 
 out_relative <- res_pipeline(dl_cost, years = 20)
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
 ## Starting Stochastic Simulation for 20 years
 out_absolute <- res_pipeline(dl_absolute, years = 20)
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
 ## Starting Stochastic Simulation for 20 years
 
 kelch <- function(out) af_over_time(out)[, "kelch13 580Y"]
@@ -600,9 +601,8 @@ explicit about the choice when reporting results.
 
 ## Reading resistance out of a simulation
 
-With `summary_saves_only = TRUE` and
-`genetics_df_without_summarising = TRUE`, each saved interval carries a compact
-set of resistance relevant summaries:
+With `output = save_summary(genetics = "allele_freqs")`, each saved interval
+carries a compact set of resistance relevant summaries:
 
 
 ``` r
@@ -632,10 +632,9 @@ check a resistance scenario is behaving:
 
 
 ``` r
-tf <- unlist(lapply(out_standing[seq_len(length(out_standing) - 1)],
-                    "[[", "overall_treatment_failure"))
-prev <- unlist(lapply(out_standing[seq_len(length(out_standing) - 1)],
-                      "[[", "micro_2_10"))
+saved <- out_standing[seq_len(length(out_standing) - 1)]
+tf <- unlist(lapply(saved, "[[", "overall_treatment_failure"))
+prev <- unlist(lapply(saved, "[[", "micro_2_10"))
 years_axis <- seq_along(tf) / 12
 
 par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))

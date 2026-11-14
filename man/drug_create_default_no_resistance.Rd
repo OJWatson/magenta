@@ -6,9 +6,15 @@
 \usage{
 drug_create_default_no_resistance()
 }
+\value{
+A \code{magenta_drug}, see \code{\link{drug_create}}.
+}
 \description{
 Perfect Drug Create
 }
 \note{
 Perfect Efficacy Drug. Used as default to match deterministic model easily
+}
+\examples{
+drug_create_default_no_resistance()$lpf
 }

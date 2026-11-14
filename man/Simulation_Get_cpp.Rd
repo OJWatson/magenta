@@ -15,3 +15,4 @@ list of 4 lists with the entire model state
 \description{
 Returns whole model to R in series of nested lists
 }
+\keyword{internal}

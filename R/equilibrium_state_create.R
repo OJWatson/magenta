@@ -8,9 +8,6 @@
 #'
 #' @keywords internal
 equilibrium_ss_create <- function(eqInit) {
-  
-  maternal <- which.max(eqInit$age >= 20)
-  
   ## create equilibrium state for return
   equilibrium_state <- list(
     "age_brackets" = eqInit$age_bounds,
@@ -33,10 +30,39 @@ equilibrium_ss_create <- function(eqInit) {
     "ICM_Init" = eqInit$ICM_init_eq,
     "theta" = seasonal_profile(eqInit$admin, eqInit$country)
   )
-  
-  return(equilibrium_state)
+
+  validate_eqss(new_param_list(equilibrium_state, "magenta_eqss"))
 }
 
+#' @rdname equilibrium_ss_create
+#' @param x List to validate.
+validate_eqss <- function(x) {
+  what <- "eqSS"
+  check_fields(x, cpp_contract$eqss, what)
+  na <- length(x$age_brackets)
+  nh <- length(x$het_brackets)
+  check_number(x$age_brackets, paste0(what, "$age_brackets"), min = 0, n = NULL)
+  check_number(x$het_brackets, paste0(what, "$het_brackets"), min = 0, n = NULL)
+  mats <- c(
+    "Smat", "Dmat", "Amat", "Umat", "Tmat", "Pmat", "IBmat", "ICAmat",
+    "ICMmat", "IDmat", "FOI", "phi"
+  )
+  for (field in mats) {
+    m <- x[[field]]
+    if (!is.matrix(m) || !is.numeric(m) || anyNA(m) || !identical(dim(m), c(na, nh))) {
+      stop(sprintf(
+        "%s$%s must be a %d by %d numeric matrix (age by heterogeneity brackets)",
+        what, field, na, nh
+      ), call. = FALSE)
+    }
+  }
+  for (field in c("Sv", "Ev", "Iv")) {
+    check_number(x[[field]], paste0(what, "$", field), min = 0)
+  }
+  check_number(x$ICM_Init, paste0(what, "$ICM_Init"), min = 0, n = nh)
+  check_number(x$theta, paste0(what, "$theta"), n = NULL)
+  invisible(x)
+}
 
 
 #' Spatial Parameter List Creation
@@ -47,12 +73,12 @@ equilibrium_ss_create <- function(eqInit) {
 #' @param spatial_type Numeric for spatial type. Default = 0
 #' @param human_importation_rate_vector Vector of human importations into this
 #'   region. Default = NULL
-#' @param mosquito_imporation_rate_vector Vector of mosquito infection 
+#' @param mosquito_imporation_rate_vector Vector of mosquito infection
 #'   importations into this region. Default = NULL
-#' @param cotransmission_freq_vector Vector of size of cotransmissions. This is 
+#' @param cotransmission_freq_vector Vector of size of cotransmissions. This is
 #'   preallocated here and regenerated every simulation update length.
 #'   Default = rep(1, 10000)
-#' @param oocyst_freq_vector Vector of number of ooocysts. This is 
+#' @param oocyst_freq_vector Vector of number of ooocysts. This is
 #'   preallocated here and regenerated every simulation update length.
 #'   Default = rep(1, 10000)
 #' @param num_human_infs Number of human infections from last day. Required for
@@ -62,10 +88,10 @@ equilibrium_ss_create <- function(eqInit) {
 #' @param plaf Population Level Frequency. Default = rep(0.5, 24)
 #' @param island_imports_plaf_linked_flag Boolean. Whether imported barcodes for
 #'  island model are drawn dependent on other sites. Currently, if TRUE, imported
-#'  barcodes will either be all 0 or will be 1 at all loci where plaf > 0, 
-#'  if \code{rbinom(1, 1, plaf[plaf>0][1])} is TRUE. I.e. the first loci greater 
-#'  than 0 is used to determine if the incoming barcode is 1 at all sites where 
-#'  plaf is greater than 0. 
+#'  barcodes will either be all 0 or will be 1 at all loci where plaf > 0,
+#'  if \code{rbinom(1, 1, plaf[plaf>0][1])} is TRUE. I.e. the first loci greater
+#'  than 0 is used to determine if the incoming barcode is 1 at all sites where
+#'  plaf is greater than 0.
 #' @keywords internal
 spl_create <- function(spatial_type = 0,
                        human_importation_rate_vector = NULL,
@@ -76,7 +102,6 @@ spl_create <- function(spatial_type = 0,
                        num_mos_infs = 0,
                        plaf = rep(0.5, 24),
                        island_imports_plaf_linked_flag = FALSE) {
-  
   # if non spatial
   if (spatial_type == 0) {
     spatial_list <- list(
@@ -88,14 +113,13 @@ spl_create <- function(spatial_type = 0,
       "plaf" = plaf,
       "island_imports_plaf_linked_flag" = island_imports_plaf_linked_flag
     )
-    
+
     # if island spatial
   } else if (spatial_type == 1) {
-    
     # first work out how frequent importation is:
     hum_imp_rate <- sum(human_importation_rate_vector, na.rm = TRUE)
     mos_imp_rate <- sum(mosquito_imporation_rate_vector, na.rm = TRUE)
-    
+
     spatial_list <- list(
       "spatial_type" = spatial_type,
       "cotransmission_freq_vector" = cotransmission_freq_vector,
@@ -105,181 +129,32 @@ spl_create <- function(spatial_type = 0,
       "plaf" = plaf,
       "island_imports_plaf_linked_flag" = island_imports_plaf_linked_flag
     )
-    
-    # if metapop sspatial - NOT FINISHED!
+
+    # metapopulation spatial lists were never finished
   } else {
-    
-    # # first work out how frequent importation is:
-    # hum_imp_rate <- human_importation_rate_vector[-which(is.na(human_importation_rate_vector))]
-    # mos_imp_rate <- mosquito_imporation_rate_vector[-which(is.na(mosquito_imporation_rate_vector))]
-    # 
-    # # therefore we frst want to work out the number of transmission events that are due to importation and how large
-    # metapopulation_number <- which(is.na(human_importation_rate_vector))
-    # other_metapopulations <- seq_len(length(human_importation_rate_vector))[-metapopulation_number]
-    # 
-    # cotransmission_import_locations <- table(
-    #   sample(other_metapopulations,
-    #          size = num_human_infs * sum(human_importation_rate_vector, na.rm = TRUE),
-    #          replace = TRUE, prob = hum_imp_rate
-    #   ))
-    # 
-    # imported_cotransmission_frequences <- sapply(cotransmission_import_locations, 
-    #                                              function(x) {
-    #                                                sample(cotransmission_vector, size = x)
-    #                                              })
-    # 
-    # ## push these freqs to redis as "Exported_Cotransmission_Frequencies_x->metapopulation_number"
-    # 
-    # ## repeat for oocysts (with some doubling...)
-    # 
-    # ## grab all the required exports that are coming out of this sim
-    # 
-    # ## pass that in as an exported_co.... etc
-    # 
-    # ## and grab all the imported barcodes/oocysts and their frequencies if this is not the initialisation step
-    # 
-    # ## create spatial_list with 6 vectors
-    # 
-    # 
-    # imported_cotransmission_events <- sapply(num_human_infs * hum_imp_rate, function(x) rep_len(cotransmission_freq_vector, x))
-    # imported_oocyst_events <- rep_len(oocyst_freq_vector, num_mos_infs * mos_imp_rate)
-    # 
-    # spatial_list <- list(
-    #   "spatial_type" = spatial_type,
-    #   "cotransmission_freq_vector" = cotransmission_freq_vector,
-    #   "oocyst_freq_vector" = oocyst_freq_vector,
-    #   "imported_cotransmissions_events" = c(0, imported_cotransmission_events),
-    #   "imported_oocyst_events" = c(0, imported_oocyst_events)
-    # )
+    stop("metapopulation spatial lists are not implemented")
   }
+
+  validate_spatial_list(new_param_list(spatial_list, "magenta_spatial_list"))
 }
 
-
-
-
-
-#' Odin generator function
-#'
-#' \code{generate_default_model} creates the user required generator for
-#' the odin model.
-#'
-#' @param ft Treatment seeking numeric
-#' @param age Vector of ages
-#' @param generator generator for model.
-#' @param dat Output of \code{equilibrium_init_create}
-#' @param dde Use dde in soliving eventual odin. Default = FALSE
-#'
-#' @keywords internal
-generate_default_model <- function(ft, age, dat, generator, dde = TRUE) {
-  mod <- generator(
-    init_S = dat$S,
-    init_T = dat$T,
-    init_D = dat$D,
-    init_A = dat$A,
-    init_U = dat$U,
-    init_P = dat$P,
-    init_ICA = dat$ICA,
-    init_ICM = dat$ICM,
-    init_ID = dat$ID,
-    init_IB = dat$IB,
-    init_Sv = dat$Sv,
-    init_Ev = dat$Ev,
-    init_Iv = dat$Iv,
-    init_PL = dat$PL,
-    init_LL = dat$LL,
-    init_EL = dat$EL,
-    na = dat$na,
-    nh = dat$nh,
-    age_rate = dat$age_rate,
-    foi_age = dat$foi_age,
-    het_wt = dat$het_wt,
-    rel_foi = dat$rel_foi,
-    omega = dat$omega,
-    pi = pi,
-    x_I = dat$x_I,
-    mv0 = dat$mv0,
-    mu0 = dat$mu0,
-    ssa0 = dat$ssa0,
-    ssa1 = dat$ssa1,
-    ssa2 = dat$ssa2,
-    ssa3 = dat$ssa3,
-    ssb1 = dat$ssb1,
-    ssb2 = dat$ssb2,
-    ssb3 = dat$ssb3,
-    theta_c = dat$theta_c,
-    den = dat$den,
-    age59 = dat$age59,
-    age05 = dat$age05,
-    age2years = dat$age2years,
-    age10years = dat$age10years,
-    two_to_10_length = dat$age10years - dat$age2years,
-    age = age * 365,
-    ft = ft,
-    use_dde = dde,
-    eta = dat$eta,
-    rA = dat$rA,
-    rT = dat$rT,
-    rD = dat$rD,
-    rU = dat$rU,
-    rP = dat$rP,
-    dE = dat$dE,
-    delayGam = dat$delayGam,
-    delayMos = dat$delayM,
-    cD = dat$cD,
-    cT = dat$cT,
-    cU = dat$cU,
-    gamma1 = dat$gamma1,
-    d1 = dat$d1,
-    dID = dat$dID,
-    ID0 = dat$ID0,
-    kD = dat$kD,
-    uD = dat$uD,
-    aD = dat$aD,
-    fD0 = dat$fD0,
-    gammaD = dat$gammaD,
-    b0 = dat$b0,
-    b1 = dat$b1,
-    dB = dat$dB,
-    IB0 = dat$IB0,
-    kB = dat$kB,
-    uB = dat$uB,
-    phi0 = dat$phi0,
-    phi1 = dat$phi1,
-    dCA = dat$dCA,
-    IC0 = dat$IC0,
-    kC = dat$kC,
-    uCA = dat$uCA,
-    dCM = dat$dCM,
-    tau1 = dat$tau1,
-    tau2 = dat$tau2,
-    Q0 = dat$Q0,
-    chi = dat$chi,
-    bites_Bed = dat$bites_Bed,
-    bites_Indoors = dat$bites_Indoors,
-    p10 = dat$p10,
-    p2 = dat$p2,
-    muEL = dat$muEL,
-    muLL = dat$muLL,
-    muPL = dat$muPL,
-    dEL = dat$dEL,
-    dLL = dat$dLL,
-    dPL = dat$dPL,
-    gammaL = dat$gammaL,
-    beta_larval0 = dat$betaL,
-    num_int = dat$num_int,
-    itn_cov = dat$itn_cov,
-    irs_cov = dat$irs_cov,
-    int_times = dat$int_times,
-    ITN_IRS_on = dat$ITN_IRS_on,
-    d_ITN0 = dat$d_ITN0,
-    r_ITN0 = dat$r_ITN0,
-    r_ITN1 = dat$r_ITN1,
-    r_IRS0 = dat$r_IRS0,
-    d_IRS0 = dat$d_IRS0,
-    IRS_interval = dat$IRS_interval,
-    ITN_interval = dat$ITN_interval,
-    irs_loss = dat$irs_loss,
-    itn_loss = dat$itn_loss
+#' @rdname spl_create
+#' @param x List to validate.
+validate_spatial_list <- function(x) {
+  what <- "spatial_list"
+  check_fields(x, cpp_contract$spatial, what)
+  check_number(x$spatial_type, paste0(what, "$spatial_type"), min = 0, max = 1, integer = TRUE)
+  check_number(x$cotransmission_freq_vector, paste0(what, "$cotransmission_freq_vector"),
+    min = 1, n = NULL, integer = TRUE
   )
+  check_number(x$oocyst_freq_vector, paste0(what, "$oocyst_freq_vector"),
+    min = 1, n = NULL, integer = TRUE
+  )
+  check_number(x$imported_cotransmissions_events, paste0(what, "$imported_cotransmissions_events"),
+    min = 0
+  )
+  check_number(x$imported_oocyst_events, paste0(what, "$imported_oocyst_events"), min = 0)
+  check_number(x$plaf, paste0(what, "$plaf"), min = 0, max = 1, n = NULL)
+  check_flag(x$island_imports_plaf_linked_flag, paste0(what, "$island_imports_plaf_linked_flag"))
+  invisible(x)
 }
-

@@ -1,12 +1,70 @@
+## magenta 1.4.0
+
+* Results change for every seeded stochastic run: the random number generator
+  is seeded once per run instead of before every C++ call, and 1.4.0 carries
+  the 1.3.8 model fixes.
+* `pipeline()` returns the same list as 1.3.x, now classed `magenta_sim` with the run's
+  `params`, `schedule` and `meta` as attributes (`sim_params()`, `sim_schedule()`,
+  `sim_meta()`) and `print()`, `summary()` and `as.data.frame()` methods.
+* `output =` takes a saver: `save_loggers()`, `save_summary()`, `save_humans()`,
+  `save_full()` or your own function. The old output flags still work, with a warning.
+* With `update_save = FALSE` a multi-year run steps year by year, so yearly inputs
+  (`ft`, `plaf`, flags, importation) apply and temporal drug cycling happens.
+* Yearly inputs shorter than the run repeat their last value; longer ones are an
+  error. The schedule is built by the exported `build_schedule()`, one value per
+  period; an `update_length` that leaves a simulated year with no period is an error.
+* Sequential drug cycling reads treatment failure from the loggers, so it works
+  with every saver and without periodic saving.
+* `sim_save()` and `sim_restore()` write and read a versioned saved state; old
+  full saves still load.
+* A resumed run uses the saved run's parameter lists and generator state; a
+  differing explicit list is an error, and passing `seed` reseeds.
+* Every parameter list constructor is exported, returns a classed list and is
+  checked by a `validate_*()` naming the list and field; `cpp_contract` records
+  the fields the C++ reads.
+* `barcode_list_create()` defaults `plaf`, `prob_crossover` and `mutation_rate`
+  to `num_loci` entries.
+* Mosquito death and feeding rates under ITN/IRS come from the closed form
+  `mu_fv_from_coverage()`, equal to the odin model output to floating-point
+  rounding and far faster;
+  `run_deterministic_model()` runs the model itself.
+* `spl_grab()` keeps the year 2000 in a range that ends there.
+* An all-zero `itn_cov` or `irs_cov` vector takes the no-intervention shortcut
+  (`fv = 0.333`, `mu = 0.132`) as a scalar `0` always did, instead of running the model.
+* `drug_list_create(number_of_resistance_loci = 1)` works.
+* `model_param_list_create()` honours `irs_half_life` and `itn_half_life`;
+  `pfpr_to_eir_heuristic(age_range = )` works; `microscopy_detected()` uses the
+  age bracket bound; `spatial_type = "metapop"` stops with a clear message.
+* A misspelt argument to `pipeline()` is reported as such;
+  `equilibrium_init_create(quiet = TRUE)` is quiet.
+* `simulation_R()` is deprecated; the `Simulation_*_cpp()` wrappers, the
+  `param_list_simulation_*()` helpers and `%>%` are no longer exported.
+* Removed `bootstrap()`, `kl()` and `generate_default_model()`. The other
+  research-era helpers stay as internal functions pending a workflows phase;
+  ggplot2, reshape2, cowplot and RColorBrewer are Suggests and redux is dropped.
+* odin and dde come from CRAN; R >= 4.1 is required.
+* Vignettes rebuilt against the new interface; every export has an example;
+  fixed-seed characterisation tests, styler and lintr in CI; testthat edition 3.
+* Two new vignettes: `Schedule` (schedules, parameter lists, the result
+  object and reproducibility) and `Deterministic` (checks against the
+  deterministic model).
+* `Person::m_cA` is initialised, so set-up-only saves no longer carry an
+  uninitialised value.
+* The fitness cost of a strain is read at every resistance locus, the last one
+  included (it was skipped, and the lookup could run past the cost table), so
+  resistance runs with a fitness cost differ from 1.3.x.
+* `drug_list_create()` and `validate_drug_list()` stop when resistance is on
+  in any year and `number_of_resistance_loci` is smaller than the number of
+  barcode positions the drugs name.
+
 ## magenta 1.3.8
 
-* New vignettes: `Loggers`, `DrugStrategies` and `NewDrugs`. `Resistance` and
-  `Introduction` rewritten, and vignette sources moved to `vignettes_src/`.
-* Bug fix to initialisation that caused resistance simulations to crash during
-  the LPF calculation.
-* Bug fix to the asymptomatic discount in the LPF calculation, which was
-  computed with integer arithmetic and so never applied.
-* Gametocyte sterilisation now applies to artemisinin sensitive strains, as
+* New vignettes `Loggers`, `DrugStrategies` and `NewDrugs`; `Resistance` and
+  `Introduction` rewritten; sources in `vignettes_src/`.
+* Fixed an initialisation crash in resistance simulations during the LPF calculation.
+* The asymptomatic discount in the LPF calculation now applies; integer
+  arithmetic had truncated it to zero.
+* Gametocyte sterilisation applies to artemisinin sensitive strains, as
   documented, rather than resistant ones.
 
 ## magenta 1.3.7

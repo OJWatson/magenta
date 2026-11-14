@@ -15,3 +15,4 @@ list of 1 confirming finalizer has finished
 \description{
 Returns whole model to R in series of nested lists
 }
+\keyword{internal}

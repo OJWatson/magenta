@@ -2,18 +2,21 @@
 % Please edit documentation in R/pipeline_param_lists.R
 \name{barcode_list_create}
 \alias{barcode_list_create}
+\alias{validate_barcode_list}
 \title{Barcode parameter list creation}
 \usage{
 barcode_list_create(
   num_loci = 24,
   ibd_length = 1,
-  plaf = rep(0.5, 24),
-  prob_crossover = rep(0.5, 24),
+  plaf = rep(0.5, num_loci),
+  prob_crossover = rep(0.5, num_loci),
   starting_ibd = 0,
   mutation_flag = FALSE,
   mutation_rate = rep(1e-07, num_loci),
   mutation_treated_modifier = 1
 )
+
+validate_barcode_list(x)
 }
 \arguments{
 \item{num_loci}{Number of loci. Default = 24}
@@ -31,10 +34,10 @@ automatically calculated in the future. If we are not ding IBD, then this
 should be 1, which is the defalt.}
 
 \item{plaf}{Vector of population level allele frequencies for the barcode.
-Default = rep(0.5, barcode_length)}
+Default = rep(0.5, num_loci)}
 
 \item{prob_crossover}{Vector of probabilities for crossover events for the
-barcode. Default = rep(0.5, barcode_length)}
+barcode. Default = rep(0.5, num_loci)}
 
 \item{starting_ibd}{Starting ibd. Default = 0}
 
@@ -43,11 +46,21 @@ barcode. Default = rep(0.5, barcode_length)}
 \item{mutation_rate}{Probability of mutation occuring and fixing}
 
 \item{mutation_treated_modifier}{Multiplier for how much more likely mutations
-are to occur in treated individuals with respect to resistance. Default = 1, i.e 
+are to occur in treated individuals with respect to resistance. Default = 1, i.e
 no difference}
+
+\item{x}{List to validate.}
+}
+\value{
+A \code{magenta_barcode_list}: a list with the fields the
+  simulation reads, see \code{\link{cpp_contract}}.
 }
 \description{
 \code{barcode_list_create} creates list detialing the barcode/genetic
   parameters for the model
 }
-\keyword{internal}
+\examples{
+bl <- barcode_list_create(num_loci = 6, plaf = rep(0.2, 6), mutation_flag = TRUE)
+bl$num_loci
+validate_barcode_list(bl)
+}

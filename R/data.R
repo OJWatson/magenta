@@ -79,7 +79,7 @@
 ##'
 "itn_2000_2015"
 
-##'  Importation data 
+##'  Importation data
 ##'
 ##'  Importation data for admin units in admin_units_seasonal
 ##'
@@ -92,28 +92,29 @@
 ##'     \itemize{
 ##'       \item incidence: Proportions of incidence that originated from other admin units, i.e.
 ##'       individuals in admin i that moved to admin j and then returned with an infection acquired
-##'       while in admin j.  
+##'       while in admin j.
 ##'       \item mosquitoFOI: Proportion of the force of infection towards mosquitoes that originated
-##'       from outside admin units, i.e. the proportion of mosquitoes that are infected from infected
-##'       individuals who travelled from admin j into admin i. 
+##'       from outside admin units, i.e. the proportion of mosquitoes that are infected
+##'       from infected
+##'       individuals who travelled from admin j into admin i.
 ##'     }
-##'     
+##'
 ##' @rdname importations
 ##' @aliases importations
 ##'
 ##'
 "importations"
 
-##'  Drug Efficacy by Genotype Table 
+##'  Drug Efficacy by Genotype Table
 ##'
 ##'  Table of probaility of late parasitological failure (28-day treatment failure)
-##'  per genoytpe. 
-##'  
+##'  per genoytpe.
+##'
 ##'  Sourced from:
-##'  
-##'  Antimalarial mass drug administration in large populations and the 
-##'  evolution of drug resistance. Tran Dang Nguyen, Thu Nguyen-Anh Tran, 
-##'  Daniel M. Parker, Nicholas J White, Maciej F Boni. 
+##'
+##'  Antimalarial mass drug administration in large populations and the
+##'  evolution of drug resistance. Tran Dang Nguyen, Thu Nguyen-Anh Tran,
+##'  Daniel M. Parker, Nicholas J White, Maciej F Boni.
 ##'  bioRxiv 2021.03.08.434496; doi: https://doi.org/10.1101/2021.03.08.434496
 ##'
 ##' @docType data

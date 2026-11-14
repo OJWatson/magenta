@@ -21,7 +21,7 @@ summarySE_mean_only_max_mean(
 
 \item{mean_only}{Are we just calculating the mean. Default = TRUE}
 
-\item{max}{Maximum value that can be obsered in the data beign summarised. 
+\item{max}{Maximum value that can be obsered in the data beign summarised.
 If greater than zero, all values in data will be set to the max before
 summarising. Default = 0.}
 }

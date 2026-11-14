@@ -24,7 +24,7 @@ summary_data_frames_from_sims(
 sumarising the data by age. Default = c("(-0.001,5]","(5,15]","(15,100]")}
 
 \item{coi_detect}{Boolean whether to report the COI detected, i.e. what we
-believe would be detected my sequencing as sensitive as pcr 
+believe would be detected my sequencing as sensitive as pcr
 Default = FALSE, i.e the true COI}
 
 \item{ibd}{Were we collecting info on IBD}

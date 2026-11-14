@@ -47,7 +47,7 @@ struct Universe {
 //'
 //' @param param_list parameter list generated with \code{Param_List_Simulation_Update_Create}
 //' @return list with ptr to model state and loggers describing the current model state
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
 {

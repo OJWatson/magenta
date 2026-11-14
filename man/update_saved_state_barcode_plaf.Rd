@@ -27,3 +27,12 @@ containers individually (human strain barcodes, infection realisations, and
 male and female mosquito oocyst barcodes) as well as to the combined set of
 barcodes across all containers.
 }
+\examples{
+\donttest{
+state <- pipeline(
+  EIR = 1, years = 1, N = 100, num_loci = 2, set_up_only = TRUE, seed = 1L,
+  housekeeping_list = housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+)
+state <- update_saved_state_barcode_plaf(state, target_plaf = c(0.9, 0.1), seed = 1L)
+}
+}

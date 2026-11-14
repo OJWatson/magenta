@@ -1,7 +1,7 @@
 ---
 title: "Adding a new drug: single low-dose primaquine"
 author: "OJ Watson"
-date: "2026-11-11"
+date: "2026-11-13"
 output:
   rmarkdown::html_vignette:
     fig_width: 7
@@ -84,6 +84,7 @@ str(new_drug)
 ##  $ hill_kA               : num 0.263
 ##  $ hill_res_n            : num 13.3
 ##  $ hill_res_kA           : num 0.564
+##  - attr(*, "class")= chr [1:3] "magenta_drug" "magenta_param_list" "list"
 ```
 
 The two protection curves say that the drug protects for about 28 days against
@@ -112,12 +113,11 @@ out_new <- pipeline(
   EIR = 10, N = 2000, years = 12, ft = 0.4,
   num_loci = 7, plaf = rep(0.1, 7),
   update_length = 30, update_save = TRUE,
-  human_update_save = TRUE, summary_saves_only = TRUE,
-  genetics_df_without_summarising = TRUE,
+  output = save_summary(genetics = "allele_freqs"),
   drug_list = dl_new, seed = 1L
 )
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
 ## Starting Stochastic Simulation for 12 years
 ```
 
@@ -298,8 +298,7 @@ run_block <- function(va, seed = 1L) {
   out <- pipeline(EIR = 20, N = 3000, years = 12, ft = 0.6,
                   num_loci = 6, plaf = rep(0.1, 6),
                   update_length = 30, update_save = TRUE,
-                  human_update_save = TRUE, summary_saves_only = TRUE,
-                  genetics_df_without_summarising = TRUE,
+                  output = save_summary(genetics = "allele_freqs"),
                   drug_list = dl_al, vector_adaptation_list = va, seed = seed)
   p <- seq_len(length(out) - 1)
   mean(tail(unlist(lapply(out[p], "[[", "micro_2_10")), 24))
@@ -320,19 +319,19 @@ data.frame(
                  oocyst_reduction_by_artemisinin = 0.01))
   )
 )
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
 ## Starting Stochastic Simulation for 12 years
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
 ## Starting Stochastic Simulation for 12 years
+## magenta v1.4.0
 ## Seed set to 1
-## magenta v1.3.8
 ## Starting Stochastic Simulation for 12 years
 ##               scenario pfpr_2_10
-## 1          no blocking 0.4330282
-## 2     default blocking 0.4250708
-## 3 99% oocyst reduction 0.4329253
+## 1          no blocking 0.4743465
+## 2     default blocking 0.4690104
+## 3 99% oocyst reduction 0.4515089
 ```
 
 Even a 99% reduction in oocysts barely moves prevalence, because the mosquito

@@ -6,42 +6,35 @@ template:
 
 reference:
   - title: "Simulation"
-    desc: "Functions for running magenta."
+    desc: "Running magenta, choosing what it keeps, and the object it returns."
     contents:
       - pipeline
-  - title: "Pipeline Misc"
+      - savers
+      - magenta_sim
+      - sim_save
+  - title: "Parameter lists"
     desc: >
-      "Functions that are actually being called by pipeline that trigger the
-      simulation to run. These consist of functions that create the parameter
-      lists to be passed to the functions that call the similarly named Rcpp
-      functions. Lastly, two functions that are used to summarise the population
-      genetics using Rcpp functions. "
+      "Constructors for the parameter lists passed to pipeline(), each with a
+      validator, and the record of the fields the C++ simulation reads."
     contents:
-      - param_list_simulation_finalizer_create
-      - param_list_simulation_get_create
-      - param_list_simulation_init_create
-      - param_list_simulation_saved_init_create
-      - param_list_simulation_update_create
-      - simulation_R
-      - Simulation_Finalizer_cpp
-      - Simulation_Get_cpp
-      - Simulation_Init_cpp
-      - Simulation_Saved_Init_cpp
-      - Simulation_Update_cpp
-      - population_get_genetics_df_n
-      - population_get_genetics_ibd_df_n
-  - title: "Pipeline Parameter Creation"
-    desc: >
-      "Functions to create parameters to be passed to pipeline"
-    contents:
-      - drug_list_create
       - model_param_list_create
-      - spl_grab
-      - intervention_grab
-      - equilibrium_init_create
+      - drug_list_create
       - housekeeping_list_create
       - nmf_list_create
       - vector_adaptation_list_create
+      - barcode_list_create
+      - cpp_contract
+  - title: "Schedule and historic inputs"
+    desc: >
+      "The per-period schedule the simulation follows, and the functions that
+      pull historic interventions and importation rates for an admin unit."
+    contents:
+      - build_schedule
+      - spl_grab
+      - intervention_grab
+      - equilibrium_init_create
+      - mu_fv_from_coverage
+      - run_deterministic_model
   - title: "Drug Functions"
     desc: "Functions to create drugs"
     contents:
@@ -71,12 +64,17 @@ articles:
     contents:
       - Introduction
       - Loggers
+      - Schedule
   - title: "Antimalarial resistance"
     navbar: "Resistance"
     contents:
       - Resistance
       - DrugStrategies
       - NewDrugs
+  - title: "Model checks"
+    navbar: "Model checks"
+    contents:
+      - Deterministic
 
 navbar:
   type: default
@@ -94,6 +92,8 @@ navbar:
         href: articles/Introduction.html
       - text: Model output, loggers and saved state
         href: articles/Loggers.html
+      - text: Schedules, parameters and reproducibility
+        href: articles/Schedule.html
       - text: -------
       - text: "Antimalarial resistance"
       - text: Simulating antimalarial resistance
@@ -102,6 +102,10 @@ navbar:
         href: articles/DrugStrategies.html
       - text: "Adding a new drug: single low-dose primaquine"
         href: articles/NewDrugs.html
+      - text: -------
+      - text: "Model checks"
+      - text: Checking magenta against the deterministic model
+        href: articles/Deterministic.html
     - text: News
       href: news/index.html
   right:

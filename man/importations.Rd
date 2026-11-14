@@ -12,10 +12,11 @@ A list of length 18
     \itemize{
       \item incidence: Proportions of incidence that originated from other admin units, i.e.
       individuals in admin i that moved to admin j and then returned with an infection acquired
-      while in admin j.  
+      while in admin j.
       \item mosquitoFOI: Proportion of the force of infection towards mosquitoes that originated
-      from outside admin units, i.e. the proportion of mosquitoes that are infected from infected
-      individuals who travelled from admin j into admin i. 
+      from outside admin units, i.e. the proportion of mosquitoes that are infected
+      from infected
+      individuals who travelled from admin j into admin i.
     }
 }
 \usage{

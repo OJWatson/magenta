@@ -26,7 +26,7 @@ heatmap_ordered_binary_plot(
 \code{heatmap_ordered_binary_plot}}
 }
 \description{
-\code{heatmap_ordered_binary_plot} creates a heatmap of all human barcodes, 
+\code{heatmap_ordered_binary_plot} creates a heatmap of all human barcodes,
 with the most common barcode grouped at the bottom
 }
 \keyword{internal}

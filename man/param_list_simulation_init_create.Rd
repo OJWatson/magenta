@@ -25,16 +25,16 @@ param_list_simulation_init_create(
 
 \item{spatial_list}{Spatial parmeters to come in}
 
-\item{housekeeping_list}{Housekeeping parameter list 
+\item{housekeeping_list}{Housekeeping parameter list
 from \code{housekeeping_list_create}}
 
-\item{drug_list}{Drug parameter list 
+\item{drug_list}{Drug parameter list
 from \code{drug_list_create}}
 
-\item{nmf_list}{Non malarial fever parameter list 
+\item{nmf_list}{Non malarial fever parameter list
 from \code{nmf_list_create}}
 
-\item{vector_adaptation_list}{vector adaptation list 
+\item{vector_adaptation_list}{vector adaptation list
 from \code{vector_adaptation_list}}
 
 \item{mpl}{model parameter list from \code{model_param_list_create}}
@@ -44,3 +44,4 @@ from \code{vector_adaptation_list}}
 \code{simulation_R} for the beginning of a simulation. Also takes an argument
 for feeding in spatial parameters/data.
 }
+\keyword{internal}

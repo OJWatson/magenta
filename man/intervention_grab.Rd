@@ -34,3 +34,9 @@ Grabs ITN, IRS  ft from database
 
 N.B. The admin region used for ft can be checked
 }
+\examples{
+ints <- intervention_grab(
+  "Democratic Republic of the Congo", "Kinshasa", year_range = 2010:2015
+)
+ints$itn_cov
+}
