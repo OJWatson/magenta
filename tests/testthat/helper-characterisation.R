@@ -27,6 +27,11 @@ snapshot_summary <- function(x, max_keep = 12L) {
     return(list(names = names(x), counts = as.integer(x)))
   }
   if (is.list(x)) {
+    # the first element of a generator state codes the generator kind, which
+    # differs between R versions; the state proper is the rest
+    if ("rng_state" %in% names(x) && is.integer(x$rng_state)) {
+      x$rng_state <- x$rng_state[-1]
+    }
     out <- lapply(x, snapshot_summary, max_keep = max_keep)
     if (is.null(names(x)) && length(out) > max_keep) {
       return(list(

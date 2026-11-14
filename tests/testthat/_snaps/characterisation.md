@@ -1058,8 +1058,8 @@
                 ITN_interval = 1095, irs_loss = 0.003798, itn_loss = 0.000719), 
             spatial_settings = list(spatial_type = NULL, island_imports_plaf_linked_flag = FALSE, 
                 survival_percentage = 0.2, oocyst_mean = 2.5, oocyst_shape = 1)), 
-        rng_state = list(length = 626L, n_na = 0L, sum = 25929670488, 
-            quantiles = c(-2138386923, -966188371, 48034205.5, 1109808107.75, 
+        rng_state = list(length = 625L, n_na = 0L, sum = 25929660085, 
+            quantiles = c(-2138386923, -966419638, 63152000, 1110946321, 
             2147080281)))
 
 ---
@@ -1278,9 +1278,9 @@
                 ITN_interval = 1095, irs_loss = 0.003798, itn_loss = 0.000719), 
             spatial_settings = list(spatial_type = NULL, island_imports_plaf_linked_flag = FALSE, 
                 survival_percentage = 0.2, oocyst_mean = 2.5, oocyst_shape = 1)), 
-        rng_state = list(length = 626L, n_na = 0L, sum = 4597015823, 
-            quantiles = c(-2137226893, -1144004075.75, 10874815.5, 
-            1123566658.75, 2147295473)))
+        rng_state = list(length = 625L, n_na = 0L, sum = 4597005420, 
+            quantiles = c(-2137226893, -1144709925, 21739228, 1126956571, 
+            2147295473)))
 
 # characterisation: equilibrium initialisation is stable
 
