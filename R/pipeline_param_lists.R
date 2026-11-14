@@ -50,7 +50,9 @@ validate_housekeeping_list <- function(x) {
 #'   absolute (i.e. impactive onward transmission chance) or relative (resistant
 #'   strains have decreases chance of being onwardly transmitted in mixed
 #'   infections). Default = FALSE.
-#' @param number_of_resistance_loci Numeric for number of res. loci
+#' @param number_of_resistance_loci Numeric for number of res. loci. With
+#'   resistance on it must be at least the number of distinct barcode
+#'   positions the \code{drugs} name, or the list is an error.
 #' @param cost_of_resistance Numeric vector for fitness cost of each resistance loci.
 #' @param epistatic_logic Is there compensatory relationships. i.e. what loci
 #'   need to be true for resistance cost to exist. Default of NULL means that
@@ -183,6 +185,21 @@ validate_drug_list <- function(x) {
   check_number(x$cost_of_resistance, paste0(what, "$cost_of_resistance"),
     min = 0, n = 2^x$number_of_resistance_loci
   )
+  # the cost table has one entry per genotype at the drugs' resistance
+  # positions, so a run with resistance on needs a locus for every position
+  # the drugs name; any() because the flag may be one value per year and the
+  # pipeline switches it on when that year starts
+  if (any(x$resistance_flag) && x$number_of_resistance_loci < length(x$resistance_loci)) {
+    stop(sprintf(
+      paste0(
+        "%s$number_of_resistance_loci is %d but the drugs have resistance at ",
+        "%d barcode positions (%s): set number_of_resistance_loci = %d, with a ",
+        "cost_of_resistance for each"
+      ),
+      what, x$number_of_resistance_loci, length(x$resistance_loci),
+      paste(x$resistance_loci, collapse = ", "), length(x$resistance_loci)
+    ), call. = FALSE)
+  }
   check_flag(x$absolute_fitness_cost_flag, paste0(what, "$absolute_fitness_cost_flag"))
   check_flag(x$mft_flag, paste0(what, "$mft_flag"))
   check_number(x$temporal_cycling, paste0(what, "$temporal_cycling"))

@@ -98,6 +98,7 @@ test_that("temporal drug cycling happens without periodic saving", {
   skip_on_cran()
   dl <- drug_list_create(
     resistance_flag = TRUE, number_of_drugs = 2, temporal_cycling = 2,
+    number_of_resistance_loci = 6, cost_of_resistance = rep(1, 6),
     drugs = list(drug_create_al(), drug_create_dhappq()), partner_drug_ratios = c(0.5, 0.5)
   )
   out <- suppressMessages(pipeline(
@@ -146,11 +147,11 @@ test_that("sequential drug cycling reads the loggers, so it works with every sav
 test_that("a resumed run continues with the saved run's parameter lists", {
   skip_on_cran()
   first <- suppressMessages(pipeline(
-    EIR = 1, years = 1, N = 60, seed = 5L, num_loci = 3, plaf = rep(0.1, 3),
+    EIR = 1, years = 1, N = 60, seed = 5L, num_loci = 6, plaf = rep(0.1, 6),
     output = save_loggers(final = "full"),
     drug_list = drug_list_create(
       drug_choice = 0, number_of_drugs = 1, drugs = list(drug_create_al()),
-      number_of_resistance_loci = 3, cost_of_resistance = rep(1, 3)
+      number_of_resistance_loci = 6, cost_of_resistance = rep(1, 6)
     ),
     housekeeping_list = quiet_housekeeping_test()
   ))
@@ -167,8 +168,8 @@ test_that("a resumed run continues with the saved run's parameter lists", {
     EIR = 1, years = 1, N = 60, saved_state_path = path,
     housekeeping_list = quiet_housekeeping_test()
   ))
-  expect_equal(sim_params(resumed)$num_loci, 3)
-  expect_equal(sim_params(resumed)$barcode$plaf, rep(0.1, 3))
+  expect_equal(sim_params(resumed)$num_loci, 6)
+  expect_equal(sim_params(resumed)$barcode$plaf, rep(0.1, 6))
   expect_equal(sim_params(resumed)$drug, sim_params(first)$drug)
   expect_identical(sim_params(resumed)$drug$drugs[[1]], drug_create_al())
   expect_equal(sim_params(resumed)$vector_adaptation, sim_params(first)$vector_adaptation)
@@ -176,11 +177,11 @@ test_that("a resumed run continues with the saved run's parameter lists", {
 
   # the same list again is fine; a different one is an error
   same <- suppressMessages(pipeline(
-    EIR = 1, years = 1, N = 60, saved_state_path = path, num_loci = 3,
+    EIR = 1, years = 1, N = 60, saved_state_path = path, num_loci = 6,
     drug_list = sim_params(first)$drug, nmf_list = nmf_list_create(),
     housekeeping_list = quiet_housekeeping_test()
   ))
-  expect_equal(sim_params(same)$num_loci, 3)
+  expect_equal(sim_params(same)$num_loci, 6)
   expect_error(
     suppressMessages(pipeline(
       EIR = 1, years = 1, N = 60, saved_state_path = path,
@@ -204,10 +205,10 @@ test_that("a resumed run continues with the saved run's parameter lists", {
   )
   # yearly inputs are for the new years and may change
   new_plaf <- suppressMessages(pipeline(
-    EIR = 1, years = 1, N = 60, saved_state_path = path, plaf = rep(0.9, 3),
+    EIR = 1, years = 1, N = 60, saved_state_path = path, plaf = rep(0.9, 6),
     housekeeping_list = quiet_housekeeping_test()
   ))
-  expect_equal(sim_params(new_plaf)$barcode$plaf, rep(0.9, 3))
+  expect_equal(sim_params(new_plaf)$barcode$plaf, rep(0.9, 6))
 })
 
 test_that("spl_grab keeps the year 2000 in a range that ends there", {

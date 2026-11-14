@@ -27,7 +27,9 @@ validate_drug_list(x)
 \arguments{
 \item{resistance_flag}{Boolean are we simulating resistance}
 
-\item{number_of_resistance_loci}{Numeric for number of res. loci}
+\item{number_of_resistance_loci}{Numeric for number of res. loci. With
+resistance on it must be at least the number of distinct barcode
+positions the \code{drugs} name, or the list is an error.}
 
 \item{artemisinin_loci}{Numerics for barcode positions that confer artemisinin
 resistance}

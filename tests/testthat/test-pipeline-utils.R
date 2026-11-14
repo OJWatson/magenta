@@ -43,6 +43,7 @@ test_that("mu_fv_create runs the deterministic model when coverage is non-zero",
 test_that("drug_list_update switches drugs under sequential and temporal cycling", {
   dl <- drug_list_create(
     resistance_flag = TRUE, number_of_drugs = 2,
+    number_of_resistance_loci = 6, cost_of_resistance = rep(1, 6),
     drugs = list(drug_create_al(), drug_create_asaq()),
     sequential_cycling = 0.1, sequential_update = 2, partner_drug_ratios = c(1, 0)
   )
@@ -65,6 +66,7 @@ test_that("drug_list_update switches drugs under sequential and temporal cycling
 
   tc <- drug_list_create(
     resistance_flag = TRUE, number_of_drugs = 2,
+    number_of_resistance_loci = 6, cost_of_resistance = rep(1, 6),
     drugs = list(drug_create_al(), drug_create_asaq()),
     temporal_cycling = 3, partner_drug_ratios = c(1, 0)
   )
@@ -78,6 +80,7 @@ test_that("drug_list_update switches drugs under sequential and temporal cycling
   expect_equal(magenta:::drug_list_update(drug_list_create(), 1, 1)$drug_choice, 0)
   mft <- drug_list_create(
     resistance_flag = TRUE, mft_flag = TRUE, number_of_drugs = 2,
+    number_of_resistance_loci = 6, cost_of_resistance = rep(1, 6),
     drugs = list(drug_create_al(), drug_create_asaq()), temporal_cycling = 1
   )
   expect_equal(magenta:::drug_list_update(mft, 1, 1)$drug_choice, 0)

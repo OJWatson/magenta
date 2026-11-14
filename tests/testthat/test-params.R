@@ -202,6 +202,42 @@ test_that("drug_list_create builds the resistance cost table for any number of l
   )
 })
 
+test_that("drug_list_create needs a resistance locus for every drug position", {
+  # DHA-PPQ has resistance at positions 0:5; the default two loci are too few
+  expect_error(
+    drug_list_create(
+      resistance_flag = TRUE, drugs = list(drug_create_dhappq()),
+      number_of_drugs = 1, partner_drug_ratios = 1
+    ),
+    paste0(
+      "drug_list\\$number_of_resistance_loci is 2 but the drugs have resistance ",
+      "at 6 barcode positions \\(0, 1, 2, 3, 4, 5\\): set number_of_resistance_loci = 6"
+    )
+  )
+  # a flag that only switches on in a later year is checked too
+  expect_error(
+    drug_list_create(
+      resistance_flag = c(FALSE, FALSE, TRUE), drugs = list(drug_create_dhappq()),
+      number_of_drugs = 1, partner_drug_ratios = 1
+    ),
+    "set number_of_resistance_loci = 6"
+  )
+  # with resistance off the mismatch is harmless
+  off <- drug_list_create(
+    drugs = list(drug_create_dhappq()), number_of_drugs = 1, partner_drug_ratios = 1
+  )
+  expect_s3_class(off, "magenta_drug_list")
+  expect_equal(off$number_of_resistance_loci, 2)
+  expect_equal(off$resistance_loci, 0:5)
+  # and a hand-edited list is caught by the validator
+  on <- off
+  on$resistance_flag <- c(FALSE, TRUE)
+  expect_error(validate_drug_list(on), "set number_of_resistance_loci = 6")
+  on$number_of_resistance_loci <- 6
+  on$cost_of_resistance <- rep(1, 64)
+  expect_identical(validate_drug_list(on), on)
+})
+
 test_that("barcode_list_create keeps only the first mutation flag", {
   bl <- barcode_list_create(num_loci = 2, plaf = c(0.5, 0.5), mutation_flag = c(TRUE, FALSE))
   expect_identical(bl$mutation_flag, TRUE)

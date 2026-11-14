@@ -53,6 +53,9 @@
 * The fitness cost of a strain is read at every resistance locus, the last one
   included (it was skipped, and the lookup could run past the cost table), so
   resistance runs with a fitness cost differ from 1.3.x.
+* `drug_list_create()` and `validate_drug_list()` stop when resistance is on
+  in any year and `number_of_resistance_loci` is smaller than the number of
+  barcode positions the drugs name.
 
 ## magenta 1.3.8
 
