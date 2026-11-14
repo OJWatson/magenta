@@ -42,3 +42,28 @@ test_that("ibd conversion", {
   z <- test_ibd_conversion(barcode = barcode, nl = 3, ib = 4, bl = 12)
   expect_identical(z$vec, c(7, 2, 5))
 })
+
+test_that("the fitness cost is read at the resistance loci, the last one included", {
+  # three resistance loci spread along an eight-locus barcode; the cost table
+  # from drug_list_create() has bit j for the j-th locus
+  loci <- c(2, 5, 7)
+  dl <- drug_list_create(
+    number_of_resistance_loci = 3, cost_of_resistance = c(0.9, 0.8, 0.7),
+    drugs = list(drug_create(barcode_res_pos = loci))
+  )
+  expect_identical(dl$resistance_loci, loci)
+  cost <- function(mutant_at) {
+    barcode <- rep(0, 8)
+    barcode[mutant_at + 1] <- 1
+    test_relative_contribution(as.raw(barcode), 8L, loci, dl$cost_of_resistance)
+  }
+  expect_equal(cost(integer(0)), 1)
+  expect_equal(cost(2), 0.9)
+  expect_equal(cost(5), 0.8)
+  # a mutant only at the last resistance locus pays that locus's cost
+  expect_equal(cost(7), 0.7)
+  expect_equal(cost(c(2, 7)), 0.9 * 0.7)
+  expect_equal(cost(c(2, 5, 7)), 0.9 * 0.8 * 0.7)
+  # positions that are not resistance loci cost nothing
+  expect_equal(cost(c(0, 1, 3, 4, 6)), 1)
+})

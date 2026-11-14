@@ -27,6 +27,7 @@ extern SEXP _magenta_test_dependent_barcode_from_PLAF(SEXP, SEXP);
 extern SEXP _magenta_test_generate_next_ibd(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _magenta_test_ibd_conversion(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _magenta_test_recombinant_with_ibd(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _magenta_test_relative_contribution(SEXP, SEXP, SEXP, SEXP);
 extern SEXP odin_itn_irs_contents(SEXP);
 extern SEXP odin_itn_irs_create(SEXP);
 extern SEXP odin_itn_irs_initial_conditions(SEXP, SEXP);
@@ -57,6 +58,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_magenta_test_generate_next_ibd",           (DL_FUNC) &_magenta_test_generate_next_ibd,           5},
     {"_magenta_test_ibd_conversion",              (DL_FUNC) &_magenta_test_ibd_conversion,              4},
     {"_magenta_test_recombinant_with_ibd",        (DL_FUNC) &_magenta_test_recombinant_with_ibd,        6},
+    {"_magenta_test_relative_contribution",       (DL_FUNC) &_magenta_test_relative_contribution,       4},
     {"odin_itn_irs_contents",                     (DL_FUNC) &odin_itn_irs_contents,                     1},
     {"odin_itn_irs_create",                       (DL_FUNC) &odin_itn_irs_create,                       1},
     {"odin_itn_irs_initial_conditions",           (DL_FUNC) &odin_itn_irs_initial_conditions,           2},

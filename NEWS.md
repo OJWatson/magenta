@@ -50,6 +50,9 @@
   deterministic model).
 * `Person::m_cA` is initialised, so set-up-only saves no longer carry an
   uninitialised value.
+* The fitness cost of a strain is read at every resistance locus, the last one
+  included (it was skipped, and the lookup could run past the cost table), so
+  resistance runs with a fitness cost differ from 1.3.x.
 
 ## magenta 1.3.8
 

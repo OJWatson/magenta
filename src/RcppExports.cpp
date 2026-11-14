@@ -134,6 +134,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_relative_contribution
+double test_relative_contribution(SEXP barcode, unsigned int bl, Rcpp::IntegerVector resistance_loci, Rcpp::NumericVector cost_of_resistance);
+RcppExport SEXP _magenta_test_relative_contribution(SEXP barcodeSEXP, SEXP blSEXP, SEXP resistance_lociSEXP, SEXP cost_of_resistanceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type barcode(barcodeSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type bl(blSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type resistance_loci(resistance_lociSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type cost_of_resistance(cost_of_resistanceSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_relative_contribution(barcode, bl, resistance_loci, cost_of_resistance));
+    return rcpp_result_gen;
+END_RCPP
+}
 // population_get_genetics_ibd_df_n
 Rcpp::List population_get_genetics_ibd_df_n(Rcpp::List param_list);
 RcppExport SEXP _magenta_population_get_genetics_ibd_df_n(SEXP param_listSEXP) {

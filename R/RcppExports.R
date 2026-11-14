@@ -66,6 +66,10 @@ test_ibd_conversion <- function(barcode, bl, nl, ib) {
     .Call('_magenta_test_ibd_conversion', PACKAGE = 'magenta', barcode, bl, nl, ib)
 }
 
+test_relative_contribution <- function(barcode, bl, resistance_loci, cost_of_resistance) {
+    .Call('_magenta_test_relative_contribution', PACKAGE = 'magenta', barcode, bl, resistance_loci, cost_of_resistance)
+}
+
 #' Returns the population's parasite genetics for ibd style summarised by pibd for given sample size and state
 #'
 #' @param param_list param_list containing statePtr, sample_size, and sample_states
