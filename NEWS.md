@@ -59,6 +59,9 @@
 * `drug_list_create()` and `validate_drug_list()` stop when resistance is on
   in any year and `number_of_resistance_loci` is smaller than the number of
   barcode positions the drugs name.
+* The resistance flag, drug choice and partner drug ratios are applied to the
+  model at every update, so a yearly `resistance_flag` can switch off again
+  (before, only a `TRUE` reached the model).
 
 ## magenta 1.3.8
 

@@ -111,12 +111,11 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
   u_ptr->parameters.g_plaf = Rcpp::as<std::vector<double> >(spatial_list["plaf"]);
   u_ptr->parameters.g_mutation_flag = Rcpp::as<bool>(barcode_list["mutation_flag"]);
   
-  // Resistance updates
-  if (drug_list["resistance_flag"]) {
-    u_ptr->parameters.g_resistance_flag = Rcpp::as<bool>(drug_list["resistance_flag"]);
-    u_ptr->parameters.g_drug_choice = Rcpp::as<int>(drug_list["drug_choice"]);
-    u_ptr->parameters.g_partner_drug_ratios = Rcpp::as<std::vector<double> >(drug_list["partner_drug_ratios"]);
-  }
+  // Resistance updates: applied every update, so that a yearly resistance
+  // flag can switch off again and the drug in use follows the drug list
+  u_ptr->parameters.g_resistance_flag = Rcpp::as<bool>(drug_list["resistance_flag"]);
+  u_ptr->parameters.g_drug_choice = Rcpp::as<int>(drug_list["drug_choice"]);
+  u_ptr->parameters.g_partner_drug_ratios = Rcpp::as<std::vector<double> >(drug_list["partner_drug_ratios"]);
   
   u_ptr->parameters.g_cotransmission_frequencies = Rcpp::as<std::vector<int> >(spatial_list["cotransmission_freq_vector"]);
   u_ptr->parameters.g_cotransmission_frequencies_size = u_ptr->parameters.g_cotransmission_frequencies.size();
