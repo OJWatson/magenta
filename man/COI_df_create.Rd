@@ -19,17 +19,17 @@ COI_df_create(
 \arguments{
 \item{df}{Output of \code{\link{pop_strains_df}}}
 
-\item{groupvars}{Grouping vars for summarySE. 
+\item{groupvars}{Grouping vars for summarySE.
 Default = \code{c('age_bin','clinical')}}
 
-\item{breaks}{Numberic vector of age breaks. 
+\item{breaks}{Numberic vector of age breaks.
 Default = \code{c(-0.001,5,15,100.1)}}
 
 \item{barcodes}{Boolean whether to return tabled barcodes. Default = FALSE}
 
 \item{ibd}{Boolean for ibd simulations or not. Default = FALSE}
 
-\item{n}{Number of individuals to sample when creating COI data frame. 
+\item{n}{Number of individuals to sample when creating COI data frame.
 Default = Inf that means all individuals are included}
 
 \item{reps}{Numeric for number of population subsamples to make. Default = 1}

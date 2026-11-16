@@ -2,6 +2,7 @@
 % Please edit documentation in R/model_param_list_create.R
 \name{model_param_list_create}
 \alias{model_param_list_create}
+\alias{validate_model_param_list}
 \title{Model Parameter List Creation}
 \usage{
 model_param_list_create(
@@ -78,9 +79,12 @@ model_param_list_create(
   IRS_interval = 1 * DY,
   ITN_interval = 3 * DY
 )
+
+validate_model_param_list(x)
 }
 \arguments{
-\item{eta}{Death rate for expoential population distribtuion, i.e. 1/Mean Population Age. Default = 0.0001305}
+\item{eta}{Death rate for exponential population distribution, i.e. 1/Mean
+Population Age. Default = 0.0001305}
 
 \item{rho}{Age-dependent biting parameter. Default = 0.85}
 
@@ -188,7 +192,8 @@ model_param_list_create(
 
 \item{dPL}{Development time of pupae. Default = 0.643}
 
-\item{gammaL}{Relative effect of density dependence on late instars relative to early instars. Default = 13.25}
+\item{gammaL}{Relative effect of density dependence on late instars relative
+to early instars. Default = 13.25}
 
 \item{km}{Seasonal carrying capacity. Default = 11}
 
@@ -223,8 +228,20 @@ model_param_list_create(
 \item{IRS_interval}{How long before IRS is repeated, i.e. when IRS decay = 1. Default =   1 * DY}
 
 \item{ITN_interval}{How long before ITN is repeated, i.e. when IRS decay = 1.  Default =   3 * DY}
+
+\item{x}{List to validate.}
+}
+\value{
+A \code{magenta_core_params}: a list with the fields the
+  simulation and the equilibrium solution read, see \code{\link{cpp_contract}}.
 }
 \description{
 \code{model_param_list_create} creates list of model parameters to be used
 within \code{equilibrium_init_create}
+}
+\examples{
+mpl <- model_param_list_create(itn_cov = 0.3)
+mpl$cov
+mpl$itn_loss
+validate_model_param_list(mpl)
 }

@@ -26,7 +26,7 @@ sample_coi(
 
 \item{age_breaks}{Corresponding vector of age breaks for the density}
 
-\item{sub_patents_included}{Boolean as to whether subpatents are included. 
+\item{sub_patents_included}{Boolean as to whether subpatents are included.
 Default = TRUE}
 
 \item{reps}{How many samples are made}

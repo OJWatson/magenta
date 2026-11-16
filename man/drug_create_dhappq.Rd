@@ -6,6 +6,12 @@
 \usage{
 drug_create_dhappq()
 }
+\value{
+A \code{magenta_drug}, see \code{\link{drug_create}}.
+}
 \description{
 DHA-PPQ Drug Create
+}
+\examples{
+drug_create_dhappq()$lpf
 }

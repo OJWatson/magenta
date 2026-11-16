@@ -2,13 +2,18 @@
 % Please edit documentation in R/equilibrium_state_create.R
 \name{equilibrium_ss_create}
 \alias{equilibrium_ss_create}
+\alias{validate_eqss}
 \title{Equilibrium list creation}
 \usage{
 equilibrium_ss_create(eqInit)
+
+validate_eqss(x)
 }
 \arguments{
 \item{eqInit}{Equilibrium initialisation state as
 output from \code{equilibrium_init_create}}
+
+\item{x}{List to validate.}
 }
 \description{
 \code{equilibrium_ss_create} creates a starting state from

@@ -102,8 +102,7 @@ out_new <- pipeline(
   EIR = 10, N = 2000, years = 12, ft = 0.4,
   num_loci = 7, plaf = rep(0.1, 7),
   update_length = 30, update_save = TRUE,
-  human_update_save = TRUE, summary_saves_only = TRUE,
-  genetics_df_without_summarising = TRUE,
+  output = save_summary(genetics = "allele_freqs"),
   drug_list = dl_new, seed = 1L
 )
 ```
@@ -286,8 +285,7 @@ run_block <- function(va, seed = 1L) {
   out <- pipeline(EIR = 20, N = 3000, years = 12, ft = 0.6,
                   num_loci = 6, plaf = rep(0.1, 6),
                   update_length = 30, update_save = TRUE,
-                  human_update_save = TRUE, summary_saves_only = TRUE,
-                  genetics_df_without_summarising = TRUE,
+                  output = save_summary(genetics = "allele_freqs"),
                   drug_list = dl_al, vector_adaptation_list = va, seed = seed)
   p <- seq_len(length(out) - 1)
   mean(tail(unlist(lapply(out[p], "[[", "micro_2_10")), 24))

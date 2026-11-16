@@ -7,10 +7,10 @@
 seasonal_profile(admin = NULL, country = NULL)
 }
 \arguments{
-\item{admin}{Character for admin region. Some fuzzy logic will be used 
+\item{admin}{Character for admin region. Some fuzzy logic will be used
 to match. If not provided then no seasonality is introduced. Default = NULL}
 
-\item{country}{Character for country within which admin2 is in. 
+\item{country}{Character for country within which admin2 is in.
 Default = NULL}
 }
 \description{

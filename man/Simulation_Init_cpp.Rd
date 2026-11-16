@@ -15,3 +15,4 @@ list with ptr to model state and loggers describing the current model state
 \description{
 Creates initial model simulation using paramter list provided
 }
+\keyword{internal}

@@ -51,6 +51,9 @@ This includes the following vignettes:
   general introduction to the design of `magenta` and how to use it
 - [**Model output, loggers and saved state**](https://ojwatson.github.io/magenta/articles/Loggers.html):
   what a simulation returns, and how to save and restart runs
+- [**Schedules, parameters and reproducibility**](https://ojwatson.github.io/magenta/articles/Schedule.html):
+  the per-year schedule a run follows, the parameter lists and their
+  validators, the result object, and what a seed reproduces
 - [**Simulating antimalarial resistance**](https://ojwatson.github.io/magenta/articles/Resistance.html):
   resistance loci, drug definitions, prophylaxis, mutation, importation and fitness costs
 - [**Drug deployment strategies**](https://ojwatson.github.io/magenta/articles/DrugStrategies.html):
@@ -58,6 +61,9 @@ This includes the following vignettes:
 - [**Adding a new drug**](https://ojwatson.github.io/magenta/articles/NewDrugs.html):
   defining therapies the package does not ship with, worked through with
   single low-dose primaquine
+- [**Checking magenta against the deterministic model**](https://ojwatson.github.io/magenta/articles/Deterministic.html):
+  the mosquito rates under ITN/IRS and the EIR to prevalence and incidence
+  relationships compared with the deterministic model the package carries
 
 Vignettes are pre-evaluated. The editable sources are in `vignettes_src/` and are
 built into `vignettes/` with `Rscript vignettes_src/build_vignettes.R`, so that building

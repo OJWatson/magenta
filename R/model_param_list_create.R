@@ -1,10 +1,11 @@
 #------------------------------------------------
-#' Model Parameter List Creation 
+#' Model Parameter List Creation
 #'
 #' \code{model_param_list_create} creates list of model parameters to be used
 #' within \code{equilibrium_init_create}
-#' 
-#' @param eta Death rate for expoential population distribtuion, i.e. 1/Mean Population Age. Default = 0.0001305
+#'
+#' @param eta Death rate for exponential population distribution, i.e. 1/Mean
+#'   Population Age. Default = 0.0001305
 #' @param rho Age-dependent biting parameter. Default = 0.85
 #' @param a0 Age-dependent biting parameter. Default = 2920
 #' @param sigma2 Variance of the log heterogeneity in biting rates. Default = 1.67
@@ -58,7 +59,8 @@
 #' @param dEL Development time of early stage larvae. Default = 6.64
 #' @param dLL Development time of late stage larvae. Default = 3.72
 #' @param dPL Development time of pupae. Default = 0.643
-#' @param gammaL Relative effect of density dependence on late instars relative to early instars. Default = 13.25
+#' @param gammaL Relative effect of density dependence on late instars relative
+#'   to early instars. Default = 13.25
 #' @param km Seasonal carrying capacity. Default = 11
 #' @param cm Seasonal birth rate. Default = 0.05
 #' @param betaL Number of eggs laid per day per mosquito. Default = 21.2
@@ -76,10 +78,16 @@
 #' @param itn_half_life ITN half life. Default =   2.64 * DY
 #' @param IRS_interval How long before IRS is repeated, i.e. when IRS decay = 1. Default =   1 * DY
 #' @param ITN_interval How long before ITN is repeated, i.e. when IRS decay = 1.  Default =   3 * DY
-#' 
-#' 
+#'
+#'
+#' @return A \code{magenta_core_params}: a list with the fields the
+#'   simulation and the equilibrium solution read, see \code{\link{cpp_contract}}.
 #' @export
-
+#' @examples
+#' mpl <- model_param_list_create(itn_cov = 0.3)
+#' mpl$cov
+#' mpl$itn_loss
+#' validate_model_param_list(mpl)
 
 model_param_list_create <- function(
   # age, heterogeneity in exposure,
@@ -87,21 +95,21 @@ model_param_list_create <- function(
   rho = 0.85,
   a0 = 2920,
   sigma2 = 1.67,
-  max_age = 100*365,
+  max_age = 100 * 365,
   #  rate of leaving infection states
   rA = 0.00512821,
   rT = 0.2,
   rD = 0.2,
   rU = 0.00906627,
-  rP = 1/25,
+  rP = 1 / 25,
   #  human latent period and time lag from asexual parasites to
-  dE  = 12,
+  dE = 12,
   delayGam = 12.5,
   # human infectiousness to mosquitoes
-  cD  = 0.0676909,
-  cT  =  0.322 * cD,
-  cU  = 0.006203,
-  gamma1  = 1.82425,
+  cD = 0.0676909,
+  cT = 0.322 * cD,
+  cU = 0.006203,
+  gamma1 = 1.82425,
   #  Immunity reducing probability of detection
   d1 = 0.160527,
   dID = 3650,
@@ -138,7 +146,7 @@ model_param_list_create <- function(
   chi = 0.86,
   bites_Bed = 0.89,
   bites_Indoors = 0.97,
-  # larval parameters daily density dependent mortality rate of egg 
+  # larval parameters daily density dependent mortality rate of egg
   muEL = 0.0338,
   muLL = 0.0348,
   muPL = 0.249,
@@ -160,129 +168,56 @@ model_param_list_create <- function(
   r_ITN1 = 0.24,
   r_IRS0 = 0.6,
   d_IRS0 = 1,
-  irs_half_life =   0.5 * DY,
-  itn_half_life =   2.64 * DY,
-  IRS_interval =   1 * DY,
-  ITN_interval =   3 * DY
+  irs_half_life = 0.5 * DY,
+  itn_half_life = 2.64 * DY,
+  IRS_interval = 1 * DY,
+  ITN_interval = 3 * DY
+) {
+  mpl <- as.list(environment())
 
-){
-  
-  mp.list <- list()
-  
-  # duration of year
-  mp.list$DY <- DY
-  
-  # age, heterogeneity in exposure
-  mp.list$eta <- eta
-  mp.list$rho <- rho
-  mp.list$a0 <- a0
-  mp.list$sigma2 <- sigma2
-  mp.list$max_age <- max_age
-  
-  # rate of leaving infection states
-  mp.list$rA <- rA
-  mp.list$rT <- rT
-  mp.list$rD <- rD
-  mp.list$rU <- rU
-  mp.list$rP <- rP
-  
-  # human latent period and time lag from asexual parasites to
-  # infectiousness
-  mp.list$dE <- dE
-  mp.list$delayGam <- delayGam
-  
-  # infectiousness to mosquitoes
-  mp.list$cD <- cD
-  mp.list$cT <- cT
-  mp.list$cU <- cU
-  mp.list$gamma1 <- gamma1
+  # derived mosquito quantities
+  mpl$fv0 <- 1 / (tau1 + tau2)
+  mpl$av0 <- Q0 * mpl$fv0 # daily feeeding rate on humans
+  mpl$Surv0 <- exp(-mu0 * delayMos) # probability of surviving incubation period
+  mpl$p10 <- exp(-mu0 * tau1) # probability of surviving one feeding cycle
+  mpl$p2 <- exp(-mu0 * tau2) # probability of surviving one resting cycle
 
-  # Immunity reducing probability of detection
-  mp.list$d1 <- d1
-  mp.list$dID <- dID
-  mp.list$ID0 <- ID0
-  mp.list$kD <- kD
-  mp.list$uD <- uD
-  mp.list$aD <- aD
-  mp.list$fD0 <- fD0
-  mp.list$gammaD <- gammaD
-  
-  # PCR prevalence parameters
-  mp.list$alphaA <- alphaA
-  mp.list$alphaU <- alphaU
-  
-  # anti-infection immunity
-  mp.list$b0 <- b0
-  mp.list$b1 <- b1
-  mp.list$dB <- dB
-  mp.list$IB0 <- IB0
-  mp.list$kB <- kB
-  mp.list$uB <- uB
-  
-  # clinical immunity
-  mp.list$phi0 <- phi0
-  mp.list$phi1 <- phi1
-  mp.list$dCA <- dCA
-  mp.list$IC0 <- IC0
-  mp.list$kC <- kC
-  mp.list$uCA <- uCA
-  mp.list$PM <- PM
-  mp.list$dCM <- dCM
-  
-  # entomological parameters
-  mp.list$delayMos <- delayMos
-  mp.list$tau1 <- tau1
-  mp.list$tau2 <- tau2
-  mp.list$mu0 <- mu0
-  mp.list$Q0 <- Q0
-  mp.list$chi <- chi
-  mp.list$bites_Bed <- bites_Bed
-  mp.list$bites_Indoors <- bites_Indoors
-  mp.list$fv0 <- 1 / (tau1 + tau2)
-  mp.list$av0 <- Q0 * mp.list$fv0 # daily feeeding rate on humans
-  mp.list$Surv0 <- exp(-mu0 * delayMos) # probability of surviving incubation period
-  mp.list$p10 <- exp(-mu0 * tau1)  # probability of surviving one feeding cycle
-  mp.list$p2 <- exp(-mu0 * tau2)  # probability of surviving one resting cycle
-  
-  # larval parameters
-  mp.list$muEL <- muEL
-  mp.list$muLL <- muLL
-  mp.list$muPL <- muPL
-  mp.list$dEL <- dEL
-  mp.list$dLL <- dLL
-  mp.list$dPL <- dPL
-  mp.list$gammaL <- gammaL
-  mp.list$km <- km
-  mp.list$cm <- cm
-  mp.list$betaL <- betaL
-  # {White et al. 2011 Parasites and Vectors}
-  mp.list$eov <- betaL/mu0 * (exp(mu0/mp.list$fv0) - 1)
-  mp.list$b_lambda <- (gammaL * muLL/muEL - dEL/dLL + (gammaL - 1) * muLL * dEL)
-  mp.list$lambda <- -0.5 * mp.list$b_lambda + sqrt(0.25 * mp.list$b_lambda^2 + gammaL * betaL * muLL * dEL/(2 * muEL * mu0 * dLL * (1 + dPL * muPL)))
-  
-  # ITN/IRS parameters
-  mp.list$num_int <- num_int
-  mp.list$itn_cov <- itn_cov
-  mp.list$irs_cov <- irs_cov
-  mp.list$ITN_IRS_on <- ITN_IRS_on
-  mp.list$pop_split <- rep(1/num_int, num_int)
-  
+  # derived larval quantities {White et al. 2011 Parasites and Vectors}
+  mpl$eov <- betaL / mu0 * (exp(mu0 / mpl$fv0) - 1)
+  mpl$b_lambda <- (gammaL * muLL / muEL - dEL / dLL + (gammaL - 1) * muLL * dEL)
+  mpl$lambda <- -0.5 * mpl$b_lambda +
+    sqrt(0.25 * mpl$b_lambda^2 +
+      gammaL * betaL * muLL * dEL / (2 * muEL * mu0 * dLL * (1 + dPL * muPL)))
+
+  # derived intervention quantities
+  mpl$pop_split <- rep(1 / num_int, num_int)
   # {No intervention} {ITN only} {IRS only} {Both ITN and IRS}
-  mp.list$cov <- c((1 - itn_cov) * (1 - irs_cov), itn_cov * (1 - irs_cov), (1 - itn_cov) * irs_cov, itn_cov * irs_cov)
-  mp.list$d_ITN0 <- d_ITN0
-  mp.list$r_ITN0 <- r_ITN0
-  mp.list$r_ITN1 <- r_ITN1
-  mp.list$r_IRS0 <- r_IRS0
-  mp.list$d_IRS0 <- d_IRS0
-  mp.list$irs_half_life <- irs_half_life
-  mp.list$itn_half_life <- itn_half_life 
-  mp.list$IRS_interval <- IRS_interval
-  mp.list$ITN_interval <- ITN_interval
-  mp.list$irs_half_life <- 0.5 * mp.list$DY
-  mp.list$itn_half_life <- 2.64 * mp.list$DY
-  mp.list$irs_loss <- log(2)/mp.list$irs_half_life
-  mp.list$itn_loss <- log(2)/mp.list$itn_half_life
+  mpl$cov <- c(
+    (1 - itn_cov) * (1 - irs_cov), itn_cov * (1 - irs_cov),
+    (1 - itn_cov) * irs_cov, itn_cov * irs_cov
+  )
+  mpl$irs_loss <- log(2) / irs_half_life
+  mpl$itn_loss <- log(2) / itn_half_life
 
-  
-  return(mp.list)
+  # order the fields as the contract lists them
+  mpl <- mpl[cpp_contract$core$fields]
+  validate_model_param_list(new_param_list(mpl, "magenta_core_params"))
+}
+
+#' @rdname model_param_list_create
+#' @param x List to validate.
+#' @export
+validate_model_param_list <- function(x) {
+  what <- "model_param_list"
+  check_fields(x, cpp_contract$core, what)
+  vectors <- c("pop_split", "cov")
+  for (field in setdiff(cpp_contract$core$fields, vectors)) {
+    check_number(x[[field]], paste0(what, "$", field))
+  }
+  for (field in c("itn_cov", "irs_cov")) {
+    check_number(x[[field]], paste0(what, "$", field), min = 0, max = 1)
+  }
+  check_number(x$pop_split, paste0(what, "$pop_split"), min = 0, max = 1, n = x$num_int)
+  check_number(x$cov, paste0(what, "$cov"), min = 0, max = 1, n = 4)
+  invisible(x)
 }

@@ -5,7 +5,7 @@
 #'
 #' @param param_list parameter list generated with \code{param_list_simulation_finalizer_create}
 #' @return list of 1 confirming finalizer has finished
-#' @export
+#' @keywords internal
 Simulation_Finalizer_cpp <- function(param_list) {
     .Call('_magenta_Simulation_Finalizer_cpp', PACKAGE = 'magenta', param_list)
 }
@@ -14,7 +14,7 @@ Simulation_Finalizer_cpp <- function(param_list) {
 #'
 #' @param param_list parameter list generated with \code{Param_List_Simulation_Get_Create}
 #' @return list of 4 lists with the entire model state
-#' @export
+#' @keywords internal
 Simulation_Get_cpp <- function(param_list) {
     .Call('_magenta_Simulation_Get_cpp', PACKAGE = 'magenta', param_list)
 }
@@ -23,7 +23,7 @@ Simulation_Get_cpp <- function(param_list) {
 #'
 #' @param param_list parameter list generated with \code{Param_List_Simulation_Init_Create}
 #' @return list with ptr to model state and loggers describing the current model state
-#' @export
+#' @keywords internal
 Simulation_Init_cpp <- function(param_list) {
     .Call('_magenta_Simulation_Init_cpp', PACKAGE = 'magenta', param_list)
 }
@@ -32,7 +32,7 @@ Simulation_Init_cpp <- function(param_list) {
 #'
 #' @param param_list parameter list generated with \code{Param_List_Simulation_Get_Create}
 #' @return list with ptr to model state and loggers describing the current model state
-#' @export
+#' @keywords internal
 Simulation_Saved_Init_cpp <- function(param_list) {
     .Call('_magenta_Simulation_Saved_Init_cpp', PACKAGE = 'magenta', param_list)
 }
@@ -41,7 +41,7 @@ Simulation_Saved_Init_cpp <- function(param_list) {
 #'
 #' @param param_list parameter list generated with \code{Param_List_Simulation_Update_Create}
 #' @return list with ptr to model state and loggers describing the current model state
-#' @export
+#' @keywords internal
 Simulation_Update_cpp <- function(param_list) {
     .Call('_magenta_Simulation_Update_cpp', PACKAGE = 'magenta', param_list)
 }
@@ -66,11 +66,15 @@ test_ibd_conversion <- function(barcode, bl, nl, ib) {
     .Call('_magenta_test_ibd_conversion', PACKAGE = 'magenta', barcode, bl, nl, ib)
 }
 
+test_relative_contribution <- function(barcode, bl, resistance_loci, cost_of_resistance) {
+    .Call('_magenta_test_relative_contribution', PACKAGE = 'magenta', barcode, bl, resistance_loci, cost_of_resistance)
+}
+
 #' Returns the population's parasite genetics for ibd style summarised by pibd for given sample size and state
 #'
 #' @param param_list param_list containing statePtr, sample_size, and sample_states
 #' @return list of population information
-#' @export
+#' @keywords internal
 population_get_genetics_ibd_df_n <- function(param_list) {
     .Call('_magenta_population_get_genetics_ibd_df_n', PACKAGE = 'magenta', param_list)
 }
@@ -79,7 +83,7 @@ population_get_genetics_ibd_df_n <- function(param_list) {
 #'
 #' @param param_list param_list containing statePtr, sample_size, and sample_states
 #' @return list of population information
-#' @export
+#' @keywords internal
 population_get_genetics_df_n <- function(param_list) {
     .Call('_magenta_population_get_genetics_df_n', PACKAGE = 'magenta', param_list)
 }

@@ -47,7 +47,7 @@ struct Universe {
 //'
 //' @param param_list parameter list generated with \code{Param_List_Simulation_Get_Create}
 //' @return list with ptr to model state and loggers describing the current model state
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
 {
@@ -523,6 +523,28 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   std::vector<int> IB_last_calculated_time = Rcpp::as<vector<int> >(population_List["IB_last_calculated_time"]);
   std::vector<int> I_C_D_CM_last_calculated_time = Rcpp::as<vector<int> >(population_List["I_C_D_CM_last_calculated_time"]);
   std::vector<double> Immunity_boost_float = Rcpp::as<vector<double> >(population_List["Immunity_boost_float"]);
+
+  // The starting maternal immunity, which m_ICM decays from whenever it is
+  // recomputed. Saves from before 1.4.0 do not hold it, so it is rebuilt from
+  // the saved m_ICM and the age at which that was last computed, which inverts
+  // m_ICM = m_ICM_init * exp(-age / g_dCM) exactly up to rounding wherever
+  // m_ICM has not underflowed; for anyone it has (far beyond the age at which
+  // maternal immunity matters) the birth formula with today's mean maternal
+  // immunity is used instead, so the value is never left uninitialised.
+  std::vector<double> ICM_init_v(ICM_v.size());
+  if (population_List.containsElementNamed("ICM_init")) {
+    ICM_init_v = Rcpp::as<vector<double> >(population_List["ICM_init"]);
+  } else {
+    for (unsigned int n = 0; n < ICM_v.size(); n++) {
+      double age_at_last_calculation = Ages_v[n] - (parameters.g_current_time - I_C_D_CM_last_calculated_time[n]);
+      double exponent = age_at_last_calculation / parameters.g_dCM;
+      if (ICM_v[n] > 0.0 && exponent < 700.0) {
+        ICM_init_v[n] = ICM_v[n] * exp(exponent);
+      } else {
+        ICM_init_v[n] = parameters.g_PM * parameters.g_mean_maternal_immunity * Zetas[n];
+      }
+    }
+  }
   
   std::vector<int> Day_of_InfectionStatus_change = Rcpp::as<vector<int> >(populations_event_and_strains_List["Day_of_InfectionStatus_change"]);
   std::vector<int> Day_of_strain_clearance = Rcpp::as<vector<int> >(populations_event_and_strains_List["Day_of_strain_clearance"]);
@@ -603,6 +625,7 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     population[n].set_m_IB(IB_v[n]);
     population[n].set_m_ICA(ICA_v[n]);
     population[n].set_m_ICM(ICM_v[n]);
+    population[n].set_m_ICM_init(ICM_init_v[n]);
     population[n].set_m_ID(ID_v[n]);
     population[n].set_m_cA(cA_v[n]);
 

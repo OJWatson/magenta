@@ -39,3 +39,4 @@ will result in rep(1/3,floor(years*365))}
 \code{simulation_R} for continuing a simulation from memory within the active
 session.
 }
+\keyword{internal}

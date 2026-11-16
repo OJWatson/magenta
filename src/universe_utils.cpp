@@ -26,7 +26,7 @@ double q_fun(const Parameters &parms, unsigned int age, double ID) {
 //'
 //' @param param_list param_list containing statePtr, sample_size, and sample_states
 //' @return list of population information
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 Rcpp::List population_get_genetics_ibd_df_n(Rcpp::List param_list) {
   
@@ -212,7 +212,7 @@ Rcpp::List population_get_genetics_ibd_df_n(Rcpp::List param_list) {
 //'
 //' @param param_list param_list containing statePtr, sample_size, and sample_states
 //' @return list of population information
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 Rcpp::List population_get_genetics_df_n(Rcpp::List param_list) {
   

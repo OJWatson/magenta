@@ -2,6 +2,7 @@
 % Please edit documentation in R/pipeline_param_lists.R
 \name{drug_list_create}
 \alias{drug_list_create}
+\alias{validate_drug_list}
 \title{Create drug list}
 \usage{
 drug_list_create(
@@ -20,25 +21,29 @@ drug_list_create(
   drug_choice = 0,
   partner_drug_ratios = rep(1/number_of_drugs, number_of_drugs)
 )
+
+validate_drug_list(x)
 }
 \arguments{
 \item{resistance_flag}{Boolean are we simulating resistance}
 
-\item{number_of_resistance_loci}{Numeric for number of res. loci}
+\item{number_of_resistance_loci}{Numeric for number of res. loci. With
+resistance on it must be at least the number of distinct barcode
+positions the \code{drugs} name, or the list is an error.}
 
-\item{artemisinin_loci}{Numerics for barcode positions that confer artemisinin 
+\item{artemisinin_loci}{Numerics for barcode positions that confer artemisinin
 resistance}
 
 \item{cost_of_resistance}{Numeric vector for fitness cost of each resistance loci.}
 
 \item{absolute_fitness_cost_flag}{Boolean are we simulating fitness costs as
 absolute (i.e. impactive onward transmission chance) or relative (resistant
-strains have decreases chance of being onwardly transmitted in mixed 
+strains have decreases chance of being onwardly transmitted in mixed
 infections). Default = FALSE.}
 
-\item{epistatic_logic}{Is there compensatory relationships. i.e. what loci 
-need to be true for resistance cost to exist. Default of NULL means that 
-this becomes seq_len(number_of_resistance_loci), i.e. only dependent on 
+\item{epistatic_logic}{Is there compensatory relationships. i.e. what loci
+need to be true for resistance cost to exist. Default of NULL means that
+this becomes seq_len(number_of_resistance_loci), i.e. only dependent on
 their own loci. (TODO: Change this to be a list of length norl)}
 
 \item{number_of_drugs}{Numeric for number of drugs used}
@@ -57,7 +62,26 @@ created by \code{drug_create}.}
 \item{drug_choice}{What's the default drug choice to begin. Default = 0}
 
 \item{partner_drug_ratios}{Numeric vector for ratio of first line drugs used}
+
+\item{x}{List to validate.}
+}
+\value{
+A \code{magenta_drug_list}: a list with the fields the simulation
+  reads, see \code{\link{cpp_contract}}.
 }
 \description{
 List for simulating drug usage for resistance/mft variables
+}
+\examples{
+# a single, fully effective drug with no resistance (the default)
+drug_list_create()
+
+# artemether-lumefantrine with resistance at six loci and a fitness cost
+dl <- drug_list_create(
+  resistance_flag = TRUE, number_of_resistance_loci = 6,
+  cost_of_resistance = rep(0.99, 6), drugs = list(drug_create_al()),
+  number_of_drugs = 1, partner_drug_ratios = 1
+)
+dl$resistance_loci
+validate_drug_list(dl)
 }

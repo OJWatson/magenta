@@ -6,8 +6,8 @@
 \alias{magenta}
 \title{magenta: Individual-based simulation model of malaria epidemiology and genomics.}
 \description{
-magenta is an individual-based simulation model of malaria epidemiology and genomics. 
-magenta extends the imperial malaria model by tracking the infection history of individuals. 
+magenta is an individual-based simulation model of malaria epidemiology and genomics.
+magenta extends the imperial malaria model by tracking the infection history of individuals.
 With this additional genetic characteristics of the parasite can be assessed.
 }
 \seealso{
@@ -20,6 +20,11 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: OJ Watson \email{o.watson@imperial.ac.uk} (\href{https://orcid.org/0000-0003-2374-0741}{ORCID})
+
+Authors:
+\itemize{
+  \item OJ Watson \email{o.watson@imperial.ac.uk} (\href{https://orcid.org/0000-0003-2374-0741}{ORCID})
+}
 
 }
 \keyword{internal}

@@ -66,7 +66,9 @@ boost::dynamic_bitset<> Strain::temp_crossovers(Parameters::g_num_loci);
 
 // Work out the strain's relative onward contribution given the fitness costs in the parameters object
 double Strain::relative_contribution(const Parameters &parameters){
-  return(parameters.g_cost_of_resistance[to_ulong_range(parameters.g_resistance_loci[0],parameters.g_resistance_loci.back())]);
+  // the cost table is indexed by the bits at the resistance loci, bit j being
+  // the j-th locus, which is how drug_list_create() builds it
+  return(parameters.g_cost_of_resistance[bitset_positions_to_ulong(parameters.g_resistance_loci)]);
 }
 
 // Work out if the strain caused late parasitological failure
@@ -89,20 +91,6 @@ bool Strain::resistant_boolean(const Parameters &parameters, int drug_choice){
 // Get barcode position
 bool Strain::barcode_position(unsigned int position){
   return(m_barcode[position]);
-}
-
-// to_ulong but for range within a bitset
-unsigned long Strain::to_ulong_range(unsigned int start_bit, unsigned int end_bit){
-  
-unsigned long mask = 1;
-unsigned long result = 0;
-for (;start_bit < end_bit; ++ start_bit) {
-  if (m_barcode[start_bit])
-    result |= mask;
-  mask <<= 1;
-}
-return result;
-
 }
 
 // to_ulong but for positions in a bitset
@@ -610,4 +598,16 @@ Rcpp::List test_ibd_conversion(SEXP barcode, unsigned int bl,
 }
 
 
-// add test for to_ulong_range
+// fitness cost lookup test
+// [[Rcpp::export]]
+double test_relative_contribution(SEXP barcode, unsigned int bl,
+                                  Rcpp::IntegerVector resistance_loci,
+                                  Rcpp::NumericVector cost_of_resistance)
+{
+  Parameters::g_barcode_length = bl;
+  Parameters parameters;
+  parameters.g_resistance_loci = Rcpp::as<std::vector<unsigned int> >(resistance_loci);
+  parameters.g_cost_of_resistance = Rcpp::as<std::vector<double> >(cost_of_resistance);
+  Strain strain(sexp_to_bitset(barcode, bl));
+  return(strain.relative_contribution(parameters));
+}

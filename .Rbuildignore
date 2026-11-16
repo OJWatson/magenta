@@ -4,7 +4,7 @@ TODO.txt
 ^scripts$
 .travis.yml
 .github
-Results
+^Results/
 plots
 ^Results$
 ^plots$
@@ -32,3 +32,7 @@ docs
 submission_data
 ^\.github$
 ^\.claude$
+^R_CODE_REVIEW\.md$
+^\.lintr$
+^\.git$
+^tests/testthat/testthat-problems\.rds$

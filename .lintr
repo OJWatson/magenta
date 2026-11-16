@@ -1,0 +1,22 @@
+linters: linters_with_defaults(
+    line_length_linter(100),
+    object_name_linter = NULL,
+    object_length_linter(length = 45L),
+    commented_code_linter = NULL,
+    indentation_linter = NULL,
+    return_linter = NULL,
+    pipe_consistency_linter = NULL
+  )
+exclusions: list(
+    "R/RcppExports.R",
+    "R/cluster_utils.R",
+    "R/plotting.R",
+    "R/odin.R",
+    "tests/testthat.R",
+    "inst/extdata/odin_itn_irs.R",
+    "data-raw",
+    "scripts",
+    "vignettes",
+    "vignettes_src"
+  )
+encoding: "UTF-8"

@@ -2,6 +2,7 @@
 % Please edit documentation in R/pipeline_param_lists.R
 \name{housekeeping_list_create}
 \alias{housekeeping_list_create}
+\alias{validate_housekeeping_list}
 \title{Create housekeeping parameter list}
 \usage{
 housekeeping_list_create(
@@ -10,6 +11,8 @@ housekeeping_list_create(
   cluster = FALSE,
   clear_up = TRUE
 )
+
+validate_housekeeping_list(x)
 }
 \arguments{
 \item{quiet}{Boolean for quiet simulation. Default = TRUE}
@@ -18,9 +21,20 @@ housekeeping_list_create(
 
 \item{cluster}{Boolean for simulation being on cluster. Default = TRUE}
 
-\item{clear_up}{Boolean for whether to clear up the memory used by the 
+\item{clear_up}{Boolean for whether to clear up the memory used by the
 simulation. Default = TRUE}
+
+\item{x}{List to validate.}
+}
+\value{
+A \code{magenta_housekeeping_list}: a list with the fields the
+  simulation reads, see \code{\link{cpp_contract}}.
 }
 \description{
 List for simulation housekeeping vars, e.g. quiet prints,
+}
+\examples{
+hk <- housekeeping_list_create(quiet = TRUE, cluster = FALSE)
+hk
+validate_housekeeping_list(hk)
 }

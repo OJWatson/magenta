@@ -56,9 +56,10 @@ For example to run the model for 10 years at an EIR of 1 and no seasonality for 
 out1 <- pipeline(EIR = 1, years = 10, N = 10000)
 ```
 
-By default, magenta will run the simulation for the entire duration and return a few summaries of the human population at the end of the 10 years, which are stored within the `Loggers` list in `out`. For example, the human proportions in each infection state are the last 6 elements in `Loggers`. 
+By default, magenta will run the simulation for the entire duration and return a few summaries of the human population at the end of the 10 years, which are stored within the `Loggers` list in `out1`. (The returned object also carries the parameters, the schedule and the metadata of the run as attributes, see below.) For example, the human proportions in each infection state are the last 6 elements in `Loggers`. 
 
 ```{r out-info}
+out1
 as.data.frame(tail(out1$Loggers, 6))
 ```
 
@@ -72,7 +73,7 @@ out2 <- pipeline(EIR = 1, years = 10, N = 10000,
                  seed = 123456789L)
 ```
 
-When doing `update_save` we now get a progress bar for the simulation and the returned object `out` is now a list where each the first n-1 elements are unnamed lists and are the saved information at each month. (The last element contains the pointer to the simulation, which allows us to carry on the simulation if needed.) For example to plot the size of the susceptible proportion over time:
+When doing `update_save` we now get a progress bar for the simulation and `out2` is now a list where the first n-1 elements are unnamed lists and are the saved information at each month. (The last element contains the loggers at the end of the run, or the full model state if asked for, which allows us to carry on the simulation if needed.) For example to plot the size of the susceptible proportion over time:
 
 ```{r updated-out-S, fig.height=5, fig.width=7}
 S <- unlist(lapply(out2[1:(length(out2) - 1)], "[[", "S"))
@@ -81,22 +82,28 @@ plot(time, S)
 abline(v = 1000, col = "red")
 ```
 
+`as.data.frame()` gives the same thing as a table, one row per interval, which is usually the quickest way to plot the loggers over time:
+
+```{r updated-out-df}
+head(as.data.frame(out2))
+```
+
 `magenta` starts simulations close to the equilibrium solution, but it is not quite perfect. For example, in the above plot there is a burn in period before the red vertical line. The required burn in time varies depending on the simulation parameters and so it is best to run the model a few times first to work out a suitable burn in time. For most simulations though a 40 year burn in period is more than sufficient. 
 
-In the last simulation run, the random seed was provided, which is used to allow simulations to be able to be run reproducibly. To assist this, the function call and package version are stored with each simulation run as an attribute `meta`. 
+In the last simulation run, the random seed was provided, which is used to allow simulations to be able to be run reproducibly. To assist this, the function call and package version are stored with each simulation run in its `meta` attribute, read with `sim_meta()`. 
 
 ```{r meta-out}
-meta <- attr(out2, "meta")
+meta <- sim_meta(out2)
 print(meta$call)
 print(meta$version)
 ```
 
-`magenta` primarily characterises parasite populations in terms of a genetic barcode, in which the barcode is a vector of bits representing whether the parasite possesses the major or minor allele at the loci of interest. By default the barcode used is 24 bases long. To see what this looks like, we can request for magenta to return the human population rather than the `Loggers` as the last list element.
+`magenta` primarily characterises parasite populations in terms of a genetic barcode, in which the barcode is a vector of bits representing whether the parasite possesses the major or minor allele at the loci of interest. By default the barcode used is 24 bases long. To see what this looks like, we can request for magenta to return the human population rather than the `Loggers` as the last list element. What is kept at each interval, and in the final element, is chosen through the `output` argument, which takes a *saver*; here the default `save_loggers()` with `final = "humans"`.
 
 ```{r update-out-with-human-save, results = 'hold'}
 out3 <- pipeline(EIR = 1, years = 10, N = 10000, 
                  update_save = TRUE, update_length = 30, 
-                 human_only_full_save = TRUE, 
+                 output = save_loggers(final = "humans"), 
                  seed = 123456789L)
 ```
 
@@ -111,18 +118,19 @@ Again we return the infection states of the humans, but also their individual bi
 ```{r first-infected-individual}
 # last element
 n <- length(out3)
+last <- out3[[n]]
 
 # first individual who is infected, i.e. not in states S or P (order goes S, D, A, U, T, P) 
-i <- which.min(out3[[n]]$Infection_States %in% c(0, 5))
-out3[[n]]$Strain_barcode_vectors[i]
+i <- which.min(last$Infection_States %in% c(0, 5))
+last$Strain_barcode_vectors[i]
 
 ```
 
 Above we have found the first individual who is infected and returned the barcodes for each parasite strain the individual has. For example, this individual had one parasite strain, as only one parasite barcode is returned. We can then look at the distribution of parasite strains in the population, for example, against their individual biting rate. 
 
 ```{r all-infected-individual, fig.height=5, fig.width=7}
-zetas <- out3[[n]]$Zetas
-n_strains <- unlist(lapply(out3[[n]]$Strain_infection_state_vectors,length))
+zetas <- last$Zetas
+n_strains <- unlist(lapply(last$Strain_infection_state_vectors,length))
 plot(zetas, n_strains, log = "x", ylab = "Number of Strains")
 ```
 
@@ -132,15 +140,15 @@ With the parasite barcode information we can work out what an individual's compl
 
 m <- which.max(n_strains)
 message("Individual ", m, " has ", n_strains[m], " strains")
-un <- length(unique(out3[[n]]$Strain_barcode_vectors[[m]]))
+un <- length(unique(last$Strain_barcode_vectors[[m]]))
 message("Individual ", m, " has ", un, " unique strains")
 
 ```
 The reason we also return the age and the detection immunity, `ID`, is that these are useful for when we want to estimate the COI in terms of what strains are likely to be observed based on their parasitaemia, which is inferred by their detection immunity, `ID`. These can be estimated using `convert_barcode_vectors` as follows, which below is used to show the COI of parsaites that have sufficiently high parasite density to be detected by microscopy if that was the only parasite strain in the infection. 
 
 ```{r convert-barcode-vectors, fig.height=5, fig.width=7}
-cois <- convert_barcode_vectors(out3[[n]], 
-                                out3[[n]]$ID, 
+cois <- convert_barcode_vectors(last, 
+                                last$ID, 
                                 sub_patents_included = FALSE, 
                                 COI_type = "patent")
 
@@ -154,7 +162,7 @@ We can also request magenta to return all the information about the human and mo
 ```{r update-out-with-human-and-mosquito, results = 'hold'}
 out4 <- pipeline(EIR = 1, years = 10, N = 10000, 
                  update_save = TRUE, update_length = 30, 
-                 full_save = TRUE, 
+                 output = save_loggers(final = "full"), 
                  seed = 123456789L)
 names(out4[[n]])
 ```
@@ -171,26 +179,22 @@ The above 4 lists are sufficient for restarting a simulation and can thus be use
 
 `magenta` was initially designed for simulating neutral variation and looking at patterns in COI and parasite diversity. As a result, there are a number of options for saving summaries of the within-host parasite genetic diversity at each update length. 
 
-Previously, we were only saving the human population's parasites in the n-1 element. We can instead save the human population's parasites at each update with `human_update_save`: 
+Previously, we were only saving the human population's parasites in the final element. We can instead save the human population's parasites at each update with `save_humans()`: 
 
 ```{r human-update-saves, results = 'hold'}
 out5 <- pipeline(EIR = 1, years = 10, N = 10000, 
                  update_save = TRUE, update_length = 30, 
-                 human_update_save = TRUE, 
-                 summary_saves_only = FALSE,
-                 full_save = TRUE, 
+                 output = save_humans(final = "full"), 
                  seed = 123456789L)
 
 ```
 
-From this we could then calculate the population COI at each monthly interval amongst other genetic traits. However, saving all this information to file quickly takes up a lot of memory. Instead, we can request for the information to be summarised using `summary_saves_only`:
+From this we could then calculate the population COI at each monthly interval amongst other genetic traits. However, saving all this information to file quickly takes up a lot of memory. Instead, we can request for the information to be summarised using `save_summary()`:
 
 ```{r coi-summary-saves, results = 'hold'}
 out6 <- pipeline(EIR = 1, years = 10, N = 10000, 
                  update_save = TRUE, update_length = 30, 
-                 human_update_save = TRUE, 
-                 summary_saves_only = TRUE,
-                 full_save = TRUE, 
+                 output = save_summary(final = "full"), 
                  seed = 123456789L)
 
 ```
@@ -226,9 +230,7 @@ out7 <- pipeline(EIR = 1, years = 10, N = 10000,
                  plaf = c(rep(0.1, 32), rep(0.9, 32)),
                  update_save = TRUE, 
                  update_length = 30, 
-                 human_update_save = TRUE, 
-                 summary_saves_only = TRUE,
-                 full_save = TRUE, 
+                 output = save_summary(final = "full"), 
                  seed = 123456789L)
 
 ```
@@ -240,23 +242,21 @@ plafs <- do.call(rbind,lapply(out7[pos], function(x) {x$barcode_freq}))
 lattice::levelplot(plafs, xlab = "Time", ylab = "loci")
 ```
 
-We can also change how we summarise the simulation at each interval. This can be done in a couple of ways. The first is by altering the age and states:
+We can also change how we summarise the simulation at each interval. This can be done in a couple of ways. The first is by altering the age and states through the arguments of `save_summary()`:
 
 ```{r coi-summary-saves-different-age, results = 'hold'}
 out8 <- pipeline(EIR = 1, years = 10, N = 10000, 
-                 age_breaks = c(-0.1,5,10,15,20,100), 
-                 sample_states = c(1:4),
                  update_save = TRUE, 
                  update_length = 30, 
-                 human_update_save = TRUE, 
-                 summary_saves_only = TRUE,
-                 full_save = TRUE, 
+                 output = save_summary(age_breaks = c(-0.1,5,10,15,20,100), 
+                                       sample_states = c(1:4),
+                                       final = "full"), 
                  seed = 123456789L)
 
 out8[[1]]$summary_coi
 ```
 
-The next is by providing your own update function as `update_save_func`. Have a look at the code for `update_saves` to see the style required. 
+The next is by passing your own function as `output`. See the [model output vignette](Loggers.html) for the signature required. 
 
 ### Interventions
 
@@ -271,9 +271,8 @@ out9 <- pipeline(EIR = 4, years = 20, N = 10000,
                  update_length = 30, 
                  seed = 123456789L)
 
-infected_mosquitoes <- unlist(lapply(out9, function(x) {x$Mosquitoes$Mos_I}))
-time <- unlist(lapply(out9, function(x) {x$Time}))/365
-plot(time, infected_mosquitoes, xlab = "Time (Years)", ylab = "Infected Mosquitoes")
+df9 <- as.data.frame(out9)
+plot(df9$Time / 365, df9$Mos_I, xlab = "Time (Years)", ylab = "Infected Mosquitoes")
 abline(v = 10)
 
 ```
@@ -291,9 +290,7 @@ out10 <- pipeline(EIR = 1,
                  num_loci = 4, 
                  update_save = TRUE, 
                  update_length = 30, 
-                 human_update_save = TRUE, 
-                 summary_saves_only = TRUE,
-                 full_save = TRUE, 
+                 output = save_summary(final = "full"), 
                  seed = 123456789L)
 
 ```
@@ -318,9 +315,7 @@ out11 <- pipeline(EIR = 1,
                  num_loci = 4, 
                  update_save = TRUE, 
                  update_length = 30, 
-                 human_update_save = TRUE, 
-                 summary_saves_only = TRUE,
-                 full_save = TRUE, 
+                 output = save_summary(final = "full"), 
                  seed = 123456789L)
 
 pos <- 1:(length(out11) - 1)
@@ -375,11 +370,9 @@ out12 <- pipeline(
   spatial_incidence_matrix = spl$incidence,
   spatial_mosquitoFOI_matrix = spl$mosquitoFOI,
   spatial_type = "island",
-  human_only_full_save = TRUE,
   update_length = 30,
   update_save = TRUE,
-  human_update_save = FALSE,
-  summary_saves_only = FALSE,
+  output = save_loggers(final = "humans")
 )
 
 # Grab the microscopy prevalence over time in 2-10s
@@ -418,11 +411,6 @@ out13 <- pipeline(EIR = 1,
                   ibd_length = 20, 
                   num_loci = 24,
                   set_up_only = TRUE,
-                  update_save = TRUE, 
-                  update_length = 30, 
-                  human_update_save = TRUE, 
-                  summary_saves_only = TRUE,
-                  full_save = TRUE, 
                   seed = 123456789L)
 
 names(out13)
@@ -469,9 +457,7 @@ out14 <- pipeline(EIR = 1,
                   spatial_mosquitoFOI_matrix = 0.2,
                   update_save = TRUE, 
                   update_length = 30, 
-                  human_update_save = TRUE, 
-                  summary_saves_only = TRUE,
-                  full_save = TRUE, 
+                  output = save_summary(final = "full"), 
                   seed = 123456789L)
 
 l <- length(out14)

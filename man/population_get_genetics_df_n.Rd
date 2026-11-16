@@ -15,3 +15,4 @@ list of population information
 \description{
 Returns the population's parasite genetics summarised by coi for given sample size and state
 }
+\keyword{internal}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pipeline_utils.R
 \name{mu_fv_create}
 \alias{mu_fv_create}
-\title{Create mosquito death and feeding vector}
+\title{Mosquito death and feeding rates for a run}
 \usage{
 mu_fv_create(
   eqInit,
@@ -12,30 +12,38 @@ mu_fv_create(
   years,
   int_times = NULL,
   full = FALSE,
-  odin_model = system.file("extdata/odin_itn_irs.R", package = "magenta")
+  odin_model = NULL
 )
 }
 \arguments{
-\item{eqInit}{Equilibrium Inititial Conditions}
+\item{eqInit}{Output of \code{\link{equilibrium_init_create}}.}
 
-\item{ft}{Annual Treatment Coverage vector}
+\item{ft}{Treatment seeking, one value per year.}
 
-\item{itn_cov}{Annual ITN Coverage vector}
+\item{itn_cov, irs_cov}{Bed net and spraying coverage, one value per year.}
 
-\item{irs_cov}{Annual IRS Coverage vector}
+\item{years}{Length of the simulation in years.}
 
-\item{years}{Numeric for total years}
+\item{int_times}{Days at which the yearly values start; see
+\code{\link{mu_fv_from_coverage}}.}
 
-\item{int_times}{Timing of intervention changes. Default = NULL, which will 
-assume they are 365 days apart}
+\item{full}{Run the deterministic model and return all of its output.
+Default = FALSE}
 
-\item{full}{Boolean to return the whole deterministic output or just mosquito
-death rate and anthrophagy. Default = FALSE}
-
-\item{odin_model}{File path to odin model file. Default is the itns and irs
-model included with magenta.}
+\item{odin_model}{Unused; kept for compatibility.}
+}
+\value{
+With \code{full = FALSE}, a data frame with a row per day and
+  columns \code{mu} and \code{fv}; otherwise the list of model outputs
+  from \code{\link{run_deterministic_model}}.
 }
 \description{
-Grabs spatial incidence and mosquitoFOI vector from database
+The daily mosquito death rate \code{mu} and feeding rate \code{fv} under
+the run's bed net and spraying coverage, which the simulation reads day by
+day. Both come from the intervention block of the deterministic model and
+depend on nothing but the coverage and the parameters, so they are
+evaluated directly by \code{\link{mu_fv_from_coverage}}; with
+\code{full = TRUE} the deterministic model itself is run instead and its
+whole output returned (see \code{\link{run_deterministic_model}}).
 }
 \keyword{internal}

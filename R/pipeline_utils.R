@@ -1,166 +1,112 @@
 #' Creates age brackets
-#' 
+#'
 #' Makes age brackets given, number of brackets, max age, and spacing
-#' 
+#'
 #' @param max_age Maximum age in years
 #' @param num_age_brackets Number of age brackets
 #' @param geometric_age_brackets Boolean for geometric brackets
 #' @keywords internal
-age_brackets <- function(max_age=100, 
-                         num_age_brackets=20, 
-                         geometric_age_brackets=TRUE){
-  
-  if(geometric_age_brackets){
+age_brackets <- function(max_age = 100,
+                         num_age_brackets = 20,
+                         geometric_age_brackets = TRUE) {
+  if (geometric_age_brackets) {
     ## Create the geometric age brackets
-    ratio <- (max_age/0.1)^(1/num_age_brackets) 
-    age_vector <- 0.1 * ratio ** (1:num_age_brackets)
+    ratio <- (max_age / 0.1)^(1 / num_age_brackets)
+    age_vector <- 0.1 * ratio**(1:num_age_brackets)
     age_vector[1] <- 0
   } else {
-    age_vector <- seq(0,max_age,num_age_brackets)
+    age_vector <- seq(0, max_age, num_age_brackets)
   }
   return(age_vector)
 }
 
 #' Spatial matrix grab
-#' 
+#'
 #' Grabs spatial incidence and mosquitoFOI matrix from database
-#' 
+#'
 #' @param country Country string
 #' @param admin Admin string
 #' @param year_range Year range
-#' 
-#' @export 
+#'
+#' @export
+#' @examples
+#' spl <- spl_grab("Democratic Republic of the Congo", "Kinshasa", 2010:2012)
+#' dim(spl$incidence)
 
 spl_grab <- function(country, admin, year_range) {
-  
   importations <- magenta::importations
-  
+
   # grab importations
   imp_nms <- colnames(importations$`2000`$incidence)
-  ads <- strsplit(imp_nms, "|", fixed = TRUE) %>% 
-    lapply(function(x) x[2]) %>% 
-    unlist
-  cc <- strsplit(imp_nms, "|", fixed = TRUE) %>% 
-    lapply(function(x) x[1]) %>% 
-    unlist 
-  imp_match <- which(cc == unique(cc)[match_clean(country, unique(cc))] & 
-                       ads == unique(ads)[match_clean(admin, unique(ads))])
-  
-  message("Requested: ",admin,", ",country,
-          "\nReturned: ",ads[imp_match],", ",cc[imp_match])
-  
-  incidence <- lapply(importations,function(x) x$incidence[imp_match,]) %>% 
-    unlist() %>% 
+  ads <- strsplit(imp_nms, "|", fixed = TRUE) %>%
+    lapply(function(x) x[2]) %>%
+    unlist()
+  cc <- strsplit(imp_nms, "|", fixed = TRUE) %>%
+    lapply(function(x) x[1]) %>%
+    unlist()
+  imp_match <- which(cc == unique(cc)[match_clean(country, unique(cc))] &
+    ads == unique(ads)[match_clean(admin, unique(ads))])
+
+  message(
+    "Requested: ", admin, ", ", country,
+    "\nReturned: ", ads[imp_match], ", ", cc[imp_match]
+  )
+
+  incidence <- lapply(importations, function(x) x$incidence[imp_match, ]) %>%
+    unlist() %>%
     matrix(ncol = length(imp_nms), byrow = TRUE)
-  
-  mosquitoFOI <- lapply(importations,function(x) x$mosquitoFOI[imp_match,]) %>% 
-    unlist() %>% 
+
+  mosquitoFOI <- lapply(importations, function(x) x$mosquitoFOI[imp_match, ]) %>%
+    unlist() %>%
     matrix(ncol = length(imp_nms), byrow = TRUE)
-  
+
   # grab year bits
   end_year <- tail(year_range, 1)
   start_year <- year_range[1]
   years <- 2000:2017
-  
-  # alter the end 
+
+  # alter the end
   if (end_year > 2017) {
-    
-    extra <- length(tail(years,1):end_year)-1
-    incidence <- rbind(incidence, t(replicate(extra,incidence[18,])))
-    mosquitoFOI <- rbind(mosquitoFOI, t(replicate(extra,mosquitoFOI[18,])))
-    
-  } else if (end_year <= 2017 && end_year > 2000) {
-    
-    incidence <- incidence[1:(end_year - 1999),]
-    mosquitoFOI <- mosquitoFOI[1:(end_year - 1999),]
-    
-    
+    extra <- length(tail(years, 1):end_year) - 1
+    incidence <- rbind(incidence, t(replicate(extra, incidence[18, ])))
+    mosquitoFOI <- rbind(mosquitoFOI, t(replicate(extra, mosquitoFOI[18, ])))
+  } else if (end_year <= 2017 && end_year >= 2000) {
+    incidence <- incidence[1:(end_year - 1999), , drop = FALSE]
+    mosquitoFOI <- mosquitoFOI[1:(end_year - 1999), , drop = FALSE]
   } else {
-    
     incidence <- NULL
     mosquitoFOI <- NULL
-    
   }
-  
+
   # alter the start
   if (start_year < 2000) {
-    incidence <- rbind(matrix(0, ncol = 593, nrow = length(start_year:1999)),
-                       incidence)
-    mosquitoFOI <- rbind(matrix(0, ncol = 593, nrow = length(start_year:1999)),
-                         mosquitoFOI)
+    incidence <- rbind(
+      matrix(0, ncol = 593, nrow = length(start_year:1999)),
+      incidence
+    )
+    mosquitoFOI <- rbind(
+      matrix(0, ncol = 593, nrow = length(start_year:1999)),
+      mosquitoFOI
+    )
   } else {
-    incidence <- incidence[which(years == start_year):dim(incidence)[1],]
-    mosquitoFOI <- mosquitoFOI[which(years == start_year):dim(mosquitoFOI)[1],]
+    incidence <- incidence[which(years == start_year):dim(incidence)[1], , drop = FALSE]
+    mosquitoFOI <- mosquitoFOI[which(years == start_year):dim(mosquitoFOI)[1], , drop = FALSE]
   }
-  
-  
-  return(list("incidence" = incidence,
-              "mosquitoFOI" = mosquitoFOI))
-}
 
 
-#' Spatial matrix grab
-#' 
-#' Grabs spatial incidence and mosquitoFOI matrix from database
-#' 
-#' @param matrix Spatial matrix for 2000 to 2017
-#' @param years Years desired
-#' 
-#' @keywords internal
-spl_matrix_check <- function(matrix, years) {
-  
-  if(is.matrix(matrix)){
-    if(dim(matrix)[1] != ceiling(years)){
-      matrix <- rbind(matrix(rep(matrix[1,], ceiling(years) - dim(matrix)[1]),
-                             ncol=dim(matrix)[2], 
-                             byrow=TRUE),
-                      matrix)
-    }
-  }
-  
-  if(is.vector(matrix)) {
-    if(length(matrix) != ceiling(years)){
-      matrix <- c(rep(matrix[1],ceiling(years) - length(matrix)), matrix)
-    }
-    matrix <- as.matrix(matrix)
-  }
-  
-  return(matrix)
+  return(list(
+    "incidence" = incidence,
+    "mosquitoFOI" = mosquitoFOI
+  ))
 }
 
-#' plaf matrix check
-#' 
-#' @details Checks length formatting etc of population level allele frequency matrix
-#' 
-#' @param matrix plaf matrix
-#' @param years Years desired
-#' @keywords internal
-plaf_matrix_check <- function(matrix, years) {
-  
-  if(is.matrix(matrix)){
-    if(dim(matrix)[1] != ceiling(years)){
-      matrix <- rbind(matrix,
-                      matrix(rep(matrix[2,],ceiling(years) - dim(matrix)[1]),
-                             ncol=dim(matrix)[2],byrow=TRUE)
-                      )
-    }
-  }
-  
-  if(is.vector(matrix)) {
-    
-    matrix <- c(rep(matrix,years - 1),matrix)
-    matrix <- matrix(matrix,nrow=ceiling(years),byrow=TRUE)
-  }
-  
-  return(matrix)
-}
 
 #' Intervention grab
-#' 
+#'
 #' @details Grabs ITN, IRS  ft from database
-#' 
-#' N.B. The admin region used for ft can be checked 
-#' 
+#'
+#' N.B. The admin region used for ft can be checked
+#'
 #' @param country Country string
 #' @param admin Admin string
 #' @param year_range Year range
@@ -168,80 +114,77 @@ plaf_matrix_check <- function(matrix, years) {
 #' @param final_irs_cov Final IRS coverage
 #' @param final_ft Final treatment coverage
 #'
-#' @export 
+#' @export
+#' @examples
+#' ints <- intervention_grab(
+#'   "Democratic Republic of the Congo", "Kinshasa", year_range = 2010:2015
+#' )
+#' ints$itn_cov
 
-intervention_grab <- function(country, admin, year_range, 
+intervention_grab <- function(country, admin, year_range,
                               final_itn_cov = NULL,
                               final_irs_cov = NULL,
                               final_ft = NULL) {
-  
-  
   itn_2000_2015 <- magenta::itn_2000_2015
   irs_2000_2015 <- magenta::irs_2000_2015
   admin_units_seasonal <- magenta::admin_units_seasonal
-  
+
   # incorporate hitoric interventions
   ad_mat <- itn_2000_2015$admin[match_clean(admin, itn_2000_2015$admin)]
   c_mat <- itn_2000_2015$country[match_clean(country, itn_2000_2015$country)]
-  
-  itn_cov <- itn_2000_2015$value[which(itn_2000_2015$admin==ad_mat & itn_2000_2015$country==c_mat)]
-  irs_cov <- irs_2000_2015$value[which(irs_2000_2015$admin==ad_mat & irs_2000_2015$country==c_mat)]
-  
+
+  itn_rows <- itn_2000_2015$admin == ad_mat & itn_2000_2015$country == c_mat
+  irs_rows <- irs_2000_2015$admin == ad_mat & irs_2000_2015$country == c_mat
+  itn_cov <- itn_2000_2015$value[which(itn_rows)]
+  irs_cov <- irs_2000_2015$value[which(irs_rows)]
+
   # admatch for ft
-  if(is.null(options("quiet_admin"))) {
-    options("quiet_admin"=TRUE)
-  }
-  
-  adm <- admin_match(admin, country, quiet = options("quiet_admin"))
-  ft <- admin_units_seasonal$ft[adm] 
+  adm <- admin_match(admin, country, quiet = TRUE)
+  ft <- admin_units_seasonal$ft[adm]
   ft <- rep(ft, 16)
-  
+
   # check it's the right length
-  if(length(irs_cov)!=16){
-    irs_cov <- irs_2000_2015$value[which(irs_2000_2015$country==country)]
+  if (length(irs_cov) != 16) {
+    irs_cov <- irs_2000_2015$value[which(irs_2000_2015$country == country)]
   }
-  if(length(irs_cov)!=16){
-    irs_cov <- rep(0,16)
-  } 
-  
+  if (length(irs_cov) != 16) {
+    irs_cov <- rep(0, 16)
+  }
+
   # grab year bits
   end_year <- tail(year_range, 1)
   start_year <- year_range[1]
   years <- 2000:2015
-  
+
   # check the final coverages
   if (is.null(final_itn_cov)) final_itn_cov <- tail(itn_cov, 1)
   if (is.null(final_irs_cov)) final_irs_cov <- tail(irs_cov, 1)
   if (is.null(final_ft)) final_ft <- tail(ft, 1)
-  
-  # alter the end 
+
+  # alter the end
   if (end_year > 2015) {
-    
-    itn_cov <- c(itn_cov,final_itn_cov)
-    irs_cov <- c(irs_cov,final_irs_cov)
-    ft <- c(ft,final_ft)
-    
+    itn_cov <- c(itn_cov, final_itn_cov)
+    irs_cov <- c(irs_cov, final_irs_cov)
+    ft <- c(ft, final_ft)
+
     itn_cov <- approx(x = c(years, end_year), y = itn_cov, xout = 2000:end_year)$y
     irs_cov <- approx(x = c(years, end_year), y = irs_cov, xout = 2000:end_year)$y
     ft <- approx(x = c(years, end_year), y = ft, xout = 2000:end_year)$y
-    
   } else if (end_year <= 2015 && end_year > 2000) {
-    
     itn_cov <- itn_cov[1:(end_year - 1999)]
     irs_cov <- irs_cov[1:(end_year - 1999)]
     ft <- ft[1:(end_year - 1999)]
-    
   } else {
-    
     itn_cov <- rep(0, length(year_range))
     irs_cov <- rep(0, length(year_range))
     ft <- rep(0, length(year_range))
-    return(list("itn_cov" = itn_cov, 
-                "irs_cov" = irs_cov,
-                "ft" = ft))
-    
+    return(list(
+      "itn_cov" = itn_cov,
+      "irs_cov" = irs_cov,
+      "ft" = ft
+    ))
   }
-  
+
   if (year_range[1] < 2000) {
     itn_cov <- c(rep(0, length(start_year:1999)), itn_cov)
     irs_cov <- c(rep(0, length(start_year:1999)), irs_cov)
@@ -251,30 +194,37 @@ intervention_grab <- function(country, admin, year_range,
     irs_cov <- irs_cov[which(years == start_year):length(irs_cov)]
     ft <- ft[which(years == start_year):length(ft)]
   }
-  
-  
-  return(list("itn_cov" = itn_cov, 
-              "irs_cov" = irs_cov,
-              "ft" = ft))
-  
+
+
+  return(list(
+    "itn_cov" = itn_cov,
+    "irs_cov" = irs_cov,
+    "ft" = ft
+  ))
 }
 
-#' Create mosquito death and feeding vector
-#' 
-#' Grabs spatial incidence and mosquitoFOI vector from database
-#' 
-#' @param eqInit Equilibrium Inititial Conditions
-#' @param ft Annual Treatment Coverage vector
-#' @param itn_cov Annual ITN Coverage vector
-#' @param irs_cov Annual IRS Coverage vector
-#' @param int_times Timing of intervention changes. Default = NULL, which will 
-#'   assume they are 365 days apart
-#' @param full Boolean to return the whole deterministic output or just mosquito
-#'   death rate and anthrophagy. Default = FALSE
-#' @param odin_model File path to odin model file. Default is the itns and irs
-#'   model included with magenta.     
-#' @param years Numeric for total years
-#' 
+#' Mosquito death and feeding rates for a run
+#'
+#' The daily mosquito death rate \code{mu} and feeding rate \code{fv} under
+#' the run's bed net and spraying coverage, which the simulation reads day by
+#' day. Both come from the intervention block of the deterministic model and
+#' depend on nothing but the coverage and the parameters, so they are
+#' evaluated directly by \code{\link{mu_fv_from_coverage}}; with
+#' \code{full = TRUE} the deterministic model itself is run instead and its
+#' whole output returned (see \code{\link{run_deterministic_model}}).
+#'
+#' @param eqInit Output of \code{\link{equilibrium_init_create}}.
+#' @param ft Treatment seeking, one value per year.
+#' @param itn_cov,irs_cov Bed net and spraying coverage, one value per year.
+#' @param years Length of the simulation in years.
+#' @param int_times Days at which the yearly values start; see
+#'   \code{\link{mu_fv_from_coverage}}.
+#' @param full Run the deterministic model and return all of its output.
+#'   Default = FALSE
+#' @param odin_model Unused; kept for compatibility.
+#' @return With \code{full = FALSE}, a data frame with a row per day and
+#'   columns \code{mu} and \code{fv}; otherwise the list of model outputs
+#'   from \code{\link{run_deterministic_model}}.
 #' @keywords internal
 mu_fv_create <- function(eqInit,
                          ft,
@@ -283,276 +233,366 @@ mu_fv_create <- function(eqInit,
                          years,
                          int_times = NULL,
                          full = FALSE,
-                         odin_model = system.file("extdata/odin_itn_irs.R",package="magenta")) {
-  
-  if (identical(irs_cov, 0) && identical(itn_cov, 0)) {
-    out <- data.frame("mu"=rep(0.132, length(seq_len(round(years*365))+1)),
-                      "fv"=rep(0.333, length(seq_len(round(years*365))+1)))
+                         odin_model = NULL) {
+  if (all(irs_cov == 0) && all(itn_cov == 0)) {
+    out <- data.frame(
+      "mu" = rep(0.132, length(seq_len(round(years * 365)) + 1)),
+      "fv" = rep(0.333, length(seq_len(round(years * 365)) + 1))
+    )
+  } else if (full) {
+    out <- run_odin_model(eqInit, ft, itn_cov, irs_cov, years, int_times)
   } else {
-    
-    message("\nRunning Deterministic Model for ", years, " years")
-    
-    length_check <- function(x) {
-      if (length(x) == 0) {
-        x <- rep(0, years)
-      } 
-      if(length(x) < years) {
-        x <- rep(x, length.out = years)
-      } 
-      if(length(x) > years) {
-        x <- tail(x, years)
-      }
-      return(c(x[1],x))
-    }
-    
-    # check interventions parm lengths
-    eqInit$ft_vector <- length_check(ft)
-    eqInit$itn_vector <- length_check(itn_cov)
-    eqInit$irs_vector <- length_check(irs_cov)
-    
-  
-    # set up the intervetnion times
-    if (is.null(int_times)) {
-      int_times <- c(-25,seq(0,by=365,length.out = years))
-    }
-    eqInit$t_vector <- int_times
-    eqInit$ITN_IRS_on <- 0
-    
-    
-    # split pop accordingly
-    eqInit$pop_split <- rep(1/eqInit$num_int, eqInit$num_int)
-    
-    extensions <- which(unlist(lapply(eqInit, function(x) {(length(dim(x))==3)})))
-    mat <- matrix(0, eqInit$na, eqInit$nh)
-    for(e in names(extensions)) {
-      if(grepl("_I",e)){
-        eqInit[[e]] <- array(eqInit[[e]][,,1] , c(eqInit$na, eqInit$nh, eqInit$num_int))
-      } else {
-        eqInit[[e]] <-  vapply(rep(1/eqInit$num_int, eqInit$num_int), 
-                               FUN = function(x) { 
-                                 x * eqInit[[e]][,,1]
-                                 }, mat)
-      }
-    }
-    
-    # build model 
-    state <- eqInit[names(eqInit) %in% odin_itn_irs$private_fields$user]
-    
-    # weird catach for when init_ICM values fall below 5e-32 that must catch
-    state$init_ICM
-    model <- odin_itn_irs$new(user=state,use_dde=TRUE)
-    
-    #create model and simulate
-    tt <- seq(1,round(years*365),1)
-    mod_run <- model$run(t = tt, n_history = 1000, step_size_max = 10)
-    out <- model$transform_variables(mod_run)
-    
-    if(!full){
-      out <- data.frame("mu"=out$mu,"fv"=out$fv)
-    }
-    
+    out <- mu_fv_from_coverage(eqInit, ft, itn_cov, irs_cov, years, int_times)
   }
-  
-  return(out)
-  
+  out
+}
+
+#' Mosquito death and feeding rates from intervention coverage
+#'
+#' Evaluates the intervention block of the deterministic model (the one in
+#' \code{inst/extdata/odin_itn_irs.R}) directly: the ITN and IRS decay, the
+#' per-category feeding and repellency probabilities, and from them the
+#' mosquito feeding rate \code{fv} and death rate \code{mu}, for every day of
+#' the simulation. Neither rate depends on the model's state, so this gives
+#' the numbers running the model would, to floating-point rounding, and is
+#' what \code{\link{pipeline}} uses.
+#'
+#' @details The deterministic model in \code{inst/extdata/odin_itn_irs.R}
+#' computes its intervention block (coverage categories, net and spray decay,
+#' the repeat and successful feeding probabilities, \code{zbar} and
+#' \code{wbar}) from the time \code{t} and the parameters alone; no state
+#' variable feeds into \code{mu} or \code{fv}. This evaluates that block at
+#' the same daily time points \code{\link{mu_fv_create}} returns, in the
+#' same order of operations as the generated C, so the result equals the
+#' odin output to floating-point rounding: identical on some platforms and
+#' within an ulp on others, depending on how the generated C was compiled
+#' (\code{tests/testthat/test-mu-fv.R} checks this against the model).
+#'
+#' @param params The model parameter list from
+#'   \code{\link{model_param_list_create}}, which holds the entomological and
+#'   intervention parameters, or the equilibrium list from
+#'   \code{\link{equilibrium_init_create}}, which carries it.
+#' @param ft Treatment seeking, one value per year (only its length matters
+#'   here; it is kept so the arguments match \code{\link{mu_fv_create}}).
+#' @param itn_cov,irs_cov Bed net and spraying coverage, one value per year.
+#'   A shorter vector is padded by repeating its last value.
+#' @param years Length of the simulation in years.
+#' @param int_times Days at which the yearly coverage values start. Default
+#'   \code{NULL} uses \code{c(-25, 0, 365, 730, ...)}, i.e. the year-one
+#'   coverage from before the simulation starts and a change on each
+#'   anniversary.
+#' @param itn_irs_on Day from which interventions act; \code{0} as in the
+#'   pipeline, where every simulated day is on or after it.
+#' @return Data frame with a row per day (\code{round(years * 365)} rows) and
+#'   columns \code{mu} and \code{fv}.
+#' @export
+#' @examples
+#' # nets from year two, spraying from year three, over four years
+#' rates <- mu_fv_from_coverage(
+#'   model_param_list_create(), ft = 0.4,
+#'   itn_cov = c(0, 0.3, 0.6, 0.6), irs_cov = c(0, 0, 0.2, 0.2), years = 4
+#' )
+#' rates[c(1, 366, 731), ]
+mu_fv_from_coverage <- function(params, ft, itn_cov, irs_cov, years,
+                                int_times = NULL, itn_irs_on = 0) {
+  n_years <- ceiling(years)
+  first_then <- function(x, what) {
+    x <- pad_annual(x, n_years, what)
+    c(x[1], x)
+  }
+  ft <- first_then(ft, "ft")
+  itn_vector <- first_then(itn_cov, "itn_cov")
+  irs_vector <- first_then(irs_cov, "irs_cov")
+  if (is.null(int_times)) {
+    int_times <- c(-25, seq(0, by = 365, length.out = n_years))
+  }
+  if (length(int_times) != length(itn_vector)) {
+    stop("int_times must have one entry per yearly value plus one", call. = FALSE)
+  }
+  p <- params
+  num_int <- p$num_int
+
+  tt <- seq(1, round(years * 365), 1)
+  if (any(tt < int_times[1])) {
+    stop("int_times must start on or before day 1", call. = FALSE)
+  }
+  # interpolate(t_vector, x, "constant"): the value at the last breakpoint on
+  # or before t, held beyond the last one
+  idx <- findInterval(tt, int_times)
+  eff_itn <- itn_vector[idx]
+  eff_irs <- irs_vector[idx]
+  int_on <- int_times[idx]
+  before <- tt < itn_irs_on
+  eff_on <- ifelse(before, itn_irs_on, int_on)
+
+  # net and spray decay since the start of the current coverage period
+  itn_decay <- ifelse(before, 0, exp(-((tt - eff_on) %% p$ITN_interval) * p$itn_loss))
+  irs_decay <- ifelse(before, 0, exp(-((tt - eff_on) %% p$IRS_interval) * p$irs_loss))
+  d_itn <- ifelse(before, 0, p$d_ITN0 * itn_decay)
+  r_itn <- ifelse(before, 0, p$r_ITN1 + (p$r_ITN0 - p$r_ITN1) * itn_decay)
+  s_itn <- ifelse(before, 1, 1 - d_itn - r_itn)
+  r_irs <- ifelse(before, 0, p$r_IRS0 * irs_decay)
+  d_irs <- ifelse(before, 0, p$chi * p$d_IRS0 * irs_decay)
+  s_irs <- ifelse(before, 1, 1 - d_irs)
+
+  bed <- p$bites_Bed
+  indoors <- p$bites_Indoors
+  # coverage of, probability of feeding in, and of being repelled by, each
+  # intervention category: none, ITN only, IRS only, both
+  cov <- cbind(
+    (1 - eff_itn) * (1 - eff_irs), eff_itn * (1 - eff_irs),
+    (1 - eff_itn) * eff_irs, eff_itn * eff_irs
+  )
+  w <- cbind(
+    1,
+    1 - bed + bed * s_itn,
+    1 - indoors + indoors * (1 - r_irs) * s_irs,
+    1 - indoors + bed * (1 - r_irs) * s_itn * s_irs + (indoors - bed) * (1 - r_irs) * s_irs
+  )
+  z <- cbind(
+    0,
+    bed * r_itn,
+    indoors * r_irs,
+    bed * (r_irs + (1 - r_irs) * r_itn) + (indoors - bed) * r_irs
+  )
+  # summed category by category, as the C sum does
+  zh <- 0
+  wh <- 0
+  for (k in seq_len(num_int)) {
+    zh <- zh + cov[, k] * z[, k]
+    wh <- wh + cov[, k] * w[, k]
+  }
+  zh <- ifelse(before, 0, zh)
+  wh <- ifelse(before, 1, wh)
+
+  zbar <- p$Q0 * zh
+  fv <- 1 / (p$tau1 / (1 - zbar) + p$tau2)
+  wbar <- 1 - p$Q0 + p$Q0 * wh
+  p1 <- wbar * p$p10 / (1 - zbar * p$p10)
+  mu <- -fv * log(p1 * p$p2)
+  data.frame(mu = mu, fv = fv)
+}
+
+#' Run the deterministic model over a simulation
+#'
+#' Sets the equilibrium list up with the yearly intervention vectors and
+#' change times, builds the odin model and runs it for the length of the
+#' simulation, returning every output (the transformed variables, including
+#' \code{t}, \code{mu} and \code{fv}) as the pipeline did before the closed
+#' form \code{\link{mu_fv_from_coverage}}.
+#'
+#' @param eqInit Output of \code{\link{equilibrium_init_create}}.
+#' @param ft Treatment seeking, one value per year.
+#' @param itn_cov,irs_cov Bed net and spraying coverage, one value per year.
+#' @param years Length of the simulation in years.
+#' @param int_times Days at which the yearly values start; \code{NULL} for
+#'   the year-one values from before the start and a change each anniversary.
+#' @return The list of model outputs, one vector (or array) per output with
+#'   a value per day.
+#' @keywords internal
+run_odin_model <- function(eqInit, ft, itn_cov, irs_cov, years, int_times = NULL) {
+  message("\nRunning Deterministic Model for ", years, " years")
+
+  # the yearly vectors are padded by the schedule's rule; the first value
+  # is repeated so that the model starts from the year-one coverage
+  n_years <- ceiling(years)
+  first_then <- function(x) {
+    x <- pad_annual(x, n_years, deparse(substitute(x)))
+    c(x[1], x)
+  }
+  eqInit$ft_vector <- first_then(ft)
+  eqInit$itn_vector <- first_then(itn_cov)
+  eqInit$irs_vector <- first_then(irs_cov)
+
+  # set up the intervetnion times
+  if (is.null(int_times)) {
+    int_times <- c(-25, seq(0, by = 365, length.out = n_years))
+  }
+  eqInit$t_vector <- int_times
+  eqInit$ITN_IRS_on <- 0
+
+  # split pop accordingly
+  eqInit$pop_split <- rep(1 / eqInit$num_int, eqInit$num_int)
+
+  extensions <- which(unlist(lapply(eqInit, function(x) {
+    (length(dim(x)) == 3)
+  })))
+  mat <- matrix(0, eqInit$na, eqInit$nh)
+  for (e in names(extensions)) {
+    if (grepl("_I", e)) {
+      eqInit[[e]] <- array(eqInit[[e]][, , 1], c(eqInit$na, eqInit$nh, eqInit$num_int))
+    } else {
+      eqInit[[e]] <- vapply(rep(1 / eqInit$num_int, eqInit$num_int),
+        FUN = function(x) {
+          x * eqInit[[e]][, , 1]
+        }, mat
+      )
+    }
+  }
+
+  # build model
+  state <- eqInit[names(eqInit) %in% odin_itn_irs$private_fields$user]
+
+  # weird catach for when init_ICM values fall below 5e-32 that must catch
+  state$init_ICM
+  model <- odin_itn_irs$new(user = state, use_dde = TRUE)
+
+  # create model and simulate
+  tt <- seq(1, round(years * 365), 1)
+  mod_run <- model$run(t = tt, n_history = 1000, step_size_max = 10)
+  model$transform_variables(mod_run)
+}
+
+#' Run the deterministic model
+#'
+#' Runs the deterministic transmission model that \code{magenta} carries
+#' (\code{inst/extdata/odin_itn_irs.R}, an early copy of the Imperial
+#' malaria model with ITN and IRS) from its equilibrium for a given setting,
+#' and returns every model output through time. The simulation itself only
+#' takes its mosquito death and feeding rates from this model (see
+#' \code{\link{mu_fv_create}}); the full run is for checking the
+#' individual-based simulation against the deterministic one, for example
+#' that the prevalence and incidence a large population settles at for an
+#' \code{EIR} match.
+#'
+#' @inheritParams equilibrium_init_create
+#' @param years Length of the run in years.
+#' @param itn_cov,irs_cov Bed net and spraying coverage, one value per year.
+#'   Default = 0
+#' @param int_times Days at which the yearly values start; see
+#'   \code{\link{mu_fv_from_coverage}}.
+#' @return List of the model's outputs, one vector (or array) per output with
+#'   a value per day: \code{t}, the compartment totals (\code{Sout},
+#'   \code{Tout}, ...), prevalence and incidence, and the mosquito rates
+#'   \code{mu} and \code{fv}, among others.
+#' @export
+#' @examples
+#' \donttest{
+#' # the deterministic model and the simulation at the same EIR, no resistance
+#' det <- run_deterministic_model(EIR = 10, ft = 0.4, years = 2, itn_cov = 0.3)
+#' # daily prevalence and clinical incidence from the deterministic model
+#' det$prev[c(1, 365, 730)]
+#' det$inc[c(1, 365, 730)]
+#'
+#' # the simulation's incidence over the same two years, per 365-day period
+#' sim <- pipeline(
+#'   EIR = 10, ft = 0.4, years = 2, N = 10000, itn_cov = 0.3,
+#'   update_save = TRUE, update_length = 365, output = save_loggers()
+#' )
+#' sapply(sim, function(x) x$Loggers$Incidence)
+#' }
+run_deterministic_model <- function(EIR, ft, years,
+                                    itn_cov = 0, irs_cov = 0,
+                                    age_vector = age_brackets(100, 40, TRUE),
+                                    het_brackets = 5,
+                                    model_param_list = model_param_list_create(),
+                                    country = NULL, admin = NULL,
+                                    int_times = NULL, quiet = FALSE) {
+  eq_init <- equilibrium_init_create(
+    age_vector = age_vector, het_brackets = het_brackets, ft = ft[1],
+    EIR = EIR, model_param_list = model_param_list, country = country,
+    admin = admin, quiet = quiet
+  )
+  run_odin_model(eq_init, ft, itn_cov, irs_cov, years, int_times)
 }
 
 
-drug_list_update <- function(drug_list, year, tf){
-  
-  
+#' Drug cycling between periods
+#'
+#' Applies the sequential and temporal cycling rules of a drug list between
+#' two periods of the simulation. Sequential cycling moves to the next drug
+#' when the treatment failure exceeds the threshold and the last switch is
+#' far enough back; temporal cycling moves on a fixed year. Neither applies
+#' under multiple first-line therapies or without resistance.
+#'
+#' @param drug_list The drug list as it stands.
+#' @param year The year the finished period belongs to.
+#' @param tf Treatment failure over the last two periods, from
+#'   \code{\link{period_treatment_failure}}; \code{NA} never triggers a
+#'   switch.
+#' @return The drug list, with \code{drug_choice} and
+#'   \code{next_temporal_cycle} moved on if a rule fired.
+#' @keywords internal
+drug_list_update <- function(drug_list, year, tf) {
   if (drug_list$resistance_flag) {
     if (!drug_list$mft_flag) {
-      
       # if sequential cycling
       if (drug_list$sequential_cycling > 0) {
-        if (tf > drug_list$sequential_cycling && year > drug_list$next_temporal_cycle) {
+        if (!is.na(tf) && tf > drug_list$sequential_cycling &&
+          year > drug_list$next_temporal_cycle) {
           drug_list$drug_choice <- drug_list$drug_choice + 1
           drug_list$next_temporal_cycle <- year + drug_list$sequential_update
-          if(drug_list$drug_choice == (drug_list$number_of_drugs)){
+          if (drug_list$drug_choice == (drug_list$number_of_drugs)) {
             drug_list$drug_choice <- 0
           }
-          
+
           message("Sequential cycling: switched to drug ", drug_list$drug_choice)
         }
       }
-      
+
       # if temporal cycling
       if (drug_list$temporal_cycling > 0) {
         if (drug_list$next_temporal_cycle == year) {
           drug_list$drug_choice <- drug_list$drug_choice + 1
-          if(drug_list$drug_choice == (drug_list$number_of_drugs)){
+          if (drug_list$drug_choice == (drug_list$number_of_drugs)) {
             drug_list$drug_choice <- 0
           }
-          drug_list$next_temporal_cycle <- drug_list$next_temporal_cycle + 
+          drug_list$next_temporal_cycle <- drug_list$next_temporal_cycle +
             drug_list$temporal_cycling
         }
       }
     }
   }
-  
-  return(drug_list)  
-  
-} 
 
-# convert allele frequencies
-pop_alf <- function(nums,nl,weighted=FALSE){ 
-  if(class(nums %>% unlist)=="raw") {
-    if(weighted) {
-    res <- colSums(do.call(rbind,lapply(nums,function(x){colMeans(matrix(as.numeric(x),ncol = nl))})))/length(nums)
+  return(drug_list)
+}
+
+#' Population allele frequencies from barcodes
+#'
+#' @param nums List of the barcodes as raw vectors, one element per
+#'   individual, as \code{\link{pop_strains_df}} returns them.
+#' @param nl Number of loci.
+#' @param weighted Whether each individual contributes equally (the mean of
+#'   their strains) rather than each strain. Default = FALSE
+#' @return A vector of \code{nl} frequencies, or of \code{NA} when there are
+#'   no barcodes.
+#' @keywords internal
+pop_alf <- function(nums, nl, weighted = FALSE) {
+  if (is.raw(unlist(nums))) {
+    if (weighted) {
+      res <- colSums(do.call(rbind, lapply(nums, function(x) {
+        colMeans(matrix(as.numeric(x), ncol = nl))
+      }))) / length(nums)
     } else {
-    res <- matrix(as.numeric(do.call(rbind,nums)),ncol=nl)
-    res <- colSums(res)/nrow(res)
+      res <- matrix(as.numeric(do.call(rbind, nums)), ncol = nl)
+      res <- colSums(res) / nrow(res)
     }
   } else {
-    res <- rep(NA,nl)
+    res <- rep(NA, nl)
   }
   return(unlist(res))
 }
 
-# convert to lineages frequencies
-lineages <- function(nums,nl){ 
-  if(class(nums %>% unlist)=="raw") {
+#' Lineage frequencies from barcodes
+#'
+#' Tables the distinct barcodes (each read as an integer) over every possible
+#' barcode of \code{nl} loci.
+#'
+#' @param nums List of the barcodes as raw vectors.
+#' @param nl Number of loci.
+#' @return A table of \code{2^nl} counts, or a vector of \code{NA} when
+#'   there are no barcodes.
+#' @keywords internal
+lineages <- function(nums, nl) {
+  if (is.raw(unlist(nums))) {
     res <- table(
       factor(
-        apply(matrix(as.numeric(do.call(rbind,nums)),ncol=nl),1,bitsToInt),
-        levels=0:((2^nl)-1)
+        apply(matrix(as.numeric(do.call(rbind, nums)), ncol = nl), 1, bitsToInt),
+        levels = 0:((2^nl) - 1)
       )
     )
   } else {
-    res <- rep(NA,2^nl)
+    res <- rep(NA, 2^nl)
   }
   return(unlist(res))
 }
-
-
-# what to save in update_saves
-update_saves <- function(res, i, sim.out, sample_states,
-                         sample_size, sample_reps, mean_only,
-                         age_breaks = c(-0.001, 5, 15, 100.1),
-                         barcode_list, num_loci, full_update_save=FALSE,
-                         genetics_df_without_summarising, save_lineages = FALSE,
-                         human_update_save, summary_saves_only,
-                         only_allele_freqs, mpl, seed, weighted=FALSE) {
-  
-  
-  # what are saving, does it include the humans
-  if(human_update_save) 
-  {
-    # do we just want the summary data frame 
-    if(summary_saves_only){
-      
-      # sample the population strain's genetics
-      if(length(sample_size)>1){
-        df <- pop_strains_df(sim.out$Ptr, sample_size = 0, 
-                             sample_states = sample_states, 
-                             ibd = barcode_list$barcode_type,
-                             seed = seed)
-      } else {
-        df <- pop_strains_df(sim.out$Ptr, sample_size = sample_size*sample_reps, 
-                             sample_states = sample_states, 
-                             ibd = barcode_list$barcode_type,
-                             seed = seed)
-        
-      }
-      
-      # summarise the genetics
-      if(genetics_df_without_summarising) {
-        
-        res[[i]] <- list()
-        if(only_allele_freqs){
-          res[[i]]$af <- pop_alf(df$nums[unlist(lapply(df$barcode_states,length))>0],num_loci,weighted=weighted)
-          if(save_lineages){
-            res[[i]]$lineage <-lineages(df$nums[unlist(lapply(df$barcode_states,length))>0],num_loci)
-          }
-        } else {
-          res[[i]]$df <- df
-        }
-        
-      } else {
-        
-        if(i%%12 == 0 && i >= (length(res)-180)){
-          res[[i]] <- COI_df_create(df, barcodes=TRUE, 
-                                    ibd = barcode_list$barcode_type,
-                                    breaks = age_breaks,
-                                    n = sample_size, 
-                                    reps = sample_reps, 
-                                    mean_only = mean_only)
-        } else {
-          res[[i]] <- COI_df_create(df, barcodes=FALSE, 
-                                    ibd = barcode_list$barcode_type,
-                                    breaks = age_breaks, 
-                                    n = sample_size, 
-                                    reps = sample_reps, 
-                                    mean_only = mean_only)
-        }
-        
-      }
-      
-      # treatment outcomes for resistance work
-      res[[i]]$succesfull_treatments <- sim.out$Loggers$Treatments$Successful_Treatments
-      res[[i]]$unsuccesful_treatments_lpf <- sim.out$Loggers$Treatments$Unsuccesful_Treatments_LPF
-      res[[i]]$not_treated <- sim.out$Loggers$Treatments$Not_Treated
-      res[[i]]$treatment_failure <-  res[[i]]$unsuccesful_treatments_lpf / (res[[i]]$unsuccesful_treatments_lpf + res[[i]]$succesfull_treatments) 
-      res[[i]]$daily_pop_eir <-  sim.out$Loggers$Treatments$daily_infectious_bite_counters / sim.out$Loggers$Log_Counter*365 / length(sim.out$Loggers$Ages )
-      res[[i]]$mutations <-  sim.out$Loggers$daily_mutations_per_loci
-      
-      if(any(is.na(res[[i]]$treatment_failure))) {
-        res[[i]]$treatment_failure[is.na(res[[i]]$treatment_failure)] <- 0 
-      }
-      res[[i]]$overall_treatment_failure <- sum(res[[i]]$unsuccesful_treatments_lpf)/(sum(res[[i]]$unsuccesful_treatments_lpf + res[[i]]$succesfull_treatments))
-      if(is.na(res[[i]]$overall_treatment_failure)){
-        res[[i]]$overall_treatment_failure <- 0
-      }
-      
-      # prevalence measures
-      two_ten <- sim.out$Loggers$Ages < 3650 & sim.out$Loggers$Ages > 720
-      dt_10 <- sum(sim.out$Loggers$InfectionStates %in% c(1, 4) & two_ten) / sum(two_ten)
-      
-      micro_det <- q_fun(mpl$d1,sim.out$Loggers$ID,mpl$ID0,mpl$kD,
-                         sapply(sim.out$Loggers$Ages,fd,mpl$fD0,mpl$aD,mpl$gammaD)) 
-      
-      a_10 <- sum(sim.out$Loggers$InfectionStates %in% 2 & two_ten ) / sum(two_ten) * mean(micro_det[two_ten])
-      res[[i]]$pcr_prev <- sum(unlist(sim.out$Loggers[c("D","A","U","T")]))
-      res[[i]]$dat <- sum(unlist(sim.out$Loggers[c("D","A","T")]))
-      res[[i]]$micro_2_10 <- dt_10 + a_10
-      
-      # or do we want the full human popualation
-    } else {
-      
-      # then grab the population
-      strain_vars <- c(
-        "Strain_infection_state_vectors",
-        "Strain_day_of_infection_state_change_vectors",
-        "Strain_barcode_vectors"
-      )
-      human_vars <- c("Infection_States", "Zetas", "Ages", "ID")
-      
-      pl3 <- param_list_simulation_get_create(statePtr = sim.out$Ptr)
-      sim_save <- simulation_R(pl3, seed = seed)
-      
-      if(full_update_save) {
-        res[[i]] <- sim_save
-      } else {
-      
-      # and then store what's needed
-      Strains <- sim_save$populations_event_and_strains_List[strain_vars]
-      Humans <- c(sim_save$population_List[human_vars],
-                  Strains,
-                  sim_save$scourge_List["Mosquito_Day_of_death"],
-                  sim_save$scourge_List["Mosquito_Infection_States"])
-      res[[i]] <- Humans
-      }
-    }
-    
-    # or are we just saving the loggers
-  } 
-  else 
-  {
-    res[[i]] <- sim.out$Loggers
-  }
-  
-  return(res)
-  
-}
-

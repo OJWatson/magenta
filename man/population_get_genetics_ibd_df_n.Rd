@@ -15,3 +15,4 @@ list of population information
 \description{
 Returns the population's parasite genetics for ibd style summarised by pibd for given sample size and state
 }
+\keyword{internal}
