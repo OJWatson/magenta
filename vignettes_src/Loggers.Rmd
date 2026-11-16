@@ -269,14 +269,19 @@ Three days of work are saved by knowing the following.
 1. The saved state must have been produced with a saver whose
    `final = "full"` (or with `save_full()`). A run that only kept the loggers
    cannot be saved, and `sim_save()` stops with a message saying so.
-2. The **saved parameter lists win**. The core, drug, housekeeping, nmf,
-   vector adaptation and barcode lists and the spatial settings are all taken
-   from the file; passing a different one to the restarting call is an error.
-   The yearly inputs (`ft`, `plaf`, `resistance_flag`, the importation
-   matrices) are for the new years and may be given. To change a drug policy
-   partway through a run, do it with the yearly vectors rather than by
-   restarting. The random number generator carries on from where the saved
-   run stopped unless you pass `seed`.
+2. The **saved state is restored as it stopped, and the inputs you give
+   drive it from there**. The core, housekeeping, nmf, vector adaptation and
+   barcode lists and the spatial settings are taken from the file; passing a
+   different one to the restarting call is an error. The yearly inputs
+   (`ft`, `plaf`, the importation matrices) are for the new years and may be
+   given. So may a `drug_list`: its `resistance_flag` (one value per new
+   year), `drug_choice`, `partner_drug_ratios` and cycling settings apply
+   from the first new period, as they would in a fresh run, so this is how
+   to change a drug policy partway through a run. The drugs themselves,
+   their resistance loci and fitness costs are part of the saved state and
+   must match it. Without a `drug_list` the saved run's list carries on. The
+   random number generator carries on from where the saved run stopped
+   unless you pass `seed`.
 3. `update_saved_state_barcode_plaf()` exists to edit the barcodes inside a
    saved state, which is the supported way to introduce a new allele into a
    population you have already burned in.

@@ -180,14 +180,25 @@ simulation state, as a full save, without running it. Default = FALSE}
 \item{saved_state_path}{Full file path to a saved model state to be
   loaded and continued (as written by \code{\link{sim_save}} or kept by a
   saver with \code{final = "full"}), or the object itself. Default = NULL,
-  which will trigger initialisation. A resumed run continues with the
-  parameter lists the saved run was using (core, drug, housekeeping, nmf,
-  vector adaptation, barcode and spatial settings): passing a different
-  one is an error. The yearly inputs (\code{ft}, \code{itn_cov},
+  which will trigger initialisation. Loading the state restores the
+  simulation exactly as it stopped, and the inputs given to the resuming
+  call drive it from there. A resumed run continues with the parameter
+  lists the saved run was using (core, housekeeping, nmf, vector
+  adaptation, barcode and spatial settings): passing a different one is
+  an error. The yearly inputs (\code{ft}, \code{itn_cov},
   \code{irs_cov}, \code{plaf}, \code{mutation_flag} and the importation
   matrices) are for the new years and may be given; \code{plaf},
   \code{mutation_flag} and the importation vectors default to the saved
-  run's last values.
+  run's last values. A \code{drug_list} given on resume is used as it
+  stands for the new years, as for a fresh run: its \code{resistance_flag}
+  (one value per new year), \code{drug_choice}, \code{partner_drug_ratios}
+  and cycling settings apply from the first new period, with its cycling
+  clock counting from the new run's year one rather than continuing the
+  saved run's. The drugs themselves, \code{number_of_resistance_loci},
+  \code{resistance_loci}, \code{artemisinin_loci},
+  \code{cost_of_resistance} and \code{absolute_fitness_cost_flag} are
+  part of the saved state and must match it. With no \code{drug_list}
+  the saved run's list carries on, its cycling state included.
 
 # Deprecated output flags
 

@@ -17,8 +17,11 @@
   with every saver and without periodic saving.
 * `sim_save()` and `sim_restore()` write and read a versioned saved state; old
   full saves still load.
-* A resumed run uses the saved run's parameter lists and generator state; a
-  differing explicit list is an error, and passing `seed` reseeds.
+* A resumed run restores the saved state as it stopped and uses the saved run's
+  parameter lists and generator state; a differing explicit list is an error,
+  and passing `seed` reseeds. A `drug_list` given on resume drives the new
+  years (resistance flags, drug choice, partner ratios, cycling) as in a fresh
+  run; its drugs, loci and costs must match the saved ones.
 * Every parameter list constructor is exported, returns a classed list and is
   checked by a `validate_*()` naming the list and field; `cpp_contract` records
   the fields the C++ reads.

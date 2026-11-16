@@ -742,8 +742,10 @@ Phase 4 is applied, after OJ's review of each item: one seed per run with
 the generator state kept in `meta$rng_state` and in full saves and restored
 on resume; one period per year when `update_save = FALSE` so that every
 yearly input applies (`itn_cov`/`irs_cov` already did, through the odin
-solve); a resumed run continues with all of the saved run's lists and errors
-on a differing explicit argument; `spl_grab()` keeps the year 2000. Every
+solve); a resumed run continues with the saved run's lists and errors on a
+differing explicit argument, except that a `drug_list` given on resume drives
+the new years (the drugs, loci and costs must match the save); `spl_grab()`
+keeps the year 2000. Every
 stochastic characterisation snapshot moved with the seed change and was
 accepted deliberately; the equilibrium snapshot did not.
 `tests/testthat/test-findings.R` now tests the fixes. Sequential drug

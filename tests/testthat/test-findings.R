@@ -187,7 +187,7 @@ test_that("a resumed run continues with the saved run's parameter lists", {
       EIR = 1, years = 1, N = 60, saved_state_path = path,
       drug_list = drug_list_create(), housekeeping_list = quiet_housekeeping_test()
     )),
-    "`drug_list` differs from the saved value"
+    "cannot change on resume, but `drug_list\\$drugs`, `drug_list\\$number_of_resistance_loci`"
   )
   expect_error(
     suppressMessages(pipeline(
@@ -209,6 +209,64 @@ test_that("a resumed run continues with the saved run's parameter lists", {
     housekeeping_list = quiet_housekeeping_test()
   ))
   expect_equal(sim_params(new_plaf)$barcode$plaf, rep(0.9, 6))
+})
+
+test_that("a resumed run's update steps use the drug list it is given", {
+  skip_on_cran()
+  al <- function(...) {
+    drug_list_create(
+      ..., drug_choice = 0, number_of_drugs = 1, drugs = list(drug_create_al()),
+      number_of_resistance_loci = 6, cost_of_resistance = rep(1, 6)
+    )
+  }
+  # a resistant population, saved with resistance off
+  first <- suppressMessages(pipeline(
+    EIR = 5, years = 1, N = 100, seed = 7L, num_loci = 6, plaf = rep(0.3, 6), ft = 0.6,
+    output = save_loggers(final = "full"), drug_list = al(),
+    housekeeping_list = quiet_housekeeping_test()
+  ))
+  path <- tempfile(fileext = ".rds")
+  on.exit(unlink(path), add = TRUE)
+  sim_save(first, path)
+  resume <- function(...) {
+    suppressMessages(pipeline(
+      EIR = 5, years = 2, N = 100, ft = 0.6, saved_state_path = path,
+      update_save = TRUE, update_length = 365,
+      housekeeping_list = quiet_housekeeping_test(), ...
+    ))
+  }
+
+  # the ICM logger is left out of the comparisons: a person's starting
+  # maternal immunity is not part of the saved state, so after a resume the
+  # C++ recomputes ICM from an uninitialised value and two identical resumes
+  # differ there alone
+  but_icm <- function(x) x[setdiff(names(x), "ICM")]
+
+  # no list: the saved list carries on, resistance off throughout
+  carried <- resume()
+  expect_equal(sim_params(carried)$drug, sim_params(first)$drug)
+  expect_false(any(sim_schedule(carried)$resistance_flag))
+
+  # a list that switches resistance on in the second new year drives the run
+  switched <- resume(drug_list = al(resistance_flag = c(FALSE, TRUE)))
+  expect_equal(sim_schedule(switched)$resistance_flag, c(FALSE, TRUE))
+  expect_equal(sim_params(switched)$drug$resistance_flag, c(FALSE, TRUE))
+  # the first new year is the same run; the second is not
+  expect_identical(but_icm(switched[[1]]), but_icm(carried[[1]]))
+  expect_false(identical(but_icm(switched[[2]]$Loggers), but_icm(carried[[2]]$Loggers)))
+
+  # the drugs themselves are part of the saved state
+  expect_error(
+    resume(drug_list = drug_list_create(
+      drug_choice = 0, number_of_drugs = 1, drugs = list(drug_create_dhappq()),
+      number_of_resistance_loci = 6, cost_of_resistance = rep(1, 6)
+    )),
+    "cannot change on resume, but `drug_list\\$drugs` differs"
+  )
+  expect_error(
+    resume(drug_list = al(resistance_flag = TRUE, absolute_fitness_cost_flag = TRUE)),
+    "`drug_list\\$absolute_fitness_cost_flag` differs"
+  )
 })
 
 test_that("spl_grab keeps the year 2000 in a range that ends there", {

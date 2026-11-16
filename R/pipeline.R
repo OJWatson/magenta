@@ -87,14 +87,25 @@
 #' @param saved_state_path Full file path to a saved model state to be
 #'   loaded and continued (as written by \code{\link{sim_save}} or kept by a
 #'   saver with \code{final = "full"}), or the object itself. Default = NULL,
-#'   which will trigger initialisation. A resumed run continues with the
-#'   parameter lists the saved run was using (core, drug, housekeeping, nmf,
-#'   vector adaptation, barcode and spatial settings): passing a different
-#'   one is an error. The yearly inputs (\code{ft}, \code{itn_cov},
+#'   which will trigger initialisation. Loading the state restores the
+#'   simulation exactly as it stopped, and the inputs given to the resuming
+#'   call drive it from there. A resumed run continues with the parameter
+#'   lists the saved run was using (core, housekeeping, nmf, vector
+#'   adaptation, barcode and spatial settings): passing a different one is
+#'   an error. The yearly inputs (\code{ft}, \code{itn_cov},
 #'   \code{irs_cov}, \code{plaf}, \code{mutation_flag} and the importation
 #'   matrices) are for the new years and may be given; \code{plaf},
 #'   \code{mutation_flag} and the importation vectors default to the saved
-#'   run's last values.
+#'   run's last values. A \code{drug_list} given on resume is used as it
+#'   stands for the new years, as for a fresh run: its \code{resistance_flag}
+#'   (one value per new year), \code{drug_choice}, \code{partner_drug_ratios}
+#'   and cycling settings apply from the first new period, with its cycling
+#'   clock counting from the new run's year one rather than continuing the
+#'   saved run's. The drugs themselves, \code{number_of_resistance_loci},
+#'   \code{resistance_loci}, \code{artemisinin_loci},
+#'   \code{cost_of_resistance} and \code{absolute_fitness_cost_flag} are
+#'   part of the saved state and must match it. With no \code{drug_list}
+#'   the saved run's list carries on, its cycling state included.
 #'
 #' # Deprecated output flags
 #'
@@ -286,9 +297,15 @@ pipeline <- function(EIR = 120,
         supplied = "..."
       )
     }
-    check_resume_arg("drug_list", drug_list, saved$inputs$drug_list, supplied,
-      ignore = c("drug_choice", "next_temporal_cycle", "resistance_flag")
-    )
+    # the drug list is the exception: the drugs, their loci and costs are
+    # part of the saved C++ state, but the yearly resistance flags, the drug
+    # in use, the partner ratios and the cycling settings drive the update
+    # steps from R, so a list given on resume takes over for the new years
+    if ("drug_list" %in% supplied) {
+      check_resume_drug_list(drug_list, saved$inputs$drug_list)
+    } else {
+      drug_list <- saved$inputs$drug_list
+    }
     check_resume_arg(
       "housekeeping_list", housekeeping_list, saved$inputs$housekeeping_list, supplied
     )
@@ -299,7 +316,6 @@ pipeline <- function(EIR = 120,
     )
     # from here on the saved lists are the ones in use
     mpl <- saved$inputs$core_parameter_list
-    drug_list <- saved$inputs$drug_list
     housekeeping_list <- saved$inputs$housekeeping_list
     nmf_list <- saved$inputs$nmf_list
     vector_adaptation_list <- saved$inputs$vector_adaptation_list
@@ -546,8 +562,8 @@ check_resume_arg <- function(name, current, saved, supplied, ignore = character(
   if (!(name %in% supplied)) {
     return(invisible(NULL))
   }
-  # lists are compared without the fields allowed to differ (the drug
-  # cycling state the saved run moved on) and without their class
+  # lists are compared without the fields allowed to differ and without
+  # their class
   strip <- function(x) {
     if (is.list(x)) {
       x <- unclass(x)
@@ -560,6 +576,37 @@ check_resume_arg <- function(name, current, saved, supplied, ignore = character(
     stop(
       "a resumed run continues with the saved run's parameter lists, but `",
       name, "` differs from the saved value; drop it from the call",
+      call. = FALSE
+    )
+  }
+  invisible(NULL)
+}
+
+#' Check a drug list given when resuming a saved run
+#'
+#' The drugs, their resistance loci and the fitness costs are part of the
+#' saved C++ state and cannot change on resume. The rest of the list (the
+#' yearly resistance flags, the drug in use, the partner ratios and the
+#' cycling settings) drives the update steps from R and may differ.
+#'
+#' @param current The drug list given to \code{\link{pipeline}}.
+#' @param saved The drug list the saved run was using.
+#' @return \code{NULL}, invisibly, or an error naming the fields that differ.
+#' @keywords internal
+check_resume_drug_list <- function(current, saved) {
+  fixed <- c(
+    "drugs", "number_of_drugs", "number_of_resistance_loci", "resistance_loci",
+    "artemisinin_loci", "cost_of_resistance", "absolute_fitness_cost_flag"
+  )
+  differs <- vapply(fixed, function(field) {
+    !isTRUE(all.equal(current[[field]], saved[[field]], check.attributes = FALSE))
+  }, logical(1))
+  if (any(differs)) {
+    stop(
+      "the drugs, their resistance loci and fitness costs come from the saved ",
+      "state and cannot change on resume, but `drug_list$",
+      paste(fixed[differs], collapse = "`, `drug_list$"),
+      "` differs from the saved value",
       call. = FALSE
     )
   }
