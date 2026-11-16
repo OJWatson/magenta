@@ -87,6 +87,7 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
   std::vector<double> IB(universe_ptr->parameters.g_N);
   std::vector<double> ICA(universe_ptr->parameters.g_N);
   std::vector<double> ICM(universe_ptr->parameters.g_N);
+  std::vector<double> ICM_init(universe_ptr->parameters.g_N);
   std::vector<double> cA(universe_ptr->parameters.g_N);
   std::vector<double> ID(universe_ptr->parameters.g_N);
   std::vector<int> Treatment_Outcomes(universe_ptr->parameters.g_N);
@@ -154,6 +155,7 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     IB[element] = universe_ptr->population[element].get_m_IB();
     ICA[element] = universe_ptr->population[element].get_m_ICA();
     ICM[element] = universe_ptr->population[element].get_m_ICM();
+    ICM_init[element] = universe_ptr->population[element].get_m_ICM_init();
     ID[element] = universe_ptr->population[element].get_m_ID();
     cA[element] = universe_ptr->population[element].get_m_cA();
     Treatment_Outcomes[element] = static_cast<int>(universe_ptr->population[element].get_m_treatment_outcome());
@@ -367,6 +369,7 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     Rcpp::Named("IB")=IB,
     Rcpp::Named("ICA")=ICA,
     Rcpp::Named("ICM")=ICM,
+    Rcpp::Named("ICM_init")=ICM_init,
     Rcpp::Named("ID")=ID,
     Rcpp::Named("cA")=cA,
     Rcpp::Named("Treatment_Outcomes")=Treatment_Outcomes,

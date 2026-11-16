@@ -70,7 +70,7 @@ test_that("saved state can be reloaded for continuation or inspection", {
   sim_save(full_run, tf2)
   saved <- sim_restore(tf2)
   expect_s3_class(saved, "magenta_saved_state")
-  expect_equal(saved$format_version, 1L)
+  expect_equal(saved$format_version, 2L)
   expect_equal(saved$population_List, final_state$population_List)
   resumed2 <- run_saved_state_simulation(saved_state_path = tf2)
   expect_equal(resumed2[[1]]$af, resumed[[1]]$af)

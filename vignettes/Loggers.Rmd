@@ -1,7 +1,7 @@
 ---
 title: "Model output, loggers and saved state"
 author: "OJ Watson"
-date: "2026-11-13"
+date: "2026-11-16"
 output:
   rmarkdown::html_vignette:
     fig_width: 7
@@ -58,7 +58,7 @@ out
 ##   N: 1000   years: 3   EIR: 5
 ##   output:   loggers, 1 period(s), final = loggers
 ##   seed:     1   version: 1.4.0
-##   elapsed:  0.3 secs
+##   elapsed:  0.4 secs
 names(out$Loggers)
 ##  [1] "Log_Counter"              "Incidence"               
 ##  [3] "Incidence_05"             "Treatments"              
@@ -403,7 +403,7 @@ schedule and metadata of the run that produced it, and a format version.
 state_file <- file.path(tempdir(), "magenta_state.rds")
 sim_save(out_f, state_file)
 sim_restore(state_file)
-## <magenta_saved_state> format 1, magenta 1.4.0
+## <magenta_saved_state> format 2, magenta 1.4.0
 ##   N: 1000   day: 1096
 ##   from:     pipeline(EIR = 5, ft = 0.4, N = 1000, years = 3, output = save_logg...
 

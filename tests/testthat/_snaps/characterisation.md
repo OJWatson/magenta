@@ -862,7 +862,9 @@
         )), ICA = list(length = 100L, n_na = 0L, sum = 386.249765, 
         quantiles = c(0.005265, 0.501925, 2.050518, 5.014498, 26.544297
         )), ICM = list(length = 100L, n_na = 0L, sum = 1.586307, 
-        quantiles = c(0, 0, 0, 0, 1.177533)), ID = list(length = 100L, 
+        quantiles = c(0, 0, 0, 0, 1.177533)), ICM_init = list(length = 100L, 
+        n_na = 0L, sum = 455.657851, quantiles = c(0.349994, 2.010955, 
+        2.010955, 11.120388, 51.286342)), ID = list(length = 100L, 
         n_na = 0L, sum = 236.570045, quantiles = c(0.005142, 0.380437, 
         1.419207, 2.388637, 18.949111)), cA = list(length = 100L, 
         n_na = 0L, sum = 0, quantiles = c(0, 0, 0, 0, 0)), Treatment_Outcomes = list(
@@ -1074,11 +1076,13 @@
         ICA = list(length = 100L, n_na = 0L, sum = 389.059778, quantiles = c(0, 
         0.485692, 1.895096, 4.87094, 25.685798)), ICM = list(length = 100L, 
             n_na = 0L, sum = 1.931642, quantiles = c(0, 0, 0, 0, 
-            1.908686)), ID = list(length = 100L, n_na = 0L, sum = 232.227086, 
-            quantiles = c(0, 0.338608, 1.286449, 2.283648, 19.122409
-            )), cA = list(length = 100L, n_na = 0L, sum = 5.228356, 
-            quantiles = c(0.017874, 0.037795, 0.060462, 0.067082, 
-            0.067691)), Treatment_Outcomes = list(length = 100L, 
+            1.908686)), ICM_init = list(length = 100L, n_na = 0L, 
+            sum = 446.485319, quantiles = c(0.11693, 2.010955, 2.010955, 
+            11.120388, 51.286342)), ID = list(length = 100L, n_na = 0L, 
+            sum = 232.227086, quantiles = c(0, 0.338608, 1.286449, 
+            2.283648, 19.122409)), cA = list(length = 100L, n_na = 0L, 
+            sum = 5.228356, quantiles = c(0.017874, 0.037795, 0.060462, 
+            0.067082, 0.067691)), Treatment_Outcomes = list(length = 100L, 
             n_na = 0L, sum = 0, quantiles = c(0, 0, 0, 0, 0)), Recrudescence_Outcomes = list(
             length = 100L, n_na = 0L, sum = 0, quantiles = c(0, 0, 
             0, 0, 0)), Drug_choices = list(length = 100L, n_na = 0L, 

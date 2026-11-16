@@ -150,7 +150,7 @@ test_that("sim_save writes a versioned state that sim_restore reads back", {
   expect_invisible(sim_save(out, path))
   saved <- sim_restore(path)
   expect_s3_class(saved, "magenta_saved_state")
-  expect_equal(saved$format_version, 1L)
+  expect_equal(saved$format_version, 2L)
   expect_equal(saved$version, as.character(utils::packageVersion("magenta")))
   expect_true(all(magenta:::cpp_contract$saved_state %in% names(saved)))
   expect_named(saved$saved_inputs, c(
@@ -160,7 +160,7 @@ test_that("sim_save writes a versioned state that sim_restore reads back", {
   expect_s3_class(saved$params, "magenta_params")
   expect_s3_class(saved$schedule, "magenta_schedule")
   expect_equal(saved$meta$seed, 10L)
-  expect_output(print(saved), "format 1")
+  expect_output(print(saved), "format 2")
 
   # continuing from it uses the saved drug list and runs on
   cont <- suppressMessages(pipeline(
@@ -183,11 +183,52 @@ test_that("sim_save writes a versioned state that sim_restore reads back", {
     housekeeping_list = quiet()
   ))
   sim_save(state, path)
-  expect_equal(sim_restore(path)$format_version, 1L)
+  expect_equal(sim_restore(path)$format_version, 2L)
 
   # older plain-list saves are accepted and upgraded on read
   saveRDS(unclass(state), path)
   old <- sim_restore(path)
   expect_equal(old$format_version, 0L)
   expect_error(sim_restore(system.file("DESCRIPTION", package = "magenta")))
+})
+
+test_that("a save without each person's starting maternal immunity still loads", {
+  skip_on_cran()
+  out <- suppressMessages(pipeline(
+    EIR = 5, years = 1, N = 100, seed = 12L, num_loci = 3,
+    output = save_loggers(final = "full"), housekeeping_list = quiet()
+  ))
+  path <- tempfile(fileext = ".rds")
+  on.exit(unlink(path), add = TRUE)
+  sim_save(out, path)
+  saved <- sim_restore(path)
+  expect_true(all(is.finite(saved$population_List$ICM_init)))
+  expect_true(all(saved$population_List$ICM_init >= 0))
+
+  # the format 1 save of 1.4.0 before the field was added: no ICM_init
+  old <- saved
+  old$population_List$ICM_init <- NULL
+  old$format_version <- 1L
+  setup <- function(x) {
+    suppressMessages(pipeline(
+      EIR = 5, years = 1, N = 100, num_loci = 3, saved_state_path = x,
+      set_up_only = TRUE, housekeeping_list = quiet()
+    ))
+  }
+  from_old <- setup(old)
+  expect_true(all(is.finite(from_old$population_List$ICM)))
+  expect_true(all(from_old$population_List$ICM >= 0))
+  expect_true(all(is.finite(from_old$population_List$ICM_init)))
+  expect_true(all(from_old$population_List$ICM_init >= 0))
+  # rebuilt from the saved ICM and the age it was last computed at, so it
+  # matches the value the new format carries to rounding
+  expect_equal(from_old$population_List$ICM_init, setup(saved)$population_List$ICM_init)
+  expect_equal(from_old$population_List$ICM_init, saved$population_List$ICM_init)
+  # and a run continues from it
+  cont <- suppressMessages(pipeline(
+    EIR = 5, years = 1, N = 100, num_loci = 3, saved_state_path = old,
+    output = save_loggers(final = "full"), housekeeping_list = quiet()
+  ))
+  expect_true(all(is.finite(cont$population_List$ICM)))
+  expect_true(all(cont$population_List$ICM >= 0))
 })

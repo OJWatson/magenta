@@ -62,6 +62,9 @@
 * The resistance flag, drug choice and partner drug ratios are applied to the
   model at every update, so a yearly `resistance_flag` can switch off again
   (before, only a `TRUE` reached the model).
+* A saved state carries each person's starting maternal immunity, so a resumed
+  run keeps it (it was read uninitialised after a resume) and resumed runs
+  differ from 1.3.x; older saves still load and rebuild it.
 
 ## magenta 1.3.8
 

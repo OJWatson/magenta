@@ -666,7 +666,7 @@ sim_save <- function(sim, path) {
   extra$meta$Ptr <- NULL
   obj <- new_saved_state(
     c(unclass(state), extra),
-    format_version = 1L, version = as.character(version)
+    format_version = 2L, version = as.character(version)
   )
   saveRDS(obj, path)
   invisible(path)
@@ -729,7 +729,9 @@ final_full_state <- function(sim) {
 #' @param x The saved state as a list.
 #' @param format_version Format of the object: \code{0} for the plain full
 #'   saves of earlier versions, \code{1} for what \code{\link{sim_save}}
-#'   writes.
+#'   wrote before the population list carried each person's starting
+#'   maternal immunity (\code{ICM_init}), \code{2} for what it writes now.
+#'   Every format loads; the C++ rebuilds \code{ICM_init} for the older two.
 #' @param version The magenta version that wrote it.
 #' @return \code{x} with the two fields and class
 #'   \code{magenta_saved_state}.
@@ -767,7 +769,7 @@ as_saved_state <- function(x) {
   if (!inherits(x, "magenta_saved_state")) {
     x <- new_saved_state(x, format_version = 0L, version = NA_character_)
   }
-  if (x$format_version > 1L) {
+  if (x$format_version > 2L) {
     stop(
       "saved state format version ", x$format_version,
       " is newer than this version of magenta understands",

@@ -815,6 +815,11 @@ Open findings, not investigated further:
 - With `update_save = TRUE` the per-period output slots are the `Loggers`
   list itself while the final slot is `list(Loggers = ...)`, the 1.3.x shape
   the snapshots pin.
+- Late parasitological failure happens with resistance off too:
+  `Person::treatment_outcome()` without the resistance flag draws it from
+  `1 - lpf[0]` of the drug in use (0.085 per treatment for AL), as the drug's
+  own efficacy, so `Unsuccesful_Treatments_LPF` is non-zero in runs with no
+  resistance. Intended, from the comment ("regardless of resistance").
 
 *Parked for Phase 6.* The research-era helpers that Phase 0 removed are back
 on the branch, parked and unchanged (styled; ggplot2 calls qualified;

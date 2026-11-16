@@ -236,24 +236,22 @@ test_that("a resumed run's update steps use the drug list it is given", {
     ))
   }
 
-  # the ICM logger is left out of the comparisons: a person's starting
-  # maternal immunity is not part of the saved state, so after a resume the
-  # C++ recomputes ICM from an uninitialised value and two identical resumes
-  # differ there alone
-  but_icm <- function(x) x[setdiff(names(x), "ICM")]
-
   # no list: the saved list carries on, resistance off throughout
   carried <- resume()
   expect_equal(sim_params(carried)$drug, sim_params(first)$drug)
   expect_false(any(sim_schedule(carried)$resistance_flag))
+  # two resumes from one file are the same run in every logger
+  again <- resume()
+  expect_identical(again[[1]], carried[[1]])
+  expect_identical(again[[2]]$Loggers, carried[[2]]$Loggers)
 
   # a list that switches resistance on in the second new year drives the run
   switched <- resume(drug_list = al(resistance_flag = c(FALSE, TRUE)))
   expect_equal(sim_schedule(switched)$resistance_flag, c(FALSE, TRUE))
   expect_equal(sim_params(switched)$drug$resistance_flag, c(FALSE, TRUE))
   # the first new year is the same run; the second is not
-  expect_identical(but_icm(switched[[1]]), but_icm(carried[[1]]))
-  expect_false(identical(but_icm(switched[[2]]$Loggers), but_icm(carried[[2]]$Loggers)))
+  expect_identical(switched[[1]], carried[[1]])
+  expect_false(identical(switched[[2]]$Loggers, carried[[2]]$Loggers))
 
   # the drugs themselves are part of the saved state
   expect_error(

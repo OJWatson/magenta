@@ -11,7 +11,9 @@ new_saved_state(x, format_version, version)
 
 \item{format_version}{Format of the object: \code{0} for the plain full
 saves of earlier versions, \code{1} for what \code{\link{sim_save}}
-writes.}
+wrote before the population list carried each person's starting
+maternal immunity (\code{ICM_init}), \code{2} for what it writes now.
+Every format loads; the C++ rebuilds \code{ICM_init} for the older two.}
 
 \item{version}{The magenta version that wrote it.}
 }
