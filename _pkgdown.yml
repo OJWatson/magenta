@@ -56,6 +56,7 @@ reference:
     contents:
       - convert_barcode_vectors
       - update_saved_state_barcode_plaf
+      - update_saved_state_barcode_haplotype
   - title: "Data Objects"
     desc: "Internal Data Objects"
     contents:

@@ -271,6 +271,62 @@ update_saved_state_barcode_plaf <- function(saved_state, target_plaf, seed = NUL
   invisible(saved_state)
 }
 
+update_saved_state_barcode_haplotype <- function(saved_state, target_haplotype, seed = NULL) {
+
+  if (!is.list(saved_state)) {
+    stop("`saved_state` must be a list produced by readRDS on a saved simulation state.")
+  }
+
+  validate_haplotype_vector(target_haplotype)
+
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+
+  list_paths <- list(
+    c("populations_event_and_strains_List", "Strain_barcode_vectors"),
+    c("populations_event_and_strains_List", "Infection_barcode_realisation_vectors"),
+    c("scourge_List", "Mosquito_Oocyst_barcode_male_vectors"),
+    c("scourge_List", "Mosquito_Oocyst_barcode_female_vectors")
+  )
+
+  for (path in list_paths) {
+    if (!has_nested_element(saved_state, path)) {
+      stop(sprintf("Saved state does not contain `%s`.", paste(path, collapse = "$")))
+    }
+
+    barcode_list <- get_nested_element(saved_state, path)
+    flattened <- flatten_barcode_vectors(barcode_list)
+
+    if (length(flattened$flat) == 0) {
+      stop(sprintf(
+        "Cannot adjust haplotype frequencies for `%s` because it does not contain any barcode vectors.",
+        paste(path, collapse = "$")
+      ))
+    }
+
+    barcode_length <- length(flattened$flat[[1]])
+    haplotype_count <- length(target_haplotype)
+    if (haplotype_count != 2^barcode_length) {
+      stop(sprintf(
+        "`target_haplotype` has length %d but barcodes in `%s` have length %d (requiring %d haplotypes).",
+        haplotype_count, paste(path, collapse = "$"), barcode_length, 2^barcode_length
+      ))
+    }
+
+    barcode_matrix <- flat_to_matrix(flattened$flat, barcode_length)
+    adjusted_matrix <- adjust_matrix_to_haplotype(barcode_matrix, target_haplotype)
+
+    saved_state <- set_nested_element(
+      saved_state,
+      path,
+      rebuild_barcode_vectors(adjusted_matrix, flattened$counts)
+    )
+  }
+
+  invisible(saved_state)
+}
+
 validate_plaf_vector <- function(target_plaf) {
   if (!is.numeric(target_plaf)) {
     stop("`target_plaf` must be a numeric vector.")
@@ -282,6 +338,23 @@ validate_plaf_vector <- function(target_plaf) {
     stop("`target_plaf` values must lie between 0 and 1.")
   }
   invisible(target_plaf)
+}
+
+validate_haplotype_vector <- function(target_haplotype) {
+  if (!is.numeric(target_haplotype)) {
+    stop("`target_haplotype` must be a numeric vector.")
+  }
+  if (length(target_haplotype) == 0) {
+    stop("`target_haplotype` must have positive length.")
+  }
+  if (any(target_haplotype < 0)) {
+    stop("`target_haplotype` values must be non-negative.")
+  }
+  total <- sum(target_haplotype)
+  if (!isTRUE(all.equal(total, 1, tolerance = .Machine$double.eps^0.5))) {
+    stop("`target_haplotype` values must sum to 1.")
+  }
+  invisible(target_haplotype)
 }
 
 has_nested_element <- function(x, path) {
@@ -427,6 +500,93 @@ adjust_matrix_to_plaf <- function(barcode_matrix, target_plaf) {
   
   validate_plaf(barcode_matrix, target_plaf, "barcode vectors")
   barcode_matrix
+}
+
+adjust_matrix_to_haplotype <- function(barcode_matrix, target_haplotype) {
+  n <- nrow(barcode_matrix)
+  if (n == 0) {
+    return(barcode_matrix)
+  }
+
+  barcode_matrix <- as.matrix(barcode_matrix)
+  storage.mode(barcode_matrix) <- "integer"
+
+  barcode_length <- ncol(barcode_matrix)
+  haplotypes <- length(target_haplotype)
+  if (haplotypes != 2^barcode_length) {
+    stop("Number of haplotypes does not match barcode length.")
+  }
+
+  target_counts <- compute_target_haplotype_counts(target_haplotype, n)
+
+  assignments <- rep.int(seq_len(haplotypes), target_counts)
+  if (length(assignments) != n) {
+    stop("Failed to construct haplotype assignments of the correct size.")
+  }
+
+  if (n > 1) {
+    assignments <- sample(assignments)
+  }
+
+  for (i in seq_len(n)) {
+    barcode_matrix[i, ] <- haplotype_index_to_barcode(assignments[i] - 1L, barcode_length)
+  }
+
+  validate_haplotype(barcode_matrix, target_haplotype, "barcode vectors")
+
+  barcode_matrix
+}
+
+compute_target_haplotype_counts <- function(target_haplotype, n) {
+  raw <- target_haplotype * n
+  target_counts <- floor(raw)
+  remainder <- n - sum(target_counts)
+
+  if (remainder < 0) {
+    stop("`target_haplotype` results in impossible haplotype counts.")
+  }
+
+  if (remainder > 0) {
+    order_remainder <- order(raw - target_counts, decreasing = TRUE)
+    for (idx in seq_len(remainder)) {
+      target_counts[order_remainder[[idx]]] <- target_counts[order_remainder[[idx]]] + 1L
+    }
+  }
+
+  storage.mode(target_counts) <- "integer"
+  target_counts
+}
+
+haplotype_index_to_barcode <- function(index, barcode_length) {
+  bits <- intToBits(as.integer(index))
+  as.integer(bits[seq_len(barcode_length)])
+}
+
+validate_haplotype <- function(barcode_matrix, target_haplotype, context) {
+  if (nrow(barcode_matrix) == 0) {
+    return(invisible(NULL))
+  }
+
+  barcode_length <- ncol(barcode_matrix)
+  haplotypes <- 2^barcode_length
+  observed_counts <- integer(haplotypes)
+
+  powers <- 2^(seq_len(barcode_length) - 1L)
+  for (i in seq_len(nrow(barcode_matrix))) {
+    idx <- as.integer(sum(barcode_matrix[i, ] * powers) + 1L)
+    observed_counts[[idx]] <- observed_counts[[idx]] + 1L
+  }
+
+  expected_counts <- compute_target_haplotype_counts(target_haplotype, nrow(barcode_matrix))
+
+  if (!identical(observed_counts, expected_counts)) {
+    stop(sprintf(
+      "Failed to match target haplotype frequencies for %s.",
+      context
+    ))
+  }
+
+  invisible(NULL)
 }
 
 validate_plaf <- function(barcode_matrix, target_plaf, context) {
