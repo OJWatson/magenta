@@ -229,41 +229,88 @@ What is left is mostly the realised EIR (item 5). I found two causes in the tran
 Neither is a plain bug: both come from magenta being individual-based in a way the equilibrium
 (and ms) is not. So I have not changed either.
 
-**5a. Gametocyte delay removes D and T from onward transmission.** `reciprocal_infection_boolean`
-(`src/person.cpp:54-68`) only counts strains acquired more than `g_delay_gam` (12.5 d) ago. A strain is
-acquired when it is realised, which is also when the person becomes D. D lasts about 5 d, then T
-lasts 5 d, so almost none of a clinical episode is infectious. ms instead lags the whole
-infectivity by 12.5 d (a lagged value in `biting_process.R`). That shifts the D and T days later but keeps them,
-and it is what the equilibrium solution assumes (`FOIvij_eq` uses cD * D + cT * T,
-`R/equilibrium_init_create.R:247`). With a scratch toggle setting `g_delay_gam = 0` (N = 5e4,
-4 years, 2 seeds, all other fixes on), the results were:
+**5a. Gametocyte delay removes clinical episodes from onward transmission.**
+`reciprocal_infection_boolean` (`src/person.cpp:54-68`) only counts strains acquired more than
+`g_delay_gam` (12.5 d) ago.
+- The acquisition day is not the infectious bite. It is the day the strain is realised, `dur_E`
+  (12 d) after the bite, which is also the day the person moves to D, T or A. The strain is pushed
+  with `parameters.g_current_time` at realisation (`src/person.cpp:1477-1480`).
+- So a new infection only becomes infectious to mosquitoes 12.5 d after the person enters D or T
+  (24.5 d after the bite). D and T each last about 5 d (a clinical case goes to one or the other),
+  so the clinical episode itself contributes almost nothing.
+  - An untreated case is usually A by day 12.5, so it transmits at cA, not cD.
+  - A treated case is in P (cP = 0) by then, so cT never counts.
+- ms lags the whole person's infectivity by 12.5 d. A person in D on day t contributes cD on day
+  t + 12.5, whatever state they are in then. So the D and T days are moved later, not lost.
+- The equilibrium solution also counts them in full (`FOIvij_eq` uses cD * D + cT * T,
+  `R/equilibrium_init_create.R:247`). The lag makes no difference at equilibrium, which is why
+  setting `g_delay_gam = 0` is a fair steady-state probe of the ms behaviour.
 
-| EIR | adult-equiv realised EIR, now | with delay_gam = 0 | ms | clinical, now | with delay_gam = 0 |
+To match ms, keep the 12.5 d lag but apply it to the person's infectivity history: the
+infectivity to use on day t is the person's state (D, T, A or U) on day t - 12.5. Strain age
+should then only pick which strains a mosquito gets.
+
+**5b. Mosquitoes bite every 3 days, but sporozoites appear at day 10.**
+- A mosquito can only be infected at a bite. It then bites on a fixed 3-day cycle
+  (`g_mosquito_next_biting_day_vector` = 3, `src/parameters.cpp:68`).
+- The oocyst ruptures 10 d after the infecting bite (`src/mosquito.cpp:67`), so the first
+  infectious bite is always on day 12. It is always 2 days late, never 0 or 1.
+- Death is floor(Exp(mean 1/mu0)) + 1 days (`src/mosquito.cpp:254-263`), so P(alive on day k) =
+  exp(-mu0 k).
+- Expected infectious bites per mosquito infection:
+  - magenta: exp(-12 mu0) / (1 - exp(-3 mu0)) = 0.627;
+  - the ODE and equilibrium: exp(-10 mu0) / (3 mu0) = 0.675.
+- The ODE number is what you get in the discrete model if the first infectious bite is on day
+  11.45. In effect magenta is about half a day late, not 2 days. That half day still costs 7% of
+  the infectious bites on each pass of the loop.
+- The realised EIR starts at the input on day 0, because infectious mosquitoes are set directly
+  from Iv. It then drifts down, most at low EIR.
+
+**Probes** (scratch toggles, N = 5e4, 4 years, 2 seeds, all of fixes 1-4 on):
+- `eip`: 15.7% of infecting bites get a rupture 3 d earlier (first infectious bite on day 9, not
+  12). This makes the expected infectious bites match the ODE's 0.675 without changing the
+  biting cycle. The draw is made once per bite: drawing per oocyst left rupture times out of order
+  and stalled mosquitoes.
+- `gam0`: `g_delay_gam = 0`.
+
+The ms column is the mean of years 1-4 from 8-year runs (N = 5e4), and clinical incidence for ms is
+from the N = 1e5 comparison.
+
+| EIR | variant | adult-equiv realised EIR | ratio to input | PfPR2-10 | clinical |
 |---|---|---|---|---|---|
-| 0.55 | 0.44 | 0.48 | 0.61 | 0.115 | 0.126 |
-| 4 | 3.76 | 3.93 | 4.16 | 0.413 | 0.425 |
-| 20 | 18.9 | 19.2 | 20.4 | 0.635 | 0.644 |
+| 0.55 | now | 0.436 | 0.79 | 0.041 | 0.115 |
+| 0.55 | eip | 0.507 | 0.92 | 0.050 | 0.132 |
+| 0.55 | gam0 | 0.481 | 0.87 | 0.047 | 0.126 |
+| 0.55 | eip + gam0 | 0.564 | 1.03 | 0.055 | 0.146 |
+| 0.55 | ms | 0.607 | 1.10 | 0.057 | 0.151 |
+| 4 | now | 3.76 | 0.94 | 0.208 | 0.413 |
+| 4 | eip | 4.13 | 1.03 | 0.220 | 0.446 |
+| 4 | gam0 | 3.93 | 0.98 | 0.213 | 0.425 |
+| 4 | eip + gam0 | 4.29 | 1.07 | 0.220 | 0.457 |
+| 4 | ms | 4.16 | 1.04 | 0.217 | 0.441 |
+| 20 | now | 18.9 | 0.94 | 0.449 | 0.635 |
+| 20 | eip | 20.4 | 1.02 | 0.464 | 0.669 |
+| 20 | gam0 | 19.2 | 0.96 | 0.450 | 0.644 |
+| 20 | eip + gam0 | 20.8 | 1.04 | 0.470 | 0.677 |
+| 20 | ms | 20.4 | 1.02 | 0.459 | 0.672 |
 
-Setting the delay to 0 is only a probe. Matching ms properly would mean keeping the 12.5 d lag but
-applying it to the person's infectivity history, not to strain age.
+The biting-cycle timing (5b) is the main cause. Correcting it alone brings EIR 4 and 20 into line
+with ms on realised EIR, PfPR and clinical incidence. EIR 0.55 is still about 15% below ms on EIR
+and clinical incidence. Adding the gametocyte change (5a) closes most of that, but takes EIR 4 and
+20 slightly past ms.
 
-**5b. Mosquitoes bite every 3 days, but sporozoites appear at day 10.** Each mosquito bites on a
-fixed 3-day cycle (`g_mosquito_next_biting_day_vector` = 3, `src/parameters.cpp:68`). An oocyst
-ruptures 10 d after the infecting bite (`src/mosquito.cpp:67`), so the first infectious bite is
-on day 12. Death is floor(Exp(mean 1/mu0)) + 1 days (`src/mosquito.cpp:254-263`), so P(alive at
-day k) = exp(-mu0 k).
-- Expected infectious bites per mosquito infection in magenta:
-  exp(-12 mu0) / (1 - exp(-3 mu0)) = 0.627.
-- In the ODE and equilibrium: Surv0 * a / mu0 = exp(-10 mu0) / (3 mu0) = 0.675.
+ms is not flat either. At an input of 0.55 its realised EIR is 0.66 in year 1, then 0.60, 0.58
+and 0.59, settling about 6% above the input (0.585 by year 8). At 4 and 20 it settles 1-2% above.
 
-So each loop round gives about 7% fewer infectious bites than the equilibrium the run starts from.
-At low EIR prevalence is most sensitive to EIR, so the feedback makes it the biggest loss there.
-This fits the realised EIR starting at the input on day 0 (the infectious mosquitoes are set
-directly from Iv) and drifting down over the first months. Possible fixes:
-- an EIP that is a multiple of the biting cycle;
-- randomising the first bite after infection;
-- recalibrating mv0 for the discrete cycle.
-Each changes behaviour, so it is your call.
+Ways to fix 5b, all of them behaviour changes:
+1. Draw the extrinsic incubation period per bite as in the probe, so the expected infectious bites
+   match the ODE. This is a small change in `allocate_gametocytes`, but p depends on mu0 and the
+   cycle length, so it would need recomputing for interventions that change either.
+2. Recompute the equilibrium mosquito density (`mv0`) for the discrete 3-day cycle, so the input
+   EIR is what is realised. This keeps the mosquito biology as it is.
+3. Make the gonotrophic cycle stochastic (for example geometric with mean 3 d), which matches the
+   ODE directly. This is the biggest change to the mosquito code and to interventions that use
+   the biting vector.
 
 **5c. Minor, initialisation of exposed mosquitoes** (`src/main_init.cpp:600-622`):
 - Their remaining EIP is drawn from an exponential truncated at 10 d, not from the distribution
