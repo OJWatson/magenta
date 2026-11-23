@@ -51,6 +51,11 @@ reference:
       - drug_create_dhappq
       - drug_create_default_no_resistance
       - drug_table
+  - title: "Severe Disease"
+    desc: "Functions for severe disease outputs"
+    contents:
+      - severe_rates
+      - severe_outcomes
   - title: "Barcode Misc"
     desc: "Functions for converting and manipulating barcodes"
     contents:
@@ -77,6 +82,10 @@ articles:
       - Resistance
       - DrugStrategies
       - NewDrugs
+  - title: "Model checks"
+    navbar: ~
+    contents:
+      - Equivalence
 
 navbar:
   type: default

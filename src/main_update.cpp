@@ -577,40 +577,41 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
   
   rcpp_out(u_ptr->parameters.g_h_quiet_print, "\n Ages and Immunity Done \n");
   
-  // Create Rcpp loggers list
-  Rcpp::List Loggers = Rcpp::List::create(Rcpp::Named("Log_Counter")=log_counter,                                                                                      
-                                          Rcpp::Named("Incidence")=total_incidence/log_counter,
-                                          Rcpp::Named("Incidence_05")=total_incidence_05/log_counter, 
-                                          Rcpp::Named("Treatments")=Rcpp::List::create(
-                                            Rcpp::Named("Successful_Treatments")=succesful_treatments_by_drug,
-                                            Rcpp::Named("Unsuccesful_Treatments_LPF")=unsuccesful_treatments_by_drug,
-                                            Rcpp::Named("Not_Treated")=not_treated,
-                                            Rcpp::Named("daily_bite_counters")=daily_bite_counters,
-                                            Rcpp::Named("daily_infectious_bite_counters")=daily_infectious_bite_counters
-                                          ),
-                                          Rcpp::Named("daily_mutations_per_loci")=daily_mutations_per_loci,
-                                          Rcpp::Named("InfectionStates")=Infection_States, 
-                                          Rcpp::Named("Ages")=Ages, 
-                                          Rcpp::Named("IB")=IB, 
-                                          Rcpp::Named("ICA")=ICA, 
-                                          Rcpp::Named("ICM")=ICM, 
-                                          Rcpp::Named("ID")=ID,
-                                          Rcpp::Named("Mosquitoes")=Rcpp::List::create(
-                                            Rcpp::Named("Mos_S")=mosq_status_eq[0]/log_counter, 
-                                            Rcpp::Named("Mos_E")=mosq_status_eq[1]/log_counter, 
-                                            Rcpp::Named("Mos_I")=mosq_status_eq[2]/log_counter
-                                          ),
-                                          Rcpp::Named("Time")=u_ptr->parameters.g_current_time,
-                                          Rcpp::Named("S")=status_eq[0],Rcpp::Named("D")=status_eq[1],Rcpp::Named("A")=status_eq[2],
-                                                                                                                                Rcpp::Named("U")=status_eq[3],Rcpp::Named("T")=status_eq[4],Rcpp::Named("P")=status_eq[5]
-  );
-  
-  // Severe disease loggers appended after (Rcpp::List::create takes at most 20 elements), so earlier positions are unchanged
+  // Create Rcpp loggers list. Built with push_back as Rcpp::List::create takes at most 20 elements
+  Rcpp::List Loggers;
+  Loggers.push_back(log_counter, "Log_Counter");
+  Loggers.push_back(total_incidence/log_counter, "Incidence");
+  Loggers.push_back(total_incidence_05/log_counter, "Incidence_05");
   Loggers.push_back(total_severe/log_counter, "Severe");
   Loggers.push_back(total_severe_05/log_counter, "Severe_05");
+  Loggers.push_back(Rcpp::List::create(
+    Rcpp::Named("Successful_Treatments")=succesful_treatments_by_drug,
+    Rcpp::Named("Unsuccesful_Treatments_LPF")=unsuccesful_treatments_by_drug,
+    Rcpp::Named("Not_Treated")=not_treated,
+    Rcpp::Named("daily_bite_counters")=daily_bite_counters,
+    Rcpp::Named("daily_infectious_bite_counters")=daily_infectious_bite_counters
+  ), "Treatments");
+  Loggers.push_back(daily_mutations_per_loci, "daily_mutations_per_loci");
+  Loggers.push_back(Infection_States, "InfectionStates");
+  Loggers.push_back(Ages, "Ages");
+  Loggers.push_back(IB, "IB");
+  Loggers.push_back(ICA, "ICA");
+  Loggers.push_back(ICM, "ICM");
+  Loggers.push_back(ID, "ID");
   Loggers.push_back(IVA, "IVA");
   Loggers.push_back(IVM, "IVM");
-  
+  Loggers.push_back(Rcpp::List::create(
+    Rcpp::Named("Mos_S")=mosq_status_eq[0]/log_counter,
+    Rcpp::Named("Mos_E")=mosq_status_eq[1]/log_counter,
+    Rcpp::Named("Mos_I")=mosq_status_eq[2]/log_counter
+  ), "Mosquitoes");
+  Loggers.push_back(u_ptr->parameters.g_current_time, "Time");
+  Loggers.push_back(status_eq[0], "S");
+  Loggers.push_back(status_eq[1], "D");
+  Loggers.push_back(status_eq[2], "A");
+  Loggers.push_back(status_eq[3], "U");
+  Loggers.push_back(status_eq[4], "T");
+  Loggers.push_back(status_eq[5], "P");
   
   rcpp_out(u_ptr->parameters.g_h_quiet_print, "\n Loggers Done \n");
   

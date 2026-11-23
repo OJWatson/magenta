@@ -5,12 +5,18 @@ test_that("mosquito biting intervals are geometric with mean 1/fv", {
                                                                cluster = TRUE))
   bites <- out$parameters_List$g_mosquito_next_biting_day_vector
 
-  # never 0 (a mosquito would stall), spread out rather than a fixed 3 day cycle
+  # never 0 (a mosquito would stall), and spread out rather than a fixed cycle
   expect_gte(min(bites), 1)
   expect_gt(length(unique(bites)), 5)
 
-  # no interventions so fv = 1/3 and the mean is 3 (sd of the mean over 1000 draws ~ 0.08)
-  expect_lt(abs(mean(bites) - 3), 0.3)
-  expect_lt(abs(mean(bites == 1) - 1/3), 0.06)
+  # with no interventions the biting rate is 1 / (tau1 + tau2)
+  mpl <- model_param_list_create()
+  fv <- 1 / (mpl$tau1 + mpl$tau2)
+
+  # geometric on 1, 2, ...: mean 1/fv, variance (1 - fv)/fv^2 and P(1) = fv,
+  # checked to within 5 standard errors
+  n <- length(bites)
+  expect_lt(abs(mean(bites) - 1 / fv), 5 * sqrt((1 - fv) / fv^2 / n))
+  expect_lt(abs(mean(bites == 1) - fv), 5 * sqrt(fv * (1 - fv) / n))
 
 })

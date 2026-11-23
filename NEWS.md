@@ -1,44 +1,18 @@
-## magenta 1.3.9
+## magenta 1.4.0
 
-* Severe malaria. Each person now carries acquired (`IVA`) and maternal
-  (`IVM`) severe disease immunity, following Griffin et al. 2015 Proc R Soc B
-  282:20142657, with the parameter values used in malariasimulation. They are
-  boosted and decay in the same way as `ICA` and `ICM`, and are initialised
-  from equilibrium.
-* New loggers `Severe` and `Severe_05`: the expected number of severe cases
-  per day (the sum of the probability that each new infection is severe),
-  averaged over the logging period like `Incidence`. No new random draws are
-  made, so all existing outputs are unchanged. `IVA` and `IVM` are logged per
-  person and are kept in saved states. Older saved states and equilibrium
-  states still load, starting with no severe immunity.
-* New functions `severe_rates()`, to give clinical and severe disease per
-  person per year, and `severe_outcomes()`, to give hospitalisations and
-  deaths using the same assumptions as postie.
-* Maternal clinical immunity at birth (`ICM_init`) is now saved and restored with the model state; it was previously left uninitialised after a reload.
-* Changes to bring the relationship between EIR, prevalence and clinical
-  incidence in line with malariasimulation (see `notes/eir_alignment_review.md`).
-  These change model outputs:
-  * Bug fix to initialisation. People infected at the start were given a
-    realised infection count equal to their MOI, so their next few infections
-    were never realised until they cleared to susceptible. This lowered
-    incidence for the first 2-3 years. The same count is now reset when
-    pending infections are cleared on treatment, and is reset when loading
-    older saved states that have this problem.
-  * A successful bite no longer fails to infect because the person's blood
-    stage immunity (`IB`) was boosted in the previous `uB` days. Neither
-    malariasimulation nor Griffin et al. have this rule.
-  * The probability of clinical disease (phi) is calculated from `ICA` before
-    today's boost (as was already done for severe disease), and 0.5 is added to
-    any non-zero `ICA`, as in malariasimulation.
-  * `ICA`, `ID` and `IVA` are only boosted by bites that can cause an
-    infection (people who are susceptible, asymptomatic or subpatent).
-  * Mosquitoes no longer feed on a fixed 3 day cycle. The days to the next
-    feed are geometric (at least 1, mean 1/fv, so interventions that change fv
-    still change the mean), drawn from a block refilled each day. The
-    extrinsic incubation period is drawn once per infecting bite as 10 or 11
-    days with equal chance. Together these give the expected number of
-    infectious bites per mosquito infection in the equilibrium, which the fixed
-    cycle undershot by about 7%, so realised EIR was below the input EIR.
+* Severe malaria: acquired and maternal severe immunity (`IVA`, `IVM`) as in
+  Griffin et al. 2015, new `Severe` and `Severe_05` loggers, and new functions
+  `severe_rates()` and `severe_outcomes()`.
+* Infection, immunity boosting and mosquito biting brought in line with
+  malariasimulation, which changes model outputs:
+  * Bug fix to initialisation, which stopped initially infected people from
+    realising new infections and lowered incidence for the first 2-3 years.
+  * Bites no longer fail to infect because `IB` was boosted recently.
+  * Clinical disease uses `ICA` before the day's boost, plus 0.5 if non-zero.
+  * Immunity is only boosted by bites that can infect.
+  * Mosquito feeding intervals are geometric with mean 1/fv rather than a fixed
+    3 days, and the EIP is 10 or 11 days.
+* Bug fix: maternal immunity at birth (`ICM_init`) is now kept in saved states.
 
 ## magenta 1.3.8
 

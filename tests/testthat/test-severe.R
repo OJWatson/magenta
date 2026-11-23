@@ -1,9 +1,11 @@
 test_that("severe probability matches a hand calculation", {
 
+  # Griffin et al. 2015 equations, using the default parameters
+  mpl <- model_param_list_create()
   theta <- function(age, iva, ivm) {
-    fv <- 1 - (1 - 0.141195) / (1 + (age / 2493.41)^2.91282)
-    0.0749886 * (0.0001191 + (1 - 0.0001191) /
-                   (1 + fv * ((iva + ivm) / 1.09629)^2.00048))
+    fv <- 1 - (1 - mpl$fV0) / (1 + (age / mpl$aV)^mpl$gammaV)
+    mpl$theta0 * (mpl$theta1 + (1 - mpl$theta1) /
+                    (1 + fv * ((iva + ivm) / mpl$IV0)^mpl$kV))
   }
 
   for (x in list(c(0, 0, 0), c(365, 0, 0.5), c(3650, 5, 0), c(20 * 365, 30, 0))) {
@@ -12,19 +14,27 @@ test_that("severe probability matches a hand calculation", {
   }
 
   # no immunity gives theta0 and immunity reduces it
-  expect_equal(test_severe_probability(1000, 0, 0), 0.0749886)
+  expect_equal(test_severe_probability(1000, 0, 0), mpl$theta0)
   expect_lt(test_severe_probability(1000, 10, 0), test_severe_probability(1000, 1, 0))
 
 })
 
 test_that("severe outcomes follow the postie formula", {
 
-  out <- severe_outcomes(c(0.01, 0.02), ft = 0.5)
-  sev <- c(0.01, 0.02) / 0.8 * (0.5 * 0.58 + 0.5) / (0.1 * 0.58 + 0.9)
+  # postie's defaults, as given in severe_outcomes()
+  d <- formals(severe_outcomes)
+  model_sev <- c(0.01, 0.02)
+  ft <- 0.5
+  ts <- 1 - d$treatment_scaler
+  baseline <- d$baseline_treatment * ts + (1 - d$baseline_treatment)
+
+  out <- severe_outcomes(model_sev, ft = ft)
+  sev <- model_sev * eval(d$severe_scaler) * (ft * ts + (1 - ft)) / baseline
   expect_equal(out$severe, sev)
-  expect_equal(out$severe_hospital, sev * 0.8)
-  expect_equal(out$mortality, sev * 0.8 * 0.065 + sev * 0.2 * 0.6)
-  expect_equal(out$severe_model, c(0.01, 0.02))
+  expect_equal(out$severe_hospital, sev * d$ft_sev)
+  expect_equal(out$mortality, sev * d$ft_sev * d$hosp_sev_cfr +
+                 sev * (1 - d$ft_sev) * d$community_sev_cfr)
+  expect_equal(out$severe_model, model_sev)
   expect_error(severe_outcomes(0.01, ft = 0.5, treatment_scaler = 2))
 
 })
@@ -32,13 +42,15 @@ test_that("severe outcomes follow the postie formula", {
 test_that("equilibrium IVA uses the ICA recursion", {
 
   # with the ICA boosting and decay, IVA is identical to ICA
-  mpl <- model_param_list_create(uVA = 6.06349, dVA = 10950)
+  mpl <- model_param_list_create()
+  mpl_ica <- model_param_list_create(uVA = mpl$uCA, dVA = mpl$dCA)
   eq <- equilibrium_init_create(age_vector = age_brackets(100, 40, TRUE),
                                 het_brackets = 5, EIR = 20, ft = 0.4,
-                                model_param_list = mpl, country = NULL,
+                                model_param_list = mpl_ica, country = NULL,
                                 admin = NULL, quiet = TRUE)
   expect_equal(eq$init_IVA, eq$init_ICA)
-  expect_equal(eq$IVM_init_eq, eq$ICM_init_eq * 0.195768 / mpl$PM)
+  # maternal severe immunity is the same fraction of IVA as ICM is of ICA
+  expect_equal(eq$IVM_init_eq, eq$ICM_init_eq * mpl$PVM / mpl$PM)
 
 })
 

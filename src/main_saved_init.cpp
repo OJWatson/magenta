@@ -249,7 +249,7 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   if (parameters_List.containsElementNamed("g_dCM")) {
     parameters.g_dCM = Rcpp::as<double>(parameters_List["g_dCM"]);
   }
-  // severe disease immunity parameters (absent from states saved before 1.3.9, so keep the defaults)
+  // severe disease immunity parameters (absent from states saved before 1.4.0, so keep the defaults)
   if (parameters_List.containsElementNamed("g_theta0")) {
     parameters.g_theta0 = Rcpp::as<double>(parameters_List["g_theta0"]);
   }
@@ -564,13 +564,13 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   std::vector<int> I_C_D_CM_last_calculated_time = Rcpp::as<vector<int> >(population_List["I_C_D_CM_last_calculated_time"]);
   std::vector<double> Immunity_boost_float = Rcpp::as<vector<double> >(population_List["Immunity_boost_float"]);
   
-  // Severe disease immunity. States saved before 1.3.9 do not have these, so start with no severe immunity and
+  // Severe disease immunity. States saved before 1.4.0 do not have these, so start with no severe immunity and
   // take the IVA boost times from ICA, as is done for a new person
   std::vector<double> IVA_v(parameters.g_N, 0.0);
   std::vector<double> IVM_v(parameters.g_N, 0.0);
   std::vector<double> IVM_init_v(parameters.g_N, 0.0);
   std::vector<double> IVA_last_boost_time = ICA_last_boost_time;
-  // ICM_init is saved from 1.3.9; older states back-compute it from ICM and age (ICM = ICM_init * exp(-age/dCM))
+  // ICM_init is saved from 1.4.0; older states back-compute it from ICM and age (ICM = ICM_init * exp(-age/dCM))
   std::vector<double> ICM_init_v(parameters.g_N, 0.0);
   if (population_List.containsElementNamed("ICM_init")) {
     ICM_init_v = Rcpp::as<vector<double> >(population_List["ICM_init"]);
@@ -702,7 +702,7 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     // Strain Numbers
     population[n].set_m_number_of_strains(Number_of_Strains[n]);
     
-    // Strain Ralised Numbers. States saved before 1.3.9 could have more realised infections than pending
+    // Strain Ralised Numbers. States saved before 1.4.0 could have more realised infections than pending
     // infections (initially infected people), which stopped their next infections being realised, so reset these
     if (Number_of_Realised_Infections[n] > Rcpp::as<Rcpp::IntegerVector>(Infection_time_realisation_vectors[n]).size()) {
       population[n].set_m_number_of_realised_infections(0);

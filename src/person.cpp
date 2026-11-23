@@ -356,7 +356,7 @@ void Person::allocate_bite(Parameters &parameters, Mosquito &mosquito)
     // First calculate what the current IB should be given when it was last calculated
     m_IB *= exp((m_IB_last_calculated_time - parameters.g_current_time) / parameters.g_dB);
     
-    // If the last bite was less than g_uB (time in which boosting of IB cannot happen) then increse IB
+    // If the last bite was less than g_uB (time in which boosting of IB cannot happen) then increase IB
     if (m_IB_last_boost_time < parameters.g_current_time - parameters.g_uB) {
       
       // Increase IB and update IB last boost time
@@ -445,7 +445,7 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
       
       }
     
-      // If the last bite was less than g_uD (time in which boosting of ID cannot happen) then increse ID
+      // If the last bite was less than g_uD (time in which boosting of ID cannot happen) then increase ID
       if (m_ID_last_boost_time < parameters.g_current_time - parameters.g_uD) {
       
         // Increase ID and update ID last boost time
@@ -454,10 +454,10 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
       
       }
     
-      // If the last bite was less than g_uCA (time in which boosting of ICA cannot happen) then increse ICA
+      // If the last bite was less than g_uCA (time in which boosting of ICA cannot happen) then increase ICA
       if (m_ICA_last_boost_time < parameters.g_current_time - parameters.g_uCA) {
       
-        // Increase IB and update IB last boost time
+        // Increase ICA and update ICA last boost time
         m_ICA++;
         m_ICA_last_boost_time = parameters.g_current_time + modf(m_ICA_last_boost_time, &m_ICA_last_boost_time);
       
@@ -842,7 +842,7 @@ void Person::die(const Parameters &parameters)
   recover(parameters);
   
   // Reset immunities, age
-  m_IB = m_ID = m_ICA = 0;
+  m_IB = m_ID = m_ICA = m_IVA = 0;
   m_person_age = 0;
   m_day_last_treated = 0;
   
@@ -850,7 +850,6 @@ void Person::die(const Parameters &parameters)
   m_IB_last_boost_time -= parameters.g_uB;
   m_ICA_last_boost_time -= parameters.g_uCA;
   m_ID_last_boost_time -= parameters.g_uD;
-  m_IVA = 0;
   m_IVA_last_boost_time -= parameters.g_uVA;
   
   // Set maternal immunity
