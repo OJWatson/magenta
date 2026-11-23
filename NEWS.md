@@ -1,3 +1,20 @@
+## magenta 1.3.9
+
+* Severe malaria. Each person now carries acquired (`IVA`) and maternal
+  (`IVM`) severe disease immunity, following Griffin et al. 2015 Proc R Soc B
+  282:20142657, with the parameter values used in malariasimulation. They are
+  boosted and decay in the same way as `ICA` and `ICM`, and are initialised
+  from equilibrium.
+* New loggers `Severe` and `Severe_05`: the expected number of severe cases
+  per day (the sum of the probability that each new infection is severe),
+  averaged over the logging period like `Incidence`. No new random draws are
+  made, so all existing outputs are unchanged. `IVA` and `IVM` are logged per
+  person and are kept in saved states. Older saved states and equilibrium
+  states still load, starting with no severe immunity.
+* New functions `severe_rates()`, to give clinical and severe disease per
+  person per year, and `severe_outcomes()`, to give hospitalisations and
+  deaths using the same assumptions as postie.
+
 ## magenta 1.3.8
 
 * New vignettes: `Loggers`, `DrugStrategies` and `NewDrugs`. `Resistance` and
