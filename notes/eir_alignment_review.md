@@ -2,7 +2,7 @@
 
 Review of the gap seen in `scripts/severe_comparison.R` (magenta clinical incidence 22-36% below
 malariasimulation (ms) at the same EIR, PfPR2-10 lower at low EIR). This is a review only: no model
-code on this branch was changed. Numbers below come from a scratch copy of magenta with
+code was changed. The fixes that followed are listed at the end. Numbers below come from a scratch copy of magenta with
 environment-variable toggles and event counters, and from ms 3.0.0 with functions swapped via
 `assignInNamespace`. Line numbers are for magenta at `cc35c34` and ms at `d315a6c`.
 
@@ -213,6 +213,68 @@ for magenta against a 4-year average for ms, which only matters while magenta is
    At low EIR this is the main remaining gap.
 6. In `scripts/severe_comparison.R`, use per-person q for magenta PfPR. Ideally compare time
    averages, or the same window, in both models.
+
+## Update: fixes 1-4 and 6 are in, and where the EIR shortfall comes from
+
+Fixes 1-4 and 6 are in commit `7a920bb` (with an IVA left in the paper form, no +0.5). All tests
+pass. `scripts/severe_comparison_results.csv` was regenerated (N = 1e5, 4 years):
+
+| EIR | clinical, magenta before | clinical, magenta now | clinical, ms | PfPR2-10, magenta now | PfPR2-10, ms |
+|---|---|---|---|---|---|
+| 0.55 | 0.096 | 0.114 | 0.151 | 0.044 | 0.056 |
+| 4 | 0.346 | 0.413 | 0.441 | 0.204 | 0.217 |
+| 20 | 0.519 | 0.638 | 0.672 | 0.451 | 0.459 |
+
+What is left is mostly the realised EIR (item 5). I found two causes in the transmission loop.
+Neither is a plain bug: both come from magenta being individual-based in a way the equilibrium
+(and ms) is not. So I have not changed either.
+
+**5a. Gametocyte delay removes D and T from onward transmission.** `reciprocal_infection_boolean`
+(`src/person.cpp:54-68`) only counts strains acquired more than `g_delay_gam` (12.5 d) ago. A strain is
+acquired when it is realised, which is also when the person becomes D. D lasts about 5 d, then T
+lasts 5 d, so almost none of a clinical episode is infectious. ms instead lags the whole
+infectivity by 12.5 d (a lagged value in `biting_process.R`). That shifts the D and T days later but keeps them,
+and it is what the equilibrium solution assumes (`FOIvij_eq` uses cD * D + cT * T,
+`R/equilibrium_init_create.R:247`). With a scratch toggle setting `g_delay_gam = 0` (N = 5e4,
+4 years, 2 seeds, all other fixes on), the results were:
+
+| EIR | adult-equiv realised EIR, now | with delay_gam = 0 | ms | clinical, now | with delay_gam = 0 |
+|---|---|---|---|---|---|
+| 0.55 | 0.44 | 0.48 | 0.61 | 0.115 | 0.126 |
+| 4 | 3.76 | 3.93 | 4.16 | 0.413 | 0.425 |
+| 20 | 18.9 | 19.2 | 20.4 | 0.635 | 0.644 |
+
+Setting the delay to 0 is only a probe. Matching ms properly would mean keeping the 12.5 d lag but
+applying it to the person's infectivity history, not to strain age.
+
+**5b. Mosquitoes bite every 3 days, but sporozoites appear at day 10.** Each mosquito bites on a
+fixed 3-day cycle (`g_mosquito_next_biting_day_vector` = 3, `src/parameters.cpp:68`). An oocyst
+ruptures 10 d after the infecting bite (`src/mosquito.cpp:67`), so the first infectious bite is
+on day 12. Death is floor(Exp(mean 1/mu0)) + 1 days (`src/mosquito.cpp:254-263`), so P(alive at
+day k) = exp(-mu0 k).
+- Expected infectious bites per mosquito infection in magenta:
+  exp(-12 mu0) / (1 - exp(-3 mu0)) = 0.627.
+- In the ODE and equilibrium: Surv0 * a / mu0 = exp(-10 mu0) / (3 mu0) = 0.675.
+
+So each loop round gives about 7% fewer infectious bites than the equilibrium the run starts from.
+At low EIR prevalence is most sensitive to EIR, so the feedback makes it the biggest loss there.
+This fits the realised EIR starting at the input on day 0 (the infectious mosquitoes are set
+directly from Iv) and drifting down over the first months. Possible fixes:
+- an EIP that is a multiple of the biting cycle;
+- randomising the first bite after infection;
+- recalibrating mv0 for the discrete cycle.
+Each changes behaviour, so it is your call.
+
+**5c. Minor, initialisation of exposed mosquitoes** (`src/main_init.cpp:600-622`):
+- Their remaining EIP is drawn from an exponential truncated at 10 d, not from the distribution
+  the equilibrium implies.
+- The multi-strain branch sets the rupture time without `g_current_time`. That is harmless at
+  t = 0 but wrong otherwise.
+Both only affect the first weeks.
+
+Also note ms itself sits above the input EIR (0.61 at an input of 0.55), so ms is not exactly at
+its own equilibrium either. Some of the remaining gap at EIR 0.55 is ms being high, not magenta
+being low.
 
 ## How the numbers were made
 
