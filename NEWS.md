@@ -14,6 +14,7 @@
 * New functions `severe_rates()`, to give clinical and severe disease per
   person per year, and `severe_outcomes()`, to give hospitalisations and
   deaths using the same assumptions as postie.
+* Maternal clinical immunity at birth (`ICM_init`) is now saved and restored with the model state; it was previously left uninitialised after a reload.
 
 ## magenta 1.3.8
 

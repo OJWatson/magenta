@@ -570,6 +570,15 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   std::vector<double> IVM_v(parameters.g_N, 0.0);
   std::vector<double> IVM_init_v(parameters.g_N, 0.0);
   std::vector<double> IVA_last_boost_time = ICA_last_boost_time;
+  // ICM_init is saved from 1.3.9; older states back-compute it from ICM and age (ICM = ICM_init * exp(-age/dCM))
+  std::vector<double> ICM_init_v(parameters.g_N, 0.0);
+  if (population_List.containsElementNamed("ICM_init")) {
+    ICM_init_v = Rcpp::as<vector<double> >(population_List["ICM_init"]);
+  } else {
+    for (int n = 0; n < parameters.g_N; n++) {
+      ICM_init_v[n] = ICM_v[n] * exp(Ages_v[n] / parameters.g_dCM);
+    }
+  }
   if (population_List.containsElementNamed("IVA")) {
     IVA_v = Rcpp::as<vector<double> >(population_List["IVA"]);
     IVM_v = Rcpp::as<vector<double> >(population_List["IVM"]);
@@ -656,6 +665,7 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     population[n].set_m_IB(IB_v[n]);
     population[n].set_m_ICA(ICA_v[n]);
     population[n].set_m_ICM(ICM_v[n]);
+    population[n].set_m_ICM_init(ICM_init_v[n]);
     population[n].set_m_ID(ID_v[n]);
     population[n].set_m_cA(cA_v[n]);
     population[n].set_m_IVA(IVA_v[n]);

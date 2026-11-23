@@ -104,6 +104,7 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
   std::vector<double> IVA(universe_ptr->parameters.g_N);
   std::vector<double> IVM(universe_ptr->parameters.g_N);
   std::vector<double> IVM_init(universe_ptr->parameters.g_N);
+  std::vector<double> ICM_init(universe_ptr->parameters.g_N);
   std::vector<double> IVA_last_boost_time(universe_ptr->parameters.g_N);
   std::vector<int>  Day_of_InfectionStatus_change(universe_ptr->parameters.g_N);	
   std::vector<int>  Day_of_strain_clearance(universe_ptr->parameters.g_N);		
@@ -175,6 +176,7 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     IVA[element] = universe_ptr->population[element].get_m_IVA();
     IVM[element] = universe_ptr->population[element].get_m_IVM();
     IVM_init[element] = universe_ptr->population[element].get_m_IVM_init();
+    ICM_init[element] = universe_ptr->population[element].get_m_ICM_init();
     IVA_last_boost_time[element] = universe_ptr->population[element].get_m_IVA_last_boost_time();
     
     // Calc times
@@ -394,6 +396,7 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     Rcpp::Named("IVA")=IVA,
     Rcpp::Named("IVM")=IVM,
     Rcpp::Named("IVM_init")=IVM_init,
+    Rcpp::Named("ICM_init")=ICM_init,
     Rcpp::Named("IVA_last_boost_time")=IVA_last_boost_time
   );
   

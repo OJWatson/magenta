@@ -113,3 +113,28 @@ test_that("equilibrium and saved states without severe immunity still run", {
   expect_true(all(re$Loggers$IVA >= 0))
 
 })
+
+test_that("maternal immunity at birth survives a save and reload", {
+  skip_on_cran()
+
+  hk <- housekeeping_list_create(quiet = TRUE, quiet_test = TRUE, cluster = TRUE)
+  fs <- pipeline(EIR = 10, N = 300, years = 0.5, num_loci = 2, full_save = TRUE,
+                 seed = 7L, housekeeping_list = hk)
+  expect_true(all(is.finite(fs$population_List$ICM_init)))
+  expect_gt(max(fs$population_List$ICM_init), 0)
+  # ICM = ICM_init * exp(-age / dCM)
+  dcm <- fs$parameters_List$g_dCM
+  expect_equal(fs$population_List$ICM,
+               fs$population_List$ICM_init * exp(-fs$population_List$Ages / dcm),
+               tolerance = 1e-6)
+
+  tf <- tempfile(fileext = ".rds")
+  saveRDS(fs, tf)
+  re <- pipeline(EIR = 10, N = 300, years = 0.5, num_loci = 2, full_save = TRUE,
+                 saved_state_path = tf, seed = 8L, housekeeping_list = hk)
+  # everyone ages by the run length, so only the people alive in both can be matched
+  # by checking the reloaded values are finite and of the same scale as before
+  expect_true(all(is.finite(re$population_List$ICM_init)))
+  expect_lt(max(re$population_List$ICM_init), 10 * max(fs$population_List$ICM_init))
+  expect_true(all(is.finite(re$Loggers$ICM)))
+})
