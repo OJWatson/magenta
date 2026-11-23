@@ -1,8 +1,10 @@
 test_that("severe probability matches a hand calculation", {
 
-  # Griffin et al. 2015 equations, using the default parameters
+  # Griffin et al. 2015 equations, using the default parameters, with 0.5 added to any
+  # non-zero IVA as in malariasimulation
   mpl <- model_param_list_create()
   theta <- function(age, iva, ivm) {
+    iva <- iva + 0.5 * (iva > 0)
     fv <- 1 - (1 - mpl$fV0) / (1 + (age / mpl$aV)^mpl$gammaV)
     mpl$theta0 * (mpl$theta1 + (1 - mpl$theta1) /
                     (1 + fv * ((iva + ivm) / mpl$IV0)^mpl$kV))

@@ -91,26 +91,11 @@ run_magenta <- function(eir, seed) {
 
 ### malariasimulation
 
-malariasimulation (3.0.0) adds 0.5 to any non-zero acquired severe immunity in
-`severe_immunity()`. Griffin et al. 2015 does not, and neither does `magenta`.
-It is run as released and with that 0.5 removed, so the severe disease
-comparison can be made against both.
+malariasimulation 3.0.0 is used, as released.
 
 ```{r malariasimulation}
-severe_immunity_paper <- function(age, acquired_immunity, maternal_immunity,
-                                  parameters) {
-  fv <- 1 - (1 - parameters$fv0) / (1 + (age / parameters$av)^parameters$gammav)
-  parameters$theta0 * (parameters$theta1 + (1 - parameters$theta1) /
-    (1 + fv * ((acquired_immunity + maternal_immunity) / parameters$iv0)^parameters$kv))
-}
+run_malsim <- function(eir, seed) {
 
-run_malsim <- function(eir, seed, plus_half) {
-
-  # each run is in its own forked process, so this only changes this run
-  if (!plus_half) {
-    utils::assignInNamespace("severe_immunity", severe_immunity_paper,
-                             "malariasimulation")
-  }
   set.seed(seed)
 
   p <- get_parameters(list(
@@ -134,7 +119,7 @@ run_malsim <- function(eir, seed, plus_half) {
   a05 <- paste0("_0_", age_05)
   aall <- paste0("_0_", age_max)
 
-  data.frame(model = if (plus_half) "malariasimulation" else "malariasimulation (no +0.5)",
+  data.frame(model = "malariasimulation",
              EIR = eir,
              pfpr_2_10 = s("n_detect_lm_730_3649") / s("n_age_730_3649"),
              clinical_all = 365 * s(paste0("p_inc_clinical", aall)) / s(paste0("n_age", aall)),
@@ -174,15 +159,14 @@ eq <- do.call(rbind, lapply(exp(seq(log(min(EIRS)), log(max(EIRS)), length.out =
 ### Runs
 
 ```{r runs}
-jobs <- expand.grid(model = c("magenta", "malsim", "malsim_paper"),
+jobs <- expand.grid(model = c("magenta", "malariasimulation"),
                     eir = EIRS, stringsAsFactors = FALSE)
 
 res <- parallel::mclapply(seq_len(nrow(jobs)), function(i) {
   j <- jobs[i, ]
   switch(j$model,
          magenta = run_magenta(j$eir, seed = 100L + i),
-         malsim = run_malsim(j$eir, seed = 100L + i, plus_half = TRUE),
-         malsim_paper = run_malsim(j$eir, seed = 100L + i, plus_half = FALSE))
+         malariasimulation = run_malsim(j$eir, seed = 100L + i))
 }, mc.cores = CORES, mc.preschedule = FALSE)
 stopifnot(!vapply(res, inherits, logical(1), "try-error"))
 res <- do.call(rbind, res)
@@ -191,13 +175,10 @@ res <- do.call(rbind, res)
 ## Results
 
 ```{r plot-fn}
-model_colours <- c("magenta" = "#c51b7d",
-                   "malariasimulation" = "#4d9221",
-                   "malariasimulation (no +0.5)" = "#7fbc41")
+model_colours <- c("magenta" = "#c51b7d", "malariasimulation" = "#4d9221")
 
-plot_outcome <- function(y, ylab, models = names(model_colours), reference = TRUE) {
-  d <- res[res$model %in% models, ]
-  g <- ggplot(d, aes(EIR, .data[[y]], colour = model)) +
+plot_outcome <- function(y, ylab, reference = TRUE) {
+  g <- ggplot(res, aes(EIR, .data[[y]], colour = model)) +
     geom_line() +
     geom_point() +
     scale_x_log10() +
@@ -212,8 +193,6 @@ plot_outcome <- function(y, ylab, models = names(model_colours), reference = TRU
   }
   g
 }
-
-transmission <- c("magenta", "malariasimulation")
 ```
 
 The dashed line in each plot is the deterministic equilibrium.
@@ -221,14 +200,14 @@ The dashed line in each plot is the deterministic equilibrium.
 ### Prevalence
 
 ```{r pfpr}
-plot_outcome("pfpr_2_10", "PfPR2-10 (microscopy)", transmission)
+plot_outcome("pfpr_2_10", "PfPR2-10 (microscopy)")
 ```
 
 ### Clinical incidence
 
 ```{r clinical}
-plot_outcome("clinical_all", "Clinical cases per person per year", transmission)
-plot_outcome("clinical_05", "Clinical cases per child under 5 per year", transmission)
+plot_outcome("clinical_all", "Clinical cases per person per year")
+plot_outcome("clinical_05", "Clinical cases per child under 5 per year")
 ```
 
 ### Severe incidence
@@ -247,7 +226,7 @@ age. malariasimulation's `EIR_gamb` output, per person, is already on this
 scale. The dotted line is the input EIR.
 
 ```{r realised-eir}
-plot_outcome("realised_eir", "Realised EIR (per adult per year)", transmission,
+plot_outcome("realised_eir", "Realised EIR (per adult per year)",
              reference = FALSE) +
   geom_abline(slope = 1, intercept = 0, colour = "grey40", linetype = "dotted")
 ```

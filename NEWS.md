@@ -8,8 +8,10 @@
   * Bug fix to initialisation, which stopped initially infected people from
     realising new infections and lowered incidence for the first 2-3 years.
   * Bites no longer fail to infect because `IB` was boosted recently.
-  * Clinical disease uses `ICA` before the day's boost, plus 0.5 if non-zero.
-  * Immunity is only boosted by bites that can infect.
+  * Infection, clinical and severe disease use `IB`, `ICA` and `IVA` before
+    the day's boost, plus 0.5 if non-zero.
+  * `ICA`, `ID` and `IVA` are only boosted, and severe cases only counted, by
+    infections that are not cleared by prophylaxis.
   * Mosquito feeding intervals are geometric with mean 1/fv rather than a fixed
     3 days, and the EIP is 10 or 11 days.
 * Bug fix: maternal immunity at birth (`ICM_init`) is now kept in saved states.

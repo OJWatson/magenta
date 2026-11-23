@@ -583,7 +583,10 @@ public:
   void all_strain_clearance();
   
   // Clear the last strain if it would have been cleared by prophylaxis
-  void clear_strain_if_prophylactic(const Parameters &parameters);
+  bool clear_strain_if_prophylactic(const Parameters &parameters);
+  
+  // Boost ICA, ID and IVA after an infection
+  void boost_infection_immunity(const Parameters &parameters);
   
   // Recover to being susceptible, i.e. clearing all infections and strains and associated timings
   void recover(const Parameters &parameters);

@@ -356,6 +356,10 @@ void Person::allocate_bite(Parameters &parameters, Mosquito &mosquito)
     // First calculate what the current IB should be given when it was last calculated
     m_IB *= exp((m_IB_last_calculated_time - parameters.g_current_time) / parameters.g_dB);
     
+    // Then update the biting success rate from IB before today's boost. As in malariasimulation 0.5 is
+    // added to any non-zero IB
+    m_biting_success_rate = parameters.g_b0 * (parameters.g_b1 + ((1 - parameters.g_b1) / (1 + (pow(((m_IB > 0 ? m_IB + 0.5 : m_IB) / parameters.g_IB0), parameters.g_kB)))));
+    
     // If the last bite was less than g_uB (time in which boosting of IB cannot happen) then increase IB
     if (m_IB_last_boost_time < parameters.g_current_time - parameters.g_uB) {
       
@@ -364,9 +368,6 @@ void Person::allocate_bite(Parameters &parameters, Mosquito &mosquito)
       m_IB_last_boost_time = parameters.g_current_time + modf(m_IB_last_boost_time, &m_IB_last_boost_time);
       
     }
-    
-    // Then update the biting success rate 
-    m_biting_success_rate = parameters.g_b0 * (parameters.g_b1 + ((1 - parameters.g_b1) / (1 + (pow((m_IB / parameters.g_IB0), parameters.g_kB)))));
     
     // Update last calculated time
     m_IB_last_calculated_time = parameters.g_current_time;
@@ -426,44 +427,12 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
     // Update last calculated time
     m_I_C_D_CM_last_calculated_time = parameters.g_current_time;
     
-    // Probability that today's infection is severe, calculated before IVA is boosted as in malariasimulation
+    // Probability that today's infection is severe, calculated before IVA is boosted
     m_severe_probability = severe_probability(m_person_age, m_IVA, m_IVM, parameters);
     
     // Calculate a symptom success rate (phi) dependent on acquired and maternal immunity, also before ICA
-    // is boosted. As in malariasimulation (Winskill 2017 SI p4) 0.5 is added to any non-zero ICA
+    // is boosted. As in malariasimulation 0.5 is added to any non-zero ICA
     m_symptom_success_rate = parameters.g_phi0 * (parameters.g_phi1 + ((1 - parameters.g_phi1) / (1 + (pow((((m_ICA > 0 ? m_ICA + 0.5 : m_ICA) + m_ICM) / parameters.g_IC0), parameters.g_kC)))));
-    
-    // Immunity is only boosted by bites that can lead to an infection, as in malariasimulation
-    if (infectable) {
-    
-      // If the last bite was less than g_uVA (time in which boosting of IVA cannot happen) then increase IVA
-      if (m_IVA_last_boost_time < parameters.g_current_time - parameters.g_uVA) {
-      
-        // Increase IVA and update IVA last boost time
-        m_IVA++;
-        m_IVA_last_boost_time = parameters.g_current_time + modf(m_IVA_last_boost_time, &m_IVA_last_boost_time);
-      
-      }
-    
-      // If the last bite was less than g_uD (time in which boosting of ID cannot happen) then increase ID
-      if (m_ID_last_boost_time < parameters.g_current_time - parameters.g_uD) {
-      
-        // Increase ID and update ID last boost time
-        m_ID++;
-        m_ID_last_boost_time = parameters.g_current_time + modf(m_ID_last_boost_time, &m_ID_last_boost_time);
-      
-      }
-    
-      // If the last bite was less than g_uCA (time in which boosting of ICA cannot happen) then increase ICA
-      if (m_ICA_last_boost_time < parameters.g_current_time - parameters.g_uCA) {
-      
-        // Increase ICA and update ICA last boost time
-        m_ICA++;
-        m_ICA_last_boost_time = parameters.g_current_time + modf(m_ICA_last_boost_time, &m_ICA_last_boost_time);
-      
-      }
-    
-    }
     
     // Calculate individuals InfectionStatus change 
     
@@ -513,10 +482,6 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
       // if it is the first sporozoite then it is always taken. For successive sporozoites, we probabilistically decide based on their immunity
       if(cotransmission == 0 || rbernoulli1(m_biting_success_rate)) 
       {
-        
-        // Log the expected severe cases from this infection (once per day, as the probability is zeroed once logged)
-        m_expected_severe += m_severe_probability;
-        m_severe_probability = 0;
         
         // Push the resultant state of infection
         m_infection_state_realisation_vector.emplace_back(m_temp_infection_state);
@@ -640,8 +605,16 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
           
         }
         
-        // remove this strain if it would have been cleared by prophylaxis
-        clear_strain_if_prophylactic(parameters);
+        // remove this strain if it would have been cleared by prophylaxis, otherwise it is an infection
+        if (!clear_strain_if_prophylactic(parameters)) {
+          
+          // Log the expected severe cases from this infection (once per day, as the probability is zeroed once logged)
+          m_expected_severe += m_severe_probability;
+          m_severe_probability = 0;
+          
+          // Only infections boost ICA, ID and IVA, as in malariasimulation
+          boost_infection_immunity(parameters);
+        }
         
         
         
@@ -791,7 +764,7 @@ void Person::all_strain_clearance() {
 }
 
 // Clear the last strain if it would have been cleared by prophylaxis
-void Person::clear_strain_if_prophylactic(const Parameters &parameters)
+bool Person::clear_strain_if_prophylactic(const Parameters &parameters)
 {
 
     // are they prophylactic
@@ -807,6 +780,7 @@ void Person::clear_strain_if_prophylactic(const Parameters &parameters)
         m_infection_barcode_realisation_vector.pop_back();
         m_infection_state_realisation_vector.pop_back();
         m_infection_time_realisation_vector.pop_back();
+        return true;
       }
       
     }
@@ -827,13 +801,38 @@ void Person::clear_strain_if_prophylactic(const Parameters &parameters)
         m_infection_barcode_realisation_vector.pop_back();
         m_infection_state_realisation_vector.pop_back();
         m_infection_time_realisation_vector.pop_back();
+        return true;
       }
       
     }
     
-  
+    return false;
 }
 
+
+// Boost ICA, ID and IVA after an infection. The boosting delays mean each is boosted at most once a day
+void Person::boost_infection_immunity(const Parameters &parameters)
+{
+  
+  // If the last boost was more than g_uVA (time in which boosting of IVA cannot happen) ago then increase IVA
+  if (m_IVA_last_boost_time < parameters.g_current_time - parameters.g_uVA) {
+    m_IVA++;
+    m_IVA_last_boost_time = parameters.g_current_time + modf(m_IVA_last_boost_time, &m_IVA_last_boost_time);
+  }
+  
+  // If the last boost was more than g_uD (time in which boosting of ID cannot happen) ago then increase ID
+  if (m_ID_last_boost_time < parameters.g_current_time - parameters.g_uD) {
+    m_ID++;
+    m_ID_last_boost_time = parameters.g_current_time + modf(m_ID_last_boost_time, &m_ID_last_boost_time);
+  }
+  
+  // If the last boost was more than g_uCA (time in which boosting of ICA cannot happen) ago then increase ICA
+  if (m_ICA_last_boost_time < parameters.g_current_time - parameters.g_uCA) {
+    m_ICA++;
+    m_ICA_last_boost_time = parameters.g_current_time + modf(m_ICA_last_boost_time, &m_ICA_last_boost_time);
+  }
+  
+}
 
 // Kill person, i.e. reset age to 0, infections to 0, state to susceptible, immunities reset etc
 void Person::die(const Parameters &parameters)
@@ -1666,14 +1665,14 @@ void Person::update_immunities_to_today(const Parameters &parameters) {
 }
 
 // Probability that an infection leads to severe disease (theta) given age and severe immunity, following
-// Griffin et al. 2015 Proc R Soc B. Note malariasimulation adds 0.5 to any non-zero IVA first, which is not
-// in the paper and is not done here
+// Griffin et al. 2015 Proc R Soc B. As in malariasimulation, IVA is the value before today's boost and 0.5 is
+// added to any non-zero IVA
 double Person::severe_probability(double age, double IVA, double IVM, const Parameters &parameters) {
   
   // Age dependent modifier of severe immunity
   double fv = 1 - ((1 - parameters.g_fV0) / (1 + pow(age / parameters.g_aV, parameters.g_gammaV)));
   
-  return(parameters.g_theta0 * (parameters.g_theta1 + ((1 - parameters.g_theta1) / (1 + (fv * pow((IVA + IVM) / parameters.g_IV0, parameters.g_kV))))));
+  return(parameters.g_theta0 * (parameters.g_theta1 + ((1 - parameters.g_theta1) / (1 + (fv * pow(((IVA > 0 ? IVA + 0.5 : IVA) + IVM) / parameters.g_IV0, parameters.g_kV))))));
 }
 
 // Tests
