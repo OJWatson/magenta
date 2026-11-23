@@ -91,27 +91,12 @@ run_magenta <- function(eir, seed) {
 
 ### malariasimulation
 
-malariasimulation (3.0.0) adds 0.5 to any non-zero acquired severe immunity in
-`severe_immunity()`. Griffin et al. 2015 does not, and neither does `magenta`.
-It is run as released and with that 0.5 removed, so the severe disease
-comparison can be made against both.
+malariasimulation 3.0.0 is used, as released.
 
 
 ``` r
-severe_immunity_paper <- function(age, acquired_immunity, maternal_immunity,
-                                  parameters) {
-  fv <- 1 - (1 - parameters$fv0) / (1 + (age / parameters$av)^parameters$gammav)
-  parameters$theta0 * (parameters$theta1 + (1 - parameters$theta1) /
-    (1 + fv * ((acquired_immunity + maternal_immunity) / parameters$iv0)^parameters$kv))
-}
+run_malsim <- function(eir, seed) {
 
-run_malsim <- function(eir, seed, plus_half) {
-
-  # each run is in its own forked process, so this only changes this run
-  if (!plus_half) {
-    utils::assignInNamespace("severe_immunity", severe_immunity_paper,
-                             "malariasimulation")
-  }
   set.seed(seed)
 
   p <- get_parameters(list(
@@ -135,7 +120,7 @@ run_malsim <- function(eir, seed, plus_half) {
   a05 <- paste0("_0_", age_05)
   aall <- paste0("_0_", age_max)
 
-  data.frame(model = if (plus_half) "malariasimulation" else "malariasimulation (no +0.5)",
+  data.frame(model = "malariasimulation",
              EIR = eir,
              pfpr_2_10 = s("n_detect_lm_730_3649") / s("n_age_730_3649"),
              clinical_all = 365 * s(paste0("p_inc_clinical", aall)) / s(paste0("n_age", aall)),
@@ -177,15 +162,14 @@ eq <- do.call(rbind, lapply(exp(seq(log(min(EIRS)), log(max(EIRS)), length.out =
 
 
 ``` r
-jobs <- expand.grid(model = c("magenta", "malsim", "malsim_paper"),
+jobs <- expand.grid(model = c("magenta", "malariasimulation"),
                     eir = EIRS, stringsAsFactors = FALSE)
 
 res <- parallel::mclapply(seq_len(nrow(jobs)), function(i) {
   j <- jobs[i, ]
   switch(j$model,
          magenta = run_magenta(j$eir, seed = 100L + i),
-         malsim = run_malsim(j$eir, seed = 100L + i, plus_half = TRUE),
-         malsim_paper = run_malsim(j$eir, seed = 100L + i, plus_half = FALSE))
+         malariasimulation = run_malsim(j$eir, seed = 100L + i))
 }, mc.cores = CORES, mc.preschedule = FALSE)
 stopifnot(!vapply(res, inherits, logical(1), "try-error"))
 res <- do.call(rbind, res)
@@ -195,13 +179,10 @@ res <- do.call(rbind, res)
 
 
 ``` r
-model_colours <- c("magenta" = "#c51b7d",
-                   "malariasimulation" = "#4d9221",
-                   "malariasimulation (no +0.5)" = "#7fbc41")
+model_colours <- c("magenta" = "#c51b7d", "malariasimulation" = "#4d9221")
 
-plot_outcome <- function(y, ylab, models = names(model_colours), reference = TRUE) {
-  d <- res[res$model %in% models, ]
-  g <- ggplot(d, aes(EIR, .data[[y]], colour = model)) +
+plot_outcome <- function(y, ylab, reference = TRUE) {
+  g <- ggplot(res, aes(EIR, .data[[y]], colour = model)) +
     geom_line() +
     geom_point() +
     scale_x_log10() +
@@ -216,8 +197,6 @@ plot_outcome <- function(y, ylab, models = names(model_colours), reference = TRU
   }
   g
 }
-
-transmission <- c("magenta", "malariasimulation")
 ```
 
 The dashed line in each plot is the deterministic equilibrium.
@@ -226,7 +205,7 @@ The dashed line in each plot is the deterministic equilibrium.
 
 
 ``` r
-plot_outcome("pfpr_2_10", "PfPR2-10 (microscopy)", transmission)
+plot_outcome("pfpr_2_10", "PfPR2-10 (microscopy)")
 ```
 
 ![](Equivalence_files/figure-html/pfpr-1.png)<!-- -->
@@ -235,13 +214,13 @@ plot_outcome("pfpr_2_10", "PfPR2-10 (microscopy)", transmission)
 
 
 ``` r
-plot_outcome("clinical_all", "Clinical cases per person per year", transmission)
+plot_outcome("clinical_all", "Clinical cases per person per year")
 ```
 
 ![](Equivalence_files/figure-html/clinical-1.png)<!-- -->
 
 ``` r
-plot_outcome("clinical_05", "Clinical cases per child under 5 per year", transmission)
+plot_outcome("clinical_05", "Clinical cases per child under 5 per year")
 ```
 
 ![](Equivalence_files/figure-html/clinical-2.png)<!-- -->
@@ -271,7 +250,7 @@ scale. The dotted line is the input EIR.
 
 
 ``` r
-plot_outcome("realised_eir", "Realised EIR (per adult per year)", transmission,
+plot_outcome("realised_eir", "Realised EIR (per adult per year)",
              reference = FALSE) +
   geom_abline(slope = 1, intercept = 0, colour = "grey40", linetype = "dotted")
 ```
@@ -294,28 +273,21 @@ knitr::kable(res, digits = 3, row.names = FALSE)
 
 
 
-|model                       |  EIR| pfpr_2_10| clinical_all| clinical_05| severe_all| severe_05| realised_eir| hosp_per_1000| deaths_per_1000|
-|:---------------------------|----:|---------:|------------:|-----------:|----------:|---------:|------------:|-------------:|---------------:|
-|magenta                     |  0.5|     0.043|        0.120|       0.075|      0.004|     0.006|        0.446|         3.257|           0.700|
-|malariasimulation           |  0.5|     0.054|        0.145|       0.091|      0.003|     0.006|        0.559|         2.870|           0.617|
-|malariasimulation (no +0.5) |  0.5|     0.050|        0.137|       0.084|      0.004|     0.007|        0.523|         3.426|           0.737|
-|magenta                     |  1.0|     0.081|        0.205|       0.151|      0.005|     0.011|        0.973|         4.466|           0.960|
-|malariasimulation           |  1.0|     0.091|        0.227|       0.170|      0.004|     0.011|        1.097|         3.784|           0.814|
-|malariasimulation (no +0.5) |  1.0|     0.088|        0.220|       0.168|      0.005|     0.011|        1.051|         4.531|           0.974|
-|magenta                     |  2.0|     0.133|        0.312|       0.279|      0.006|     0.017|        1.987|         5.592|           1.202|
-|malariasimulation           |  2.0|     0.141|        0.320|       0.309|      0.005|     0.016|        2.112|         4.685|           1.007|
-|malariasimulation (no +0.5) |  2.0|     0.143|        0.323|       0.307|      0.006|     0.018|        2.108|         5.562|           1.196|
-|magenta                     |  4.0|     0.215|        0.444|       0.516|      0.008|     0.026|        4.122|         7.016|           1.508|
-|malariasimulation           |  4.0|     0.221|        0.446|       0.550|      0.007|     0.023|        4.201|         5.861|           1.260|
-|malariasimulation (no +0.5) |  4.0|     0.217|        0.441|       0.541|      0.008|     0.026|        4.122|         6.686|           1.437|
-|magenta                     |  8.0|     0.312|        0.558|       0.844|      0.009|     0.035|        8.312|         8.154|           1.753|
-|malariasimulation           |  8.0|     0.315|        0.561|       0.913|      0.008|     0.030|        8.288|         6.831|           1.469|
-|malariasimulation (no +0.5) |  8.0|     0.314|        0.552|       0.894|      0.009|     0.033|        8.215|         7.702|           1.656|
-|magenta                     | 16.0|     0.415|        0.631|       1.239|      0.010|     0.042|       16.370|         8.901|           1.914|
-|malariasimulation           | 16.0|     0.420|        0.640|       1.321|      0.009|     0.035|       16.314|         7.481|           1.608|
-|malariasimulation (no +0.5) | 16.0|     0.423|        0.647|       1.349|      0.010|     0.040|       16.382|         8.430|           1.813|
-|magenta                     | 32.0|     0.547|        0.701|       1.730|      0.011|     0.047|       32.677|         9.321|           2.004|
-|malariasimulation           | 32.0|     0.541|        0.735|       1.883|      0.009|     0.039|       33.108|         7.958|           1.711|
-|malariasimulation (no +0.5) | 32.0|     0.540|        0.728|       1.883|      0.010|     0.044|       33.016|         8.872|           1.908|
+|model             |  EIR| pfpr_2_10| clinical_all| clinical_05| severe_all| severe_05| realised_eir| hosp_per_1000| deaths_per_1000|
+|:-----------------|----:|---------:|------------:|-----------:|----------:|---------:|------------:|-------------:|---------------:|
+|magenta           |  0.5|     0.045|        0.129|       0.078|      0.003|     0.006|        0.481|         2.726|           0.586|
+|malariasimulation |  0.5|     0.054|        0.145|       0.091|      0.003|     0.006|        0.559|         2.870|           0.617|
+|magenta           |  1.0|     0.082|        0.220|       0.157|      0.004|     0.010|        1.063|         3.835|           0.825|
+|malariasimulation |  1.0|     0.087|        0.223|       0.167|      0.004|     0.010|        1.088|         3.687|           0.793|
+|magenta           |  2.0|     0.141|        0.330|       0.299|      0.006|     0.016|        2.128|         5.004|           1.076|
+|malariasimulation |  2.0|     0.142|        0.318|       0.300|      0.005|     0.016|        2.066|         4.646|           0.999|
+|magenta           |  4.0|     0.218|        0.458|       0.529|      0.007|     0.024|        4.310|         6.040|           1.299|
+|malariasimulation |  4.0|     0.219|        0.436|       0.542|      0.007|     0.022|        4.174|         5.731|           1.232|
+|magenta           |  8.0|     0.313|        0.564|       0.856|      0.008|     0.031|        8.451|         7.084|           1.523|
+|malariasimulation |  8.0|     0.313|        0.555|       0.893|      0.008|     0.030|        8.325|         6.796|           1.461|
+|magenta           | 16.0|     0.424|        0.643|       1.267|      0.009|     0.037|       16.731|         7.712|           1.658|
+|malariasimulation | 16.0|     0.423|        0.651|       1.347|      0.009|     0.035|       16.407|         7.418|           1.595|
+|magenta           | 32.0|     0.545|        0.717|       1.738|      0.010|     0.042|       33.093|         8.498|           1.827|
+|malariasimulation | 32.0|     0.539|        0.731|       1.898|      0.009|     0.039|       32.632|         7.810|           1.679|
 
 
