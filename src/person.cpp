@@ -40,32 +40,40 @@ const std::vector<Person::InfectionStatus> Person::m_transition_vector{ DISEASED
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // Work out if reciprocal infection happened. 1 if yes, 0 if no
+// Infectivity lags the infection state by delay_gam days, as in the Griffin et al. model and malariasimulation. For a
+// lag of 12.5 days the probability is the average of the infectivity of the states 12 and 13 days ago
 bool Person::reciprocal_infection_boolean(const Parameters &pars)
 {
+  
+  int lag_short = static_cast<int>(floor(pars.g_delay_gam));
+  int lag_long = static_cast<int>(ceil(pars.g_delay_gam));
   
   if (m_cA_counter)
   {
     double fD = (1 - ((1 - pars.g_fD0) / (1 + (pow((m_person_age / pars.g_aD), pars.g_gD)))));
     double q = (pars.g_d1 + ((1 - pars.g_d1) / (1 + fD *(pow((m_ID / pars.g_ID0), pars.g_kD)))));
     m_cA = pars.g_cU + ((pars.g_cD - pars.g_cU) * pow(q, pars.g_gamma1));
-    // m_cA = (pars.g_cU + (pars.g_cD - pars.g_cU) * 
-    //   (pow((pars.g_d1 + ((1 - pars.g_d1) / (1 + (1 - ((1 - pars.g_fD0) / (1 + (pow((m_person_age / pars.g_aD), pars.g_gD))))) * (pow((m_ID / pars.g_ID0), pars.g_kD))))), pars.g_gamma1)));
     m_cA_counter = false;
-    // work out the number of strains that are gametocytogenic, i.e. they were realised more than delay_gam time earlier
+    // work out the strains that are gametocytogenic, i.e. they were held delay_gam days ago, which includes strains
+    // cleared since then. With gametocyte sterilisation resistant strains are gametocytogenic after delay_gam/2 days
     for(int n = 0 ; n < m_number_of_strains ; n++){
-      if(pars.g_gametocyte_sterilisation_flag){
-        if(
-          m_active_strains[n].get_m_day_of_strain_acquisition() < (pars.g_current_time - pars.g_delay_gam) ||
-            (m_active_strains[n].get_m_day_of_strain_acquisition() < (pars.g_current_time - pars.g_delay_gam/2) && m_active_strains[n].resistant_at_any_loci_boolean(pars))
-        ){
-          m_gametocytogenic_strains.emplace_back(n);
-          m_gametocytogenic_infections++;
-        } 
-      } else {
-        if(m_active_strains[n].get_m_day_of_strain_acquisition() < (pars.g_current_time - pars.g_delay_gam)){
-          m_gametocytogenic_strains.emplace_back(n);
-          m_gametocytogenic_infections++;
-        }
+      if(
+        m_active_strains[n].get_m_day_of_strain_acquisition() <= (pars.g_current_time - lag_short) ||
+          (pars.g_gametocyte_sterilisation_flag &&
+          m_active_strains[n].get_m_day_of_strain_acquisition() < (pars.g_current_time - pars.g_delay_gam/2) &&
+          m_active_strains[n].resistant_at_any_loci_boolean(pars))
+      ){
+        m_gametocytogenic_strains.emplace_back(&m_active_strains[n]);
+        m_gametocytogenic_infections++;
+      }
+    }
+    for(unsigned int n = 0 ; n < m_cleared_strains.size() ; n++){
+      if(
+        m_cleared_strains[n].get_m_day_of_strain_acquisition() <= (pars.g_current_time - lag_short) &&
+          m_cleared_strain_day[n] > (pars.g_current_time - lag_long)
+      ){
+        m_gametocytogenic_strains.emplace_back(&m_cleared_strains[n]);
+        m_gametocytogenic_infections++;
       }
     }
   }
@@ -74,56 +82,122 @@ bool Person::reciprocal_infection_boolean(const Parameters &pars)
   if (m_gametocytogenic_infections)
   {
     
-    // default contribution modifier for onward infection probability
-    double highest_contribution = 1.0;
-    
-    // if we are doing resistance then moderate the probability of infection 
-    // if the individual is asymptomatic and only has resistant strains
-    // if they are D or T then we assume they must be in a given parasitaemia range
-    if (pars.g_absolute_fitness_cost_flag) {
-      if (pars.g_resistance_flag && (m_infection_state == ASYMPTOMATIC || m_infection_state == SUBPATENT)){
-        
-        // set this to 0 and then update according to the highest relative contribution of the strains
-        highest_contribution = 0.0;
-        double current_contribution = 0.0;
-        
-        for(auto m : m_gametocytogenic_strains){
-          current_contribution = m_active_strains[m].relative_contribution(pars);
-          
-          // TODO: Add here the infectivity function to scale if ArtR
-          if (current_contribution > highest_contribution){
-            highest_contribution = current_contribution;
-          }
-        }
-        
-      }
-      
+    // weight on the longer lag, 0.5 for a lag of 12.5 days
+    double w = pars.g_delay_gam - lag_short;
+    double p = (1 - w) * state_infectivity(lagged_infection_state(pars.g_current_time - lag_short), pars);
+    if (w > 0) {
+      p += w * state_infectivity(lagged_infection_state(pars.g_current_time - lag_long), pars);
     }
-    
-    // Match infection state and asses whether onward infection would have happened
-    switch (m_infection_state)
-    {
-    case SUSCEPTIBLE:
-      return(false);
-    case DISEASED:
-      return(rbernoulli_cD());
-    case ASYMPTOMATIC:
-      return(rbernoulli1(m_cA*highest_contribution));
-    case SUBPATENT:
-      return(rbernoulli1(pars.g_cU*highest_contribution));
-    case TREATED:
-      return(rbernoulli1(pars.g_cT*highest_contribution));
-    case PROPHYLAXIS:
-      return(false);
-    default:
-      assert("Schedule Infection Status Change Error - person's infection status not S, D, A, U, T or P");
-    return(false);
-    }
+    return(p > 0 && rbernoulli1(p));
     
   } 
   else 
   {
     return(false);
+  }
+  
+}
+
+// Probability that a person in a given infection state infects a biting mosquito
+double Person::state_infectivity(InfectionStatus state, const Parameters &pars)
+{
+  
+  // default contribution modifier for onward infection probability
+  double highest_contribution = 1.0;
+  
+  // if we are doing resistance then moderate the probability of infection 
+  // if the individual is asymptomatic and only has resistant strains
+  // if they are D or T then we assume they must be in a given parasitaemia range
+  if (pars.g_absolute_fitness_cost_flag) {
+    if (pars.g_resistance_flag && (state == ASYMPTOMATIC || state == SUBPATENT)){
+      
+      // set this to 0 and then update according to the highest relative contribution of the strains
+      highest_contribution = 0.0;
+      double current_contribution = 0.0;
+      
+      for(auto m : m_gametocytogenic_strains){
+        current_contribution = m->relative_contribution(pars);
+        
+        // TODO: Add here the infectivity function to scale if ArtR
+        if (current_contribution > highest_contribution){
+          highest_contribution = current_contribution;
+        }
+      }
+      
+    }
+    
+  }
+  
+  // Match infection state and give the probability of onward infection
+  switch (state)
+  {
+  case SUSCEPTIBLE:
+    return(0.0);
+  case DISEASED:
+    return(pars.g_cD);
+  case ASYMPTOMATIC:
+    return(m_cA*highest_contribution);
+  case SUBPATENT:
+    return(pars.g_cU*highest_contribution);
+  case TREATED:
+    return(pars.g_cT*highest_contribution);
+  case PROPHYLAXIS:
+    return(0.0);
+  default:
+    assert("Schedule Infection Status Change Error - person's infection status not S, D, A, U, T or P");
+  return(0.0);
+  }
+  
+}
+
+// Infection state on a given earlier day. Before the first recorded state, e.g. at the start of a simulation,
+// the earliest known state is used
+Person::InfectionStatus Person::lagged_infection_state(int day)
+{
+  
+  if (m_state_history_day.empty()) {
+    return(m_infection_state);
+  }
+  
+  unsigned int i = 0;
+  while (i + 1 < m_state_history_day.size() && m_state_history_day[i + 1] <= day) {
+    i++;
+  }
+  return(static_cast<InfectionStatus>(m_state_history_state[i]));
+  
+}
+
+// Record today's infection state and drop history and cleared strains older than the gametocyte lag
+void Person::update_state_history(const Parameters &parameters)
+{
+  
+  if (m_state_history_state.empty() || m_state_history_state.back() != m_infection_state) {
+    m_state_history_day.emplace_back(parameters.g_current_time);
+    m_state_history_state.emplace_back(m_infection_state);
+  }
+  
+  // keep the last state that started on or before the oldest day we look back to
+  int oldest = parameters.g_current_time - static_cast<int>(ceil(parameters.g_delay_gam));
+  unsigned int drop = 0;
+  while (drop + 1 < m_state_history_day.size() && m_state_history_day[drop + 1] <= oldest) {
+    drop++;
+  }
+  if (drop > 0) {
+    m_state_history_day.erase(m_state_history_day.begin(), m_state_history_day.begin() + drop);
+    m_state_history_state.erase(m_state_history_state.begin(), m_state_history_state.begin() + drop);
+  }
+  
+  // strains cleared on or before that day are no longer gametocytogenic
+  unsigned int n = 0;
+  while (n < m_cleared_strains.size()) {
+    if (m_cleared_strain_day[n] <= oldest) {
+      std::swap(m_cleared_strains[n], m_cleared_strains.back());
+      std::swap(m_cleared_strain_day[n], m_cleared_strain_day.back());
+      m_cleared_strains.pop_back();
+      m_cleared_strain_day.pop_back();
+    } else {
+      n++;
+    }
   }
   
 }
@@ -140,7 +214,7 @@ std::vector<boost::dynamic_bitset<>> Person::sample_two_barcodes(const Parameter
     {
       
       // Match infection state and schedule associated next state change
-      switch (m_active_strains[m_gametocytogenic_strains[n]].get_m_strain_infection_status())
+      switch (m_gametocytogenic_strains[n]->get_m_strain_infection_status())
       {
       case Strain::DISEASED:
         m_active_strain_contribution.emplace_back(parameters.g_cD);
@@ -164,6 +238,7 @@ std::vector<boost::dynamic_bitset<>> Person::sample_two_barcodes(const Parameter
         break;
       default:
         assert(NULL && "Strain infection status not D, A, U or T");
+        m_active_strain_contribution.emplace_back(parameters.g_cU);
       break;
       }
       
@@ -172,13 +247,13 @@ std::vector<boost::dynamic_bitset<>> Person::sample_two_barcodes(const Parameter
       
       // if there are resistance elements then we need to create our modifier
       if(parameters.g_resistance_flag){
-        m_active_strain_contribution.back() *= m_active_strains[m_gametocytogenic_strains[n]].relative_contribution(parameters);
+        m_active_strain_contribution.back() *= m_gametocytogenic_strains[n]->relative_contribution(parameters);
       }
       
       // ammend contribuution to onwards infectiousness if the person is treated and the strain is not artemisinin resistant
       if(parameters.g_gametocyte_sterilisation_flag){
         if(m_infection_state == TREATED || (m_infection_state == ASYMPTOMATIC && m_treatment_outcome == LPF && m_day_last_treated > parameters.g_current_time - 10)){
-          if(!Strain::all_at_positions(m_active_strains[m_gametocytogenic_strains[n]].get_m_barcode(),parameters.g_artemisinin_loci)){
+          if(!Strain::all_at_positions(m_gametocytogenic_strains[n]->get_m_barcode(),parameters.g_artemisinin_loci)){
             m_active_strain_contribution.back() *= parameters.g_gametocyte_sterilisation;
           }
         }
@@ -191,9 +266,9 @@ std::vector<boost::dynamic_bitset<>> Person::sample_two_barcodes(const Parameter
   }
   
   // If individual only has one strain then catch for this as we won't need to draw a random sample for what strain is drawn
-  if (m_number_of_strains == 1)
+  if (m_gametocytogenic_infections == 1)
   {
-    return(std::vector<boost::dynamic_bitset<>> { m_active_strains[0].get_m_barcode(), m_active_strains[0].get_m_barcode() });
+    return(std::vector<boost::dynamic_bitset<>> { m_gametocytogenic_strains[0]->get_m_barcode(), m_gametocytogenic_strains[0]->get_m_barcode() });
   }
   else
   {
@@ -203,8 +278,8 @@ std::vector<boost::dynamic_bitset<>> Person::sample_two_barcodes(const Parameter
     temp_storage.reserve(2);
     int temp_a = sample1(m_active_female_strain_contribution, m_female_contribution_sum);
     int temp_b = sample1(m_active_strain_contribution, m_contribution_sum);
-    temp_storage.emplace_back(m_active_strains[m_gametocytogenic_strains[temp_a]].get_m_barcode());
-    temp_storage.emplace_back(m_active_strains[m_gametocytogenic_strains[temp_b]].get_m_barcode());
+    temp_storage.emplace_back(m_gametocytogenic_strains[temp_a]->get_m_barcode());
+    temp_storage.emplace_back(m_gametocytogenic_strains[temp_b]->get_m_barcode());
     
     return(temp_storage);
   }
@@ -736,7 +811,13 @@ void Person::individual_strain_clearance()
 }
 
 // Clear all strains from an individual
-void Person::all_strain_clearance() {
+void Person::all_strain_clearance(const Parameters &parameters) {
+  
+  // Keep the cleared strains, as they can still be passed on to mosquitoes for delay_gam days
+  for (auto &strain : m_active_strains) {
+    m_cleared_strains.emplace_back(strain);
+    m_cleared_strain_day.emplace_back(parameters.g_current_time);
+  }
   
   // Clear all strains
   
@@ -840,6 +921,12 @@ void Person::die(const Parameters &parameters)
   // recover first
   recover(parameters);
   
+  // a newborn has no infection history or recently cleared strains
+  m_state_history_day.clear();
+  m_state_history_state.clear();
+  m_cleared_strains.clear();
+  m_cleared_strain_day.clear();
+  
   // Reset immunities, age
   m_IB = m_ID = m_ICA = m_IVA = 0;
   m_person_age = 0;
@@ -875,7 +962,7 @@ void Person::recover(const Parameters &parameters)
   m_infection_state = SUSCEPTIBLE;
   
   // Clear strains
-  all_strain_clearance();
+  all_strain_clearance(parameters);
   
   // Reset other events to 0
   m_day_of_InfectionStatus_change = 0;
@@ -898,7 +985,7 @@ void Person::treatment_outcome(const Parameters &parameters) {
       m_treatment_outcome = SUCCESFULLY_TREATED;
       m_infection_state = PROPHYLAXIS;
       schedule_m_day_of_InfectionStatus_change(parameters); // schedule next state change
-      all_strain_clearance(); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains
+      all_strain_clearance(parameters); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains
       
     } else {
       
@@ -915,7 +1002,7 @@ void Person::treatment_outcome(const Parameters &parameters) {
             m_treatment_outcome = SUCCESFULLY_TREATED;
             m_infection_state = PROPHYLAXIS;
             schedule_m_day_of_InfectionStatus_change(parameters); // schedule next state change
-            all_strain_clearance(); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains
+            all_strain_clearance(parameters); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains
           } else {
             // otherwise we consider a SPC
             slow_treatment_clearance(parameters);
@@ -925,7 +1012,7 @@ void Person::treatment_outcome(const Parameters &parameters) {
       } else {
         m_infection_state = PROPHYLAXIS;
         schedule_m_day_of_InfectionStatus_change(parameters); // schedule next state change
-        all_strain_clearance(); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains (this includes pending strains)
+        all_strain_clearance(parameters); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains (this includes pending strains)
       }
     }
   } else {
@@ -947,13 +1034,13 @@ void Person::treatment_outcome(const Parameters &parameters) {
         m_treatment_outcome = SUCCESFULLY_TREATED;
         m_infection_state = PROPHYLAXIS;
         schedule_m_day_of_InfectionStatus_change(parameters); // schedule next state change
-        all_strain_clearance(); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains
+        all_strain_clearance(parameters); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains
       }
       // if not infected at all then move them straight to P
     } else {
       m_infection_state = PROPHYLAXIS;
       schedule_m_day_of_InfectionStatus_change(parameters); // schedule next state change
-      all_strain_clearance(); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains (this includes pending strains)
+      all_strain_clearance(parameters); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains (this includes pending strains)
     }
   }
     
@@ -1565,6 +1652,9 @@ double Person::update(Parameters &parameters)
   m_active_female_strain_contribution.clear();
   m_gametocytogenic_infections = 0;
   m_gametocytogenic_strains.clear();
+  
+  // Record today's infection state for the gametocyte lag
+  update_state_history(parameters);
   
   
   // Throw if the next event date is still today

@@ -14,6 +14,10 @@
     infections that are not cleared by prophylaxis.
   * Mosquito feeding intervals are geometric with mean 1/fv rather than a fixed
     3 days, and the EIP is 10 or 11 days.
+  * Infectivity to mosquitoes lags the infection state by 12.5 days
+    (`delay_gam`), as in the Griffin et al. model, so people stay infectious
+    for 12.5 days after recovery or treatment. Saved states now keep each
+    person's recent infection states and cleared strains.
 * Bug fix: maternal immunity at birth (`ICM_init`) is now kept in saved states.
 
 ## magenta 1.3.8

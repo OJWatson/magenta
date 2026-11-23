@@ -401,6 +401,29 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
   );
   
   // Create Rcpp population event_and_strain list
+  // Infection state history and recently cleared strains, for the gametocyte lag
+  std::vector<std::vector<int> > State_history_days(universe_ptr->parameters.g_N);
+  std::vector<std::vector<int> > State_history_states(universe_ptr->parameters.g_N);
+  std::vector<std::vector<int> > Cleared_strain_days(universe_ptr->parameters.g_N);
+  std::vector<std::vector<int> > Cleared_strain_infection_states(universe_ptr->parameters.g_N);
+  std::vector<std::vector<int> > Cleared_strain_day_of_acquisition_vectors(universe_ptr->parameters.g_N);
+  std::vector<std::vector<std::vector<bool> > > Cleared_strain_barcode_vectors(universe_ptr->parameters.g_N);
+  for (unsigned int element = 0; element < universe_ptr->parameters.g_N ; element++) {
+    State_history_days[element] = universe_ptr->population[element].get_m_state_history_day();
+    State_history_states[element] = universe_ptr->population[element].get_m_state_history_state();
+    Cleared_strain_days[element] = universe_ptr->population[element].get_m_cleared_strain_day();
+    for (auto &strain : universe_ptr->population[element].get_m_cleared_strains()) {
+      Cleared_strain_infection_states[element].push_back(strain.get_m_strain_infection_status());
+      Cleared_strain_day_of_acquisition_vectors[element].push_back(strain.get_m_day_of_strain_acquisition());
+      temp_barcode = strain.get_m_barcode();
+      for(temp_barcode_iterator = 0; temp_barcode_iterator < universe_ptr->parameters.g_barcode_length ; temp_barcode_iterator++ )
+      {
+        temp_barcode_bool_vector[temp_barcode_iterator] = temp_barcode[temp_barcode_iterator];
+      }
+      Cleared_strain_barcode_vectors[element].push_back(temp_barcode_bool_vector);
+    }
+  }
+  
   Rcpp::List populations_event_and_strains_List = Rcpp::List::create(
     Rcpp::Named("Day_of_InfectionStatus_change")=Day_of_InfectionStatus_change,
     Rcpp::Named("Day_of_strain_clearance")=Day_of_strain_clearance,
@@ -421,6 +444,13 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     Rcpp::Named("Strain_cotransmission")=Strain_cotransmission,
     Rcpp::Named("Recent_identity_vectors")=recent_barcode_integers
   );
+  // List::create takes at most 20 elements
+  populations_event_and_strains_List.push_back(State_history_days, "State_history_days");
+  populations_event_and_strains_List.push_back(State_history_states, "State_history_states");
+  populations_event_and_strains_List.push_back(Cleared_strain_days, "Cleared_strain_days");
+  populations_event_and_strains_List.push_back(Cleared_strain_infection_states, "Cleared_strain_infection_states");
+  populations_event_and_strains_List.push_back(Cleared_strain_day_of_acquisition_vectors, "Cleared_strain_day_of_acquisition_vectors");
+  populations_event_and_strains_List.push_back(Cleared_strain_barcode_vectors, "Cleared_strain_barcode_vectors");
   
   // Create Mosquito population list
   Rcpp::List scourge_List = Rcpp::List::create(

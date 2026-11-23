@@ -177,7 +177,14 @@ private:
   int m_infection_realisation_empty_catch = 1;  // Variable that allows a check for empty vectors when dealing with more than one infection realisation on a day
   unsigned int m_number_of_realised_infections = 0;  // Count of realised infections
   int m_gametocytogenic_infections = 0;         // Count of any realised infections  occurred earlier than the current time - 12.5 days.
-  std::vector<int> m_gametocytogenic_strains{}; // Vector of which strains are gametocytogenic - strains may not be always be in order of being acquired as we swap and pop when clearing strains 
+  std::vector<Strain*> m_gametocytogenic_strains{}; // Strains that are gametocytogenic today, i.e. held delay_gam days ago, which includes recently cleared strains
+  
+  // Infectivity to mosquitoes lags the infection state by delay_gam days, so keep each person's recent infection
+  // states (the day each state started) and the strains cleared in the last delay_gam days (with the day cleared)
+  std::vector<int> m_state_history_day{};
+  std::vector<int> m_state_history_state{};
+  std::vector<Strain> m_cleared_strains{};
+  std::vector<int> m_cleared_strain_day{};
   
 public:
   
@@ -319,6 +326,10 @@ public:
   
   // Get person's active strains vector
   std::vector<Strain> get_m_active_strains() { return (m_active_strains); }
+  std::vector<int> get_m_state_history_day() { return (m_state_history_day); }
+  std::vector<int> get_m_state_history_state() { return (m_state_history_state); }
+  std::vector<Strain> get_m_cleared_strains() { return (m_cleared_strains); }
+  std::vector<int> get_m_cleared_strain_day() { return (m_cleared_strain_day); }
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // SEMI-GETTERS
@@ -541,6 +552,8 @@ public:
   
   // Set person's active strains vector
   void set_m_active_strains(std::vector<Strain> x) { m_active_strains = x; }
+  void set_m_state_history(std::vector<int> day, std::vector<int> state) { m_state_history_day = day; m_state_history_state = state; }
+  void set_m_cleared_strains(std::vector<Strain> x, std::vector<int> day) { m_cleared_strains = x; m_cleared_strain_day = day; }
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // ALLOCATIONS
@@ -579,8 +592,17 @@ public:
   // Clear one strain from an individual
   void individual_strain_clearance();
   
-  // Clear all strains from an individual
-  void all_strain_clearance();
+  // Clear all strains from an individual, keeping them for the gametocyte lag
+  void all_strain_clearance(const Parameters &parameters);
+  
+  // Record today's infection state and drop history and cleared strains older than the gametocyte lag
+  void update_state_history(const Parameters &parameters);
+  
+  // Infection state on a given earlier day
+  InfectionStatus lagged_infection_state(int day);
+  
+  // Probability that a person in a given infection state infects a biting mosquito
+  double state_infectivity(InfectionStatus state, const Parameters &parameters);
   
   // Clear the last strain if it would have been cleared by prophylaxis
   bool clear_strain_if_prophylactic(const Parameters &parameters);

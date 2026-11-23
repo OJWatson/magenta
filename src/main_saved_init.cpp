@@ -603,6 +603,18 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   Rcpp::List Strain_day_of_acquisition_vectors = populations_event_and_strains_List["Strain_day_of_acquisition_vectors"];
   Rcpp::List Strain_barcode_vectors = populations_event_and_strains_List["Strain_barcode_vectors"];
   
+  // Saved states before 1.4.0 have no infection state history or cleared strains
+  Rcpp::List State_history_days, State_history_states, Cleared_strain_days, Cleared_strain_infection_states,
+  Cleared_strain_day_of_acquisition_vectors, Cleared_strain_barcode_vectors;
+  if (populations_event_and_strains_List.containsElementNamed("State_history_days")) {
+    State_history_days = populations_event_and_strains_List["State_history_days"];
+    State_history_states = populations_event_and_strains_List["State_history_states"];
+    Cleared_strain_days = populations_event_and_strains_List["Cleared_strain_days"];
+    Cleared_strain_infection_states = populations_event_and_strains_List["Cleared_strain_infection_states"];
+    Cleared_strain_day_of_acquisition_vectors = populations_event_and_strains_List["Cleared_strain_day_of_acquisition_vectors"];
+    Cleared_strain_barcode_vectors = populations_event_and_strains_List["Cleared_strain_barcode_vectors"];
+  }
+  
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // END: R -> C++ CONVERSIONS: humans
@@ -741,6 +753,29 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     
     // Push the created temp strain onto the person
     population[n].allocate_strain_with_push(temp_strain);
+    }
+    
+    // Infection state history and recently cleared strains, for the gametocyte lag. States saved before
+    // these were kept have none, so infectivity uses the current state until the history builds up
+    if (populations_event_and_strains_List.containsElementNamed("State_history_days")) {
+      population[n].set_m_state_history(Rcpp::as<std::vector<int> >(State_history_days[n]),
+                                        Rcpp::as<std::vector<int> >(State_history_states[n]));
+      temp_strain_state_vector = Rcpp::as<std::vector<int> >(Cleared_strain_infection_states[n]);
+      temp_strain_day_of_acquisition = Rcpp::as<std::vector<int> >(Cleared_strain_day_of_acquisition_vectors[n]);
+      temp_strain_barcode_vector = Rcpp::as<std::vector<std::vector<bool> > >(Cleared_strain_barcode_vectors[n]);
+      std::vector<Strain> temp_cleared_strains;
+      for(unsigned int s = 0; s < temp_strain_state_vector.size(); s++)
+      {
+        temp_strain.set_m_strain_infection_status(static_cast<Strain::InfectionStatus>(temp_strain_state_vector[s]));
+        temp_strain.set_m_day_of_strain_acquisition(temp_strain_day_of_acquisition[s]);
+        for(temp_barcode_iterator = 0; temp_barcode_iterator < Parameters::g_barcode_length ; temp_barcode_iterator++ )
+        {
+          Strain::temp_barcode[temp_barcode_iterator] = temp_strain_barcode_vector[s][temp_barcode_iterator];
+        }
+        temp_strain.set_m_barcode(Strain::temp_barcode);
+        temp_cleared_strains.push_back(temp_strain);
+      }
+      population[n].set_m_cleared_strains(temp_cleared_strains, Rcpp::as<std::vector<int> >(Cleared_strain_days[n]));
     }
     
     // -----------------------------------------
