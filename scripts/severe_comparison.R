@@ -44,13 +44,15 @@ run_magenta <- function(eir, seed) {
   lg <- out$Loggers
   rates <- severe_rates(lg)
 
-  # PfPR2-10 by microscopy from the final population, as in pipeline_utils
+  # PfPR2-10 by microscopy from the final population
   mpl <- model_param_list_create()
   two_ten <- lg$Ages < 3650 & lg$Ages > 720
   q <- magenta:::q_fun(mpl$d1, lg$ID, mpl$ID0, mpl$kD,
                        sapply(lg$Ages, magenta:::fd, mpl$fD0, mpl$aD, mpl$gammaD))
-  pfpr <- sum(lg$InfectionStates %in% c(1, 4) & two_ten) / sum(two_ten) +
-    sum(lg$InfectionStates == 2 & two_ten) / sum(two_ten) * mean(q[two_ten])
+  # D and T are always detected, A with their own probability of detection, as
+  # in malariasimulation's p_detect_lm
+  pfpr <- (sum(lg$InfectionStates %in% c(1, 4) & two_ten) +
+             sum(q[lg$InfectionStates == 2 & two_ten])) / sum(two_ten)
 
   data.frame(model = "magenta", iva_plus_half = FALSE, EIR = eir,
              pfpr_2_10 = pfpr,

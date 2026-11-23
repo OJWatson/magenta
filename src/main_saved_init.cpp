@@ -702,8 +702,13 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     // Strain Numbers
     population[n].set_m_number_of_strains(Number_of_Strains[n]);
     
-    // Strain Ralised Numbers
-    population[n].set_m_number_of_realised_infections(Number_of_Realised_Infections[n]);
+    // Strain Ralised Numbers. States saved before 1.3.9 could have more realised infections than pending
+    // infections (initially infected people), which stopped their next infections being realised, so reset these
+    if (Number_of_Realised_Infections[n] > Rcpp::as<Rcpp::IntegerVector>(Infection_time_realisation_vectors[n]).size()) {
+      population[n].set_m_number_of_realised_infections(0);
+    } else {
+      population[n].set_m_number_of_realised_infections(Number_of_Realised_Infections[n]);
+    }
     
     // Set vectors
     population[n].set_m_infection_time_realisation_vector_from_vector(Rcpp::as<std::vector<int> >(Infection_time_realisation_vectors[n]));

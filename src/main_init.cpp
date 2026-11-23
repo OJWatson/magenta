@@ -372,7 +372,8 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     {
       // Initialise MOI given their individual biting rate
       population[n].set_m_number_of_strains(static_cast<int>(population[n].get_m_individual_biting_rate()) + 1);
-      population[n].set_m_number_of_realised_infections(population[n].get_m_number_of_strains());
+      // The realised infections counter indexes the pending infection vectors, which do not hold these initial strains
+      population[n].set_m_number_of_realised_infections(0);
       population[n].schedule_m_day_of_strain_clearance(parameters);
       
       // If they are treated the strains we allocate should have no state change

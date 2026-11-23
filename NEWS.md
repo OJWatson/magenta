@@ -15,6 +15,23 @@
   person per year, and `severe_outcomes()`, to give hospitalisations and
   deaths using the same assumptions as postie.
 * Maternal clinical immunity at birth (`ICM_init`) is now saved and restored with the model state; it was previously left uninitialised after a reload.
+* Changes to bring the relationship between EIR, prevalence and clinical
+  incidence in line with malariasimulation (see `notes/eir_alignment_review.md`).
+  These change model outputs:
+  * Bug fix to initialisation. People infected at the start were given a
+    realised infection count equal to their MOI, so their next few infections
+    were never realised until they cleared to susceptible. This lowered
+    incidence for the first 2-3 years. The same count is now reset when
+    pending infections are cleared on treatment, and is reset when loading
+    older saved states that have this problem.
+  * A successful bite no longer fails to infect because the person's blood
+    stage immunity (`IB`) was boosted in the previous `uB` days. Neither
+    malariasimulation nor Griffin et al. have this rule.
+  * The probability of clinical disease (phi) is calculated from `ICA` before
+    today's boost (as was already done for severe disease), and 0.5 is added to
+    any non-zero `ICA`, as in malariasimulation.
+  * `ICA`, `ID` and `IVA` are only boosted by bites that can cause an
+    infection (people who are susceptible, asymptomatic or subpatent).
 
 ## magenta 1.3.8
 
