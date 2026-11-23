@@ -323,6 +323,38 @@ Also note ms itself sits above the input EIR (0.61 at an input of 0.55), so ms i
 its own equilibrium either. Some of the remaining gap at EIR 0.55 is ms being high, not magenta
 being low.
 
+## Update: 5b is in (geometric biting and a 10/11 day EIP)
+
+Option 3 is now in, combined with a 10/11 day EIP:
+- **Days to the next feed are geometric**: 1 + floor(log U / log(1 - fv)), so at least 1 day with
+  mean 1/fv. fv still comes from `mu_fv_create()`, so interventions that change fv change the mean
+  in the same way as before.
+- **Draws are made up front**: `g_mosquito_next_biting_day_vector` (1000 values) is refilled each
+  day in `src/main_update.cpp`. It replaces the old differences of floor(k/fv). Timing at N = 1e5
+  and EIR 20 was the same as the fixed cycle (74.9 s vs 74.5 s). Drawing per feed took 76-81 s.
+- **EIP drawn once per infecting bite**: the extrinsic incubation period is 10 or 11 days with
+  equal chance. It is taken in `handle_bite` from a block of 1000 refilled each day, and all
+  oocysts from that bite use it. Drawing it per bite rather than per oocyst keeps pending oocysts
+  in rupture order; drawing per oocyst stalled mosquitoes in an earlier probe.
+- **Why both changes are needed**: geometric biting alone, with EIP 10, gives 0.720 expected
+  infectious bites per mosquito infection, against 0.675 in the ODE. Mixing 10 and 11 days brings
+  it to 0.675.
+- **First feed**: a new mosquito's first feed uses the same geometric draw, but from day 0.
+- **Not saved**: the EIP block is not added to saved states, because it is refilled every day.
+
+All tests pass, including a new `tests/testthat/test-mosquito.R`. The rerun of
+`scripts/severe_comparison.R` (N = 1e5, 4 years) gives:
+
+| EIR | PfPR2-10, magenta | PfPR2-10, ms | clinical, magenta before | clinical, magenta now | clinical, ms |
+|---|---|---|---|---|---|
+| 0.55 | 0.048 | 0.056 | 0.114 | 0.132 | 0.151 |
+| 4 | 0.215 | 0.217 | 0.413 | 0.444 | 0.441 |
+| 20 | 0.462 | 0.459 | 0.638 | 0.668 | 0.672 |
+
+EIR 4 and 20 now match ms. EIR 0.55 is still about 12% low on clinical incidence and 15% low on
+PfPR2-10. That gap goes with the gametocyte timing (5a). It is not fixed yet: the fix is to weight
+each person's infectivity by their state 12.5 days ago, and that is still with OJ to decide.
+
 ## How the numbers were made
 
 Scratch copy of this branch, with environment toggles `MAG_FIX_INIT` (counter = 0 at init),

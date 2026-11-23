@@ -154,8 +154,7 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
   unsigned int scourge_size = u_ptr->scourge.size();
   unsigned int temp_deficit = 0;
   int intervention_counter = 0;
-  std::vector<int> temp_biting_frequency_vector(u_ptr->parameters.g_max_mosquito_biting_counter);
-  int temp_biting_frequency_vector_iterator = 0;
+  double biting_log_q = 0;
   
   // status eq for logging and other logging variables
   unsigned int not_treated = 0;
@@ -267,20 +266,24 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
     // mortality changes due to interventions so we set it each day
     u_ptr->parameters.g_mean_mosquito_age = 1.0/mosquito_death_rates[intervention_counter];
     
-    // frequency of biting also changes due to repel effects of interventions so generate next biting times
-    temp_biting_frequency_vector_iterator = 1;
-    std::generate(temp_biting_frequency_vector.begin(),
-                  temp_biting_frequency_vector.end(),
-                  [&temp_biting_frequency_vector_iterator] { return temp_biting_frequency_vector_iterator++;}
-    );
+    // frequency of biting also changes due to repel effects of interventions so generate next biting times.
+    // These are geometric draws (days until next feed, at least 1) with mean 1/fv, i.e. each day a mosquito
+    // feeds with probability fv, which is the daily step equivalent of the deterministic model's biting rate.
+    // A fixed interval (e.g. always 3 days) meant the first bite after the 10 day EIP was always on day 12,
+    // which gave fewer infectious bites per mosquito infection than the deterministic model
+    biting_log_q = std::log(1.0 - std::min(mosquito_biting_rates[intervention_counter], 0.999999));
+    for (auto &next_bite : u_ptr->parameters.g_mosquito_next_biting_day_vector) {
+      next_bite = 1 + static_cast<int>(std::log(unif_rand()) / biting_log_q);
+    }
     
-    // transform the vector of 
-    std::transform(temp_biting_frequency_vector.begin(), temp_biting_frequency_vector.end(), temp_biting_frequency_vector.begin(),
-                   std::bind(std::multiplies<double>(), (1.0/mosquito_biting_rates[intervention_counter]), std::placeholders::_1));
-    
-    std::adjacent_difference(temp_biting_frequency_vector.begin(),
-                             temp_biting_frequency_vector.end(),
-                             u_ptr->parameters.g_mosquito_next_biting_day_vector.begin());
+    // EIP for mosquitoes infected today, drawn per bite as floor or ceiling of delay_mos + 0.5. On daily steps
+    // a bite on the day of oocyst rupture is infectious, so an EIP of delay_mos would count a bite the
+    // deterministic model only counts half of. Using delay_mos and delay_mos + 1 equally often gives the
+    // deterministic model's expected number of infectious bites per mosquito infection
+    for (auto &eip : u_ptr->parameters.g_mosquito_eip_vector) {
+      eip = static_cast<int>(std::floor(u_ptr->parameters.g_delay_mos + 0.5));
+      if (unif_rand() < (u_ptr->parameters.g_delay_mos + 0.5 - eip)) eip++;
+    }
     
     
     // Loop through each person and mosquito and update

@@ -69,6 +69,9 @@ Parameters::Parameters() {
   g_mosquito_biting_counter = 0;
   // delays and durations
   g_delay_mos = 10;
+  g_mosquito_eip_vector = std::vector<int>(g_max_mosquito_biting_counter, static_cast<int>(g_delay_mos));
+  g_mosquito_eip_counter = 0;
+  g_mosquito_current_eip = static_cast<int>(g_delay_mos);
   g_delay_gam = 12.5;
   g_dur_E = 12;
   g_dur_T = 5;

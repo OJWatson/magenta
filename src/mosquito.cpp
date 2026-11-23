@@ -2,9 +2,10 @@
 #include "person.h"
 
 // Non class constructor which will inialise a random strain
+// First blood meal is the days until next feed when feeding each day with probability 1/(mean biting interval)
 Mosquito::Mosquito(const Parameters &parameters) :
   m_day_of_death(rexpint1(parameters.g_mean_mosquito_age) + parameters.g_current_time ),
-  m_day_of_next_blood_meal(runiform_int_1(0,2) + parameters.g_current_time)
+  m_day_of_next_blood_meal(static_cast<int>(std::log(unif_rand()) / std::log(1.0 - 1.0 / parameters.g_mosquito_next_biting_day_vector[0])) + parameters.g_current_time)
 {
   // Reserve vector memory
   m_oocyst_rupture_time_vector.reserve(10);
@@ -64,7 +65,7 @@ void Mosquito::allocate_gametocytes(const Parameters &parameters,
   m_oocyst_barcode_male_vector.emplace_back(gam_2);
   // m_oocyst_barcode_female_vector.push_back(gam_1);
   // m_oocyst_barcode_male_vector.push_back(gam_2);
-  m_oocyst_rupture_time_vector.emplace_back(parameters.g_current_time + static_cast<int>(parameters.g_delay_mos));
+  m_oocyst_rupture_time_vector.emplace_back(parameters.g_current_time + parameters.g_mosquito_current_eip);
   m_oocyst_remaining_spz_count.emplace_back(4);
   
   // Update infection status if mosquito is susceptible
@@ -80,6 +81,10 @@ void Mosquito::handle_bite(Parameters &parameters, Person &person)
 {
   
   parameters.g_total_mosquito_infections++;
+  
+  // EIP for all oocysts from this bite, drawn once per bite so pending oocysts stay in rupture order
+  parameters.g_mosquito_current_eip = parameters.g_mosquito_eip_vector[parameters.g_mosquito_eip_counter++];
+  if (parameters.g_mosquito_eip_counter == parameters.g_max_mosquito_biting_counter) parameters.g_mosquito_eip_counter = 0;
   
   // are we doing vector adaptation work. If so alter the oocyst numbers 
   if (parameters.g_gametocyte_sterilisation_flag){

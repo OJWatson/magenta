@@ -99,6 +99,9 @@ public:
   std::vector<int> g_mosquito_next_biting_day_vector;
   int g_mosquito_biting_counter;
   int g_max_mosquito_biting_counter;
+  std::vector<int> g_mosquito_eip_vector;
+  int g_mosquito_eip_counter;
+  int g_mosquito_current_eip;
   // delays and durations;
   double g_delay_mos;
   double g_delay_gam;

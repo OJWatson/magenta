@@ -32,6 +32,13 @@
     any non-zero `ICA`, as in malariasimulation.
   * `ICA`, `ID` and `IVA` are only boosted by bites that can cause an
     infection (people who are susceptible, asymptomatic or subpatent).
+  * Mosquitoes no longer feed on a fixed 3 day cycle. The days to the next
+    feed are geometric (at least 1, mean 1/fv, so interventions that change fv
+    still change the mean), drawn from a block refilled each day. The
+    extrinsic incubation period is drawn once per infecting bite as 10 or 11
+    days with equal chance. Together these give the expected number of
+    infectious bites per mosquito infection in the equilibrium, which the fixed
+    cycle undershot by about 7%, so realised EIR was below the input EIR.
 
 ## magenta 1.3.8
 
