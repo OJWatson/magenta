@@ -146,6 +146,7 @@ int rbinomial1(int trials, double p) {
 }
 
 // Simple implementation of the rmultinom.c that emplaces the draws to the vector provided
+// Optimized: replaced individual emplace_back loops with batch insert operations
 void rmultinomN(int n, std::vector<double> &prob, double p_tot, int K, std::vector<int> &output)
 {
   int k;
@@ -155,17 +156,19 @@ void rmultinomN(int n, std::vector<double> &prob, double p_tot, int K, std::vect
     
     draw = rbinomial1(n, (prob[k] / p_tot));
     n -= draw;
-    while (draw > 0) {
-      output.emplace_back(k);
-      draw--;
+    
+    // Batch insert instead of individual emplace_back calls
+    if (draw > 0) {
+      output.insert(output.end(), draw, k);
     }
     
     if (n <= 0) /* we have all*/ return;
     p_tot -= prob[k]; /* i.e. = sum(prob[(k+1):K]) */
   }
-  while (n > 0) {
-    output.emplace_back(K - 1);
-    n--;
+  
+  // Batch insert remaining draws
+  if (n > 0) {
+    output.insert(output.end(), n, K - 1);
   }
   return;
 }

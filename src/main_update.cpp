@@ -154,8 +154,8 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
   unsigned int scourge_size = u_ptr->scourge.size();
   unsigned int temp_deficit = 0;
   int intervention_counter = 0;
-  std::vector<int> temp_biting_frequency_vector(u_ptr->parameters.g_max_mosquito_biting_counter);
-  int temp_biting_frequency_vector_iterator = 0;
+  // Note: temp_biting_frequency_vector and temp_biting_frequency_vector_iterator removed
+  // as part of optimization - biting step is now computed directly
   
   // status eq for logging and other logging variables
   unsigned int not_treated = 0;
@@ -264,19 +264,21 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
     u_ptr->parameters.g_mean_mosquito_age = 1.0/mosquito_death_rates[intervention_counter];
     
     // frequency of biting also changes due to repel effects of interventions so generate next biting times
-    temp_biting_frequency_vector_iterator = 1;
-    std::generate(temp_biting_frequency_vector.begin(),
-                  temp_biting_frequency_vector.end(),
-                  [&temp_biting_frequency_vector_iterator] { return temp_biting_frequency_vector_iterator++;}
-    );
-    
-    // transform the vector of 
-    std::transform(temp_biting_frequency_vector.begin(), temp_biting_frequency_vector.end(), temp_biting_frequency_vector.begin(),
-                   std::bind(std::multiplies<double>(), (1.0/mosquito_biting_rates[intervention_counter]), std::placeholders::_1));
-    
-    std::adjacent_difference(temp_biting_frequency_vector.begin(),
-                             temp_biting_frequency_vector.end(),
-                             u_ptr->parameters.g_mosquito_next_biting_day_vector.begin());
+    // Optimized: Single-pass computation of biting intervals that preserves the original semantics.
+    // Original code: generate [1,2,3,...], multiply by k=1/biting_rate, then adjacent_difference.
+    // This produces floor(i*k) - floor((i-1)*k) for each i, which varies when k is non-integer.
+    // We compute the same result in one pass without intermediate vectors.
+    {
+      const double biting_step = 1.0 / mosquito_biting_rates[intervention_counter];
+      double cumulative = 0.0;
+      int prev = 0;
+      for (auto& interval : u_ptr->parameters.g_mosquito_next_biting_day_vector) {
+        cumulative += biting_step;
+        int cur = static_cast<int>(cumulative);
+        interval = cur - prev;
+        prev = cur;
+      }
+    }
     
     
     // Loop through each person and mosquito and update

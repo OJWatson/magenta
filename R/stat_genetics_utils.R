@@ -85,34 +85,41 @@ summarySE_mean_only_max_mean <- function(data=NULL,
 # zero truncated geometric integers
 ztrgeomintp <- function(n, mean, p){
   
-  ngs <- rgeom(n*1.5,prob = 1/mean)
-  ngs <- round(ngs*p)
-  ngs <- ngs[ngs>0]
+  # Pre-allocate with a larger initial sample to reduce iterations
+  # Use a multiplier that accounts for the filtering of zeros
+  initial_size <- as.integer(n * 3)
+  ngs <- rgeom(initial_size, prob = 1/mean)
+  ngs <- round(ngs * p)
+  ngs <- ngs[ngs > 0]
+  
+  # If we still need more samples, generate in larger batches
   while(length(ngs) < n) {
-    ng2 <- rgeom(n*1.5,prob = 1/mean)
-    ngs <- c(ngs,round(ng2*p))
-    ngs <- ngs[ngs>0]
+    additional <- rgeom(initial_size, prob = 1/mean)
+    additional <- round(additional * p)
+    additional <- additional[additional > 0]
+    ngs <- c(ngs, additional)
   }
   
-  ngs <- sample(ngs,size = n,replace=FALSE)
-  return(ngs)
-  
-  
+  sample(ngs, size = n, replace = FALSE)
 }
 
 # zero truncated negative binomial
-ztrnbinom <- function(n,mean,size) {
+ztrnbinom <- function(n, mean, size) {
   
+  # Pre-allocate with a larger initial sample to reduce iterations
+  # Use a multiplier that accounts for the filtering of zeros
+  initial_size <- as.integer(n * 2)
+  nbs <- rnbinom(initial_size, size = size, mu = mean)
+  nbs <- nbs[nbs > 0]
   
-  nbs <- rnbinom(n*1.2,size = size, mu = mean)
-  nbs <- nbs[nbs>0]
+  # If we still need more samples, generate in larger batches
   while(length(nbs) < n) {
-    nbs <- c(nbs,rnbinom(n*.5,size = size, mu = mean))
-    nbs <- nbs[nbs>0]
+    additional <- rnbinom(initial_size, size = size, mu = mean)
+    additional <- additional[additional > 0]
+    nbs <- c(nbs, additional)
   }
   
-  nbs <- sample(nbs,size = n,replace=FALSE)
-  return(nbs)
+  sample(nbs, size = n, replace = FALSE)
 }
 
 # get the clonality from a list of barcode numbers
