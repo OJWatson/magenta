@@ -135,7 +135,15 @@ private:
   double m_ICM;               // maternally acquired immunty (ICM)
   double m_ICA;               // exposure acquired immunity (ICA)
   double m_ICA_last_boost_time = runif1(0.0, 1.0);        // time that ICA was last boosted
-  int m_I_C_D_CM_last_calculated_time = 0;    // time IC and ID was last calculated
+  int m_I_C_D_CM_last_calculated_time = 0;    // time IC, IV and ID was last calculated
+  
+  // Person's severe disease immunity (Griffin et al. 2015), decays alongside ICA and ICM
+  double m_IVM_init = 0;
+  double m_IVM = 0;               // maternally acquired severe immunity (IVM)
+  double m_IVA = 0;               // exposure acquired severe immunity (IVA)
+  double m_IVA_last_boost_time = m_ICA_last_boost_time;  // time that IVA was last boosted (copies ICA so no new random draw)
+  double m_severe_probability = 0;    // Temporary probability that today's infection is severe (theta)
+  double m_expected_severe = 0;       // Expected severe cases from today's infection, i.e. theta, reset daily
   
   // Person's blood stage immunity (I.D), i.e. reducing probability of detectiona ond onwards contribution to infectiousness
   double m_ID;                // infection-blocking immunity 
@@ -248,6 +256,21 @@ public:
   
   // Get person's ID
   double get_m_ID() { return (m_ID); }
+  
+  // Get person's IVA
+  double get_m_IVA() { return (m_IVA); }
+  
+  // Get person's IVM
+  double get_m_IVM() { return (m_IVM); }
+  
+  // Get person's IVM_init
+  double get_m_IVM_init() { return (m_IVM_init); }
+  
+  // Get person's IVA_last_boost_time
+  double get_m_IVA_last_boost_time() { return (m_IVA_last_boost_time); }
+  
+  // Get person's expected severe cases today
+  double get_m_expected_severe() { return (m_expected_severe); }
   
   // Get person's IB_last_boost_time
   double get_m_IB_last_boost_time() { return (m_IB_last_boost_time); }
@@ -425,6 +448,18 @@ public:
   // Set person's ICM_init
   void set_m_ICM_init(double x) { m_ICM_init = x; }
   
+  // Set person's IVA
+  void set_m_IVA(double x) { m_IVA = x; }
+  
+  // Set person's IVM
+  void set_m_IVM(double x) { m_IVM = x; }
+  
+  // Set person's IVM_init
+  void set_m_IVM_init(double x) { m_IVM_init = x; }
+  
+  // Set person's IVA_last_boost_time
+  void set_m_IVA_last_boost_time(double x) { m_IVA_last_boost_time = x; }
+  
   // Set person's IB_last_boost_time
   void set_m_IB_last_boost_time(double x) { m_IB_last_boost_time = x; }
   
@@ -584,6 +619,9 @@ public:
   
   // Update immunities so they are correct for today - helpful when logging to know actual immunities
   void update_immunities_to_today(const Parameters &parameters);
+  
+  // Probability that an infection leads to severe disease (theta) given age and severe immunity (Griffin et al. 2015)
+  static double severe_probability(double age, double IVA, double IVM, const Parameters &parameters);
   
 };
 

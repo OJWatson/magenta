@@ -81,6 +81,21 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
   // -------------------------------------------------
   parameters.g_phi0 = Rcpp::as<double>(core_parameter_list["phi0"]);
   
+  // severe disease immunity parameters (kept at their defaults if not provided, e.g. older saved inputs)
+  if (core_parameter_list.containsElementNamed("theta0")) {
+    parameters.g_theta0 = Rcpp::as<double>(core_parameter_list["theta0"]);
+    parameters.g_theta1 = Rcpp::as<double>(core_parameter_list["theta1"]);
+    parameters.g_dVA = Rcpp::as<double>(core_parameter_list["dVA"]);
+    parameters.g_IV0 = Rcpp::as<double>(core_parameter_list["IV0"]);
+    parameters.g_kV = Rcpp::as<double>(core_parameter_list["kV"]);
+    parameters.g_uVA = Rcpp::as<double>(core_parameter_list["uVA"]);
+    parameters.g_fV0 = Rcpp::as<double>(core_parameter_list["fV0"]);
+    parameters.g_aV = Rcpp::as<double>(core_parameter_list["aV"]);
+    parameters.g_gammaV = Rcpp::as<double>(core_parameter_list["gammaV"]);
+    parameters.g_PVM = Rcpp::as<double>(core_parameter_list["PVM"]);
+    parameters.g_dVM = Rcpp::as<double>(core_parameter_list["dVM"]);
+  }
+  
   
   // Un pack barcode parms
   // -------------------------------------------------
@@ -209,6 +224,14 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
   vector<double> het_brackets = Rcpp::as<vector<double> >(eqSS["het_brackets"]);
   std::vector<double>  ICM_Init = Rcpp::as<std::vector<double> >(eqSS["ICM_Init"]);
   
+  // severe disease immunity at equilibrium. Older equilibrium states do not have this so start with none
+  Rcpp::NumericMatrix IVAmat(ICAmat.nrow(), ICAmat.ncol());
+  std::vector<double> IVM_Init(ICM_Init.size(), 0.0);
+  if (eqSS.containsElementNamed("IVAmat")) {
+    IVAmat = Rcpp::as<Rcpp::NumericMatrix>(eqSS["IVAmat"]);
+    IVM_Init = Rcpp::as<std::vector<double> >(eqSS["IVM_Init"]);
+  }
+  
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // START: HUMAN INITIALISATION FROM EQUILIBRIUM
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -326,6 +349,9 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     {
       population[n].set_m_ICM(ICM_Init[het_bracket_in] * exp(-population[n].get_m_person_age() / parameters.g_dCM));
     }
+    population[n].set_m_IVA(IVAmat(age_bracket_in, het_bracket_in));
+    population[n].set_m_IVM_init(IVM_Init[het_bracket_in]);
+    population[n].set_m_IVM(IVM_Init[het_bracket_in] * exp(-population[n].get_m_person_age() / parameters.g_dVM));
     
     // Schedule change for those who are not susceptible
     if (population[n].get_m_infection_state() != Person::SUSCEPTIBLE)
@@ -337,6 +363,7 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     if (population[n].get_m_person_age() > 20 * 365 && population[n].get_m_person_age() < 21 * 365)
     {
       parameters.g_sum_maternal_immunity += population[n].get_m_ICA();
+      parameters.g_sum_maternal_severe_immunity += population[n].get_m_IVA();
       parameters.g_total_mums++;
     }
     
@@ -664,6 +691,8 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
   std::vector<double> ICA(parameters.g_N);
   std::vector<double> ICM(parameters.g_N);
   std::vector<double> ID(parameters.g_N);
+  std::vector<double> IVA(parameters.g_N);
+  std::vector<double> IVM(parameters.g_N);
   
   // status eq for logging and other logging variables 
   std::vector<double> status_eq = { 0,0,0,0,0,0 };
@@ -709,6 +738,8 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     ICA[element] = population[element].get_m_ICA();
     ICM[element] = population[element].get_m_ICM();
     ID[element] = population[element].get_m_ID();
+    IVA[element] = population[element].get_m_IVA();
+    IVM[element] = population[element].get_m_IVM();
     
   }
   
@@ -726,6 +757,10 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
                                           Rcpp::Named("U")=status_eq[3],Rcpp::Named("T")=status_eq[4],Rcpp::Named("P")=status_eq[5],
                                                                                                                                 Rcpp::Named("InfectionStates")=Infection_States, Rcpp::Named("Ages")=Ages, 
                                                                                                                                 Rcpp::Named("IB")=IB,Rcpp::Named("ICA")=ICA,Rcpp::Named("ICM")=ICM,Rcpp::Named("ID")=ID);
+  
+  // Severe disease immunity appended so earlier positions are unchanged
+  Loggers.push_back(IVA, "IVA");
+  Loggers.push_back(IVM, "IVM");
   
   
   // Create universe ptr for memory-continuiation

@@ -65,6 +65,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_severe_probability
+double test_severe_probability(double age, double IVA, double IVM);
+RcppExport SEXP _magenta_test_severe_probability(SEXP ageSEXP, SEXP IVASEXP, SEXP IVMSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type age(ageSEXP);
+    Rcpp::traits::input_parameter< double >::type IVA(IVASEXP);
+    Rcpp::traits::input_parameter< double >::type IVM(IVMSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_severe_probability(age, IVA, IVM));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test_barcode_from_PLAF
 SEXP test_barcode_from_PLAF(Rcpp::NumericVector plaf, unsigned int n);
 RcppExport SEXP _magenta_test_barcode_from_PLAF(SEXP plafSEXP, SEXP nSEXP) {

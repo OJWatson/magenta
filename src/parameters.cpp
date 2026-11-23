@@ -106,6 +106,21 @@ Parameters::Parameters() {
   g_mean_maternal_immunity = 0;
   g_sum_maternal_immunity = 0;
   g_total_mums = 0;
+  // Severe disease immunity parameters (Griffin et al. 2015 Proc R Soc B 282:20142657, Table S3), using the
+  // malariasimulation values. g_fV0, g_aV and g_gammaV are not tabulated there and are the malariasimulation fits
+  g_theta0 = 0.0749886;
+  g_theta1 = 0.0001191;
+  g_dVA = 10950;
+  g_IV0 = 1.09629;
+  g_kV = 2.00048;
+  g_uVA = 11.4321;
+  g_fV0 = 0.141195;
+  g_aV = 2493.41;
+  g_gammaV = 2.91282;
+  g_PVM = 0.195768;
+  g_dVM = 76.8365;
+  g_mean_maternal_severe_immunity = 0;
+  g_sum_maternal_severe_immunity = 0;
   // contributions to infectious reservoir by state and age
   g_gamma1 = 1.82425;
   g_cD = 0.0676909;

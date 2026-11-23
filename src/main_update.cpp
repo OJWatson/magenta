@@ -167,6 +167,8 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
   double total_incidence = 0;
   double total_incidence_05 = 0;
   int daily_incidence_return = 0;
+  double total_severe = 0;
+  double total_severe_05 = 0;
   int daily_bite_counters = 0;
   int daily_infectious_bite_counters = 0;
   std::vector<unsigned int> daily_mutations_per_loci(u_ptr->parameters.g_num_loci,0);
@@ -211,9 +213,11 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
     
     // Calculate yesterday's mean maternal immunity
     u_ptr->parameters.g_mean_maternal_immunity = u_ptr->parameters.g_sum_maternal_immunity / u_ptr->parameters.g_total_mums;
+    u_ptr->parameters.g_mean_maternal_severe_immunity = u_ptr->parameters.g_sum_maternal_severe_immunity / u_ptr->parameters.g_total_mums;
     
     // Reset maternal immunity sums
     u_ptr->parameters.g_sum_maternal_immunity = 0;
+    u_ptr->parameters.g_sum_maternal_severe_immunity = 0;
     u_ptr->parameters.g_total_mums = 0;
     
     // Second reset counters
@@ -465,6 +469,13 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
           total_incidence++;
         }
         
+        // log expected severe cases from today's infections
+        total_severe += element.get_m_expected_severe();
+        if (element.get_m_person_age() <= (5 * 365))
+        {
+          total_severe_05 += element.get_m_expected_severe();
+        }
+        
         // log treatment outcomes
         if(element.get_m_treatment_outcome() == Person::SUCCESFULLY_TREATED){
           succesful_treatments_by_drug[element.get_m_drug_choice()]++;
@@ -538,6 +549,8 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
   std::vector<double> ICA(u_ptr->parameters.g_N);
   std::vector<double> ICM(u_ptr->parameters.g_N);
   std::vector<double> ID(u_ptr->parameters.g_N);
+  std::vector<double> IVA(u_ptr->parameters.g_N);
+  std::vector<double> IVM(u_ptr->parameters.g_N);
   
   // loop through population and grabages and immunities for error checking
   for (unsigned int element = 0; element < u_ptr->parameters.g_N ; element++) 
@@ -554,6 +567,8 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
     ICA[element] = u_ptr->population[element].get_m_ICA();
     ICM[element] = u_ptr->population[element].get_m_ICM();
     ID[element] = u_ptr->population[element].get_m_ID();
+    IVA[element] = u_ptr->population[element].get_m_IVA();
+    IVM[element] = u_ptr->population[element].get_m_IVM();
     
   }
   
@@ -586,6 +601,12 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
                                           Rcpp::Named("S")=status_eq[0],Rcpp::Named("D")=status_eq[1],Rcpp::Named("A")=status_eq[2],
                                                                                                                                 Rcpp::Named("U")=status_eq[3],Rcpp::Named("T")=status_eq[4],Rcpp::Named("P")=status_eq[5]
   );
+  
+  // Severe disease loggers appended after (Rcpp::List::create takes at most 20 elements), so earlier positions are unchanged
+  Loggers.push_back(total_severe/log_counter, "Severe");
+  Loggers.push_back(total_severe_05/log_counter, "Severe_05");
+  Loggers.push_back(IVA, "IVA");
+  Loggers.push_back(IVM, "IVM");
   
   
   rcpp_out(u_ptr->parameters.g_h_quiet_print, "\n Loggers Done \n");

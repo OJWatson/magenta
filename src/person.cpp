@@ -413,9 +413,23 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
     m_ID *= exp((m_I_C_D_CM_last_calculated_time - parameters.g_current_time) / parameters.g_dB);
     m_ICA *= exp((m_I_C_D_CM_last_calculated_time - parameters.g_current_time) / parameters.g_dCA);
     m_ICM = m_ICM_init * exp(-m_person_age / parameters.g_dCM);
+    m_IVA *= exp((m_I_C_D_CM_last_calculated_time - parameters.g_current_time) / parameters.g_dVA);
+    m_IVM = m_IVM_init * exp(-m_person_age / parameters.g_dVM);
     
     // Update last calculated time
     m_I_C_D_CM_last_calculated_time = parameters.g_current_time;
+    
+    // Probability that today's infection is severe, calculated before IVA is boosted as in malariasimulation
+    m_severe_probability = severe_probability(m_person_age, m_IVA, m_IVM, parameters);
+    
+    // If the last bite was less than g_uVA (time in which boosting of IVA cannot happen) then increase IVA
+    if (m_IVA_last_boost_time < parameters.g_current_time - parameters.g_uVA) {
+      
+      // Increase IVA and update IVA last boost time
+      m_IVA++;
+      m_IVA_last_boost_time = parameters.g_current_time + modf(m_IVA_last_boost_time, &m_IVA_last_boost_time);
+      
+    }
     
     // If the last bite was less than g_uD (time in which boosting of ID cannot happen) then increse ID
     if (m_ID_last_boost_time < parameters.g_current_time - parameters.g_uD) {
@@ -498,6 +512,10 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
         // if it is the first sporozoite then it is always taken. For successive sporozoites, we probabilistically decide based on their immunity
         if(cotransmission == 0 || rbernoulli1(m_biting_success_rate)) 
         {
+          
+          // Log the expected severe cases from this infection (once per day, as the probability is zeroed once logged)
+          m_expected_severe += m_severe_probability;
+          m_severe_probability = 0;
           
           // Push the resultant state of infection
           m_infection_state_realisation_vector.emplace_back(m_temp_infection_state);
@@ -832,9 +850,12 @@ void Person::die(const Parameters &parameters)
   m_IB_last_boost_time -= parameters.g_uB;
   m_ICA_last_boost_time -= parameters.g_uCA;
   m_ID_last_boost_time -= parameters.g_uD;
+  m_IVA = 0;
+  m_IVA_last_boost_time -= parameters.g_uVA;
   
   // Set maternal immunity
   m_ICM = m_ICM_init = parameters.g_PM * parameters.g_mean_maternal_immunity * m_individual_biting_rate;
+  m_IVM = m_IVM_init = parameters.g_PVM * parameters.g_mean_maternal_severe_immunity * m_individual_biting_rate;
   
   // Schedule death
   schedule_m_day_of_death(parameters);
@@ -1523,6 +1544,7 @@ double Person::update(Parameters &parameters)
   // Find out if pregnacy age
   if (m_person_age > (15 * 365) && m_person_age < (25 * 365)) {
     parameters.g_sum_maternal_immunity += m_ICA;
+    parameters.g_sum_maternal_severe_immunity += m_IVA;
     parameters.g_total_mums++;
   }
   
@@ -1537,6 +1559,7 @@ double Person::update(Parameters &parameters)
   // Reset total bites and other counters designed to prevent unnecessary recalculations in cases of successive same day bites on an inidividual
   m_number_of_bites = 0;
   m_number_of_succesful_bites = 0;
+  m_expected_severe = 0;
   m_contribution_counter = 0;
   m_cA_counter = true;
   m_active_strain_contribution.clear();
@@ -1635,9 +1658,30 @@ void Person::update_immunities_to_today(const Parameters &parameters) {
   m_ID *= exp((m_I_C_D_CM_last_calculated_time - parameters.g_current_time) / parameters.g_dB);
   m_ICA *= exp((m_I_C_D_CM_last_calculated_time - parameters.g_current_time) / parameters.g_dCA);
   m_ICM = m_ICM_init * exp(-m_person_age / parameters.g_dCM);
+  m_IVA *= exp((m_I_C_D_CM_last_calculated_time - parameters.g_current_time) / parameters.g_dVA);
+  m_IVM = m_IVM_init * exp(-m_person_age / parameters.g_dVM);
   
   // Update last calculated time
   m_I_C_D_CM_last_calculated_time = parameters.g_current_time;
+}
+
+// Probability that an infection leads to severe disease (theta) given age and severe immunity, following
+// Griffin et al. 2015 Proc R Soc B. Note malariasimulation adds 0.5 to any non-zero IVA first, which is not
+// in the paper and is not done here
+double Person::severe_probability(double age, double IVA, double IVM, const Parameters &parameters) {
+  
+  // Age dependent modifier of severe immunity
+  double fv = 1 - ((1 - parameters.g_fV0) / (1 + pow(age / parameters.g_aV, parameters.g_gammaV)));
+  
+  return(parameters.g_theta0 * (parameters.g_theta1 + ((1 - parameters.g_theta1) / (1 + (fv * pow((IVA + IVM) / parameters.g_IV0, parameters.g_kV))))));
+}
+
+// Tests
+// ------------------------------
+// [[Rcpp::export]]
+double test_severe_probability(double age, double IVA, double IVM) {
+  Parameters parameters;
+  return(Person::severe_probability(age, IVA, IVM, parameters));
 }
 
 

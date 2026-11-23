@@ -46,6 +46,10 @@ Simulation_Update_cpp <- function(param_list) {
     .Call('_magenta_Simulation_Update_cpp', PACKAGE = 'magenta', param_list)
 }
 
+test_severe_probability <- function(age, IVA, IVM) {
+    .Call('_magenta_test_severe_probability', PACKAGE = 'magenta', age, IVA, IVM)
+}
+
 test_barcode_from_PLAF <- function(plaf, n) {
     .Call('_magenta_test_barcode_from_PLAF', PACKAGE = 'magenta', plaf, n)
 }
