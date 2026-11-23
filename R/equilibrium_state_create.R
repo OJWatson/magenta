@@ -31,7 +31,9 @@ equilibrium_ss_create <- function(eqInit) {
     "Ev" = eqInit$init_Ev * eqInit$mv0,
     "Iv" = eqInit$init_Iv * eqInit$mv0,
     "ICM_Init" = eqInit$ICM_init_eq,
-    "theta" = seasonal_profile(eqInit$admin, eqInit$country)
+    "theta" = seasonal_profile(eqInit$admin, eqInit$country),
+    "IVAmat" = eqInit$init_IVA[, , 1],
+    "IVM_Init" = eqInit$IVM_init_eq
   )
   
   return(equilibrium_state)

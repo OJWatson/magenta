@@ -129,6 +129,8 @@ equilibrium_init_create <- function(age_vector,
   ICA_eq <- matrix(0, na, nh)
   ICM_init_eq <- vector(length = nh, mode = "numeric")
   ICM_eq <- matrix(0, na, nh)
+  IVA_eq <- matrix(0, na, nh)
+  IVM_init_eq <- vector(length = nh, mode = "numeric")
   cA_eq <- matrix(0, na, nh)
   FOIvij_eq <- matrix(0, na, nh)
   p_det_eq <- matrix(0, na, nh)
@@ -144,6 +146,11 @@ equilibrium_init_create <- function(age_vector,
                         FOI_eq[i, j]/(FOI_eq[i, j] * mpl$uD + 1) * x_I[i])/(1 + x_I[i]/mpl$dID)
       ICA_eq[i, j] <- (ifelse(i == 1, 0, ICA_eq[i - 1, j]) +
                          FOI_eq[i,j]/(FOI_eq[i, j] * mpl$uCA + 1) * x_I[i])/(1 + x_I[i]/mpl$dCA)
+      # severe disease immunity, the same recursion as ICA (older param lists do not have it)
+      if (!is.null(mpl$uVA)) {
+        IVA_eq[i, j] <- (ifelse(i == 1, 0, IVA_eq[i - 1, j]) +
+                           FOI_eq[i,j]/(FOI_eq[i, j] * mpl$uVA + 1) * x_I[i])/(1 + x_I[i]/mpl$dVA)
+      }
       p_det_eq[i, j] <- mpl$d1 + (1 - mpl$d1)/(1 + fd[i] * (ID_eq[i, j]/mpl$ID0)^mpl$kD)
       cA_eq[i, j] <- mpl$cU + (mpl$cD - mpl$cU) * p_det_eq[i, j]^mpl$gamma1
     }
@@ -157,6 +164,11 @@ equilibrium_init_create <- function(age_vector,
                                     (ICA_eq[age20u, j] - ICA_eq[age20l, j]))
       ICM_eq[i, j] <- ifelse(i == 1,
                              ICM_init_eq[j], ICM_eq[i - 1,j])/(1 + x_I[i]/mpl$dCM)
+    }
+    # maternal severe immunity, proportional to the severe immunity of a 20 year old
+    if (!is.null(mpl$PVM)) {
+      IVM_init_eq[j] <- mpl$PVM * (IVA_eq[age20l, j] + age_20_factor *
+                                     (IVA_eq[age20u, j] - IVA_eq[age20l, j]))
     }
   }
   
@@ -288,6 +300,7 @@ equilibrium_init_create <- function(age_vector,
   ID_eq = array(ID_eq, c(na, nh, num_int))
   ICA_eq = array(ICA_eq, c(na, nh, num_int))
   ICM_eq = array(ICM_eq, c(na, nh, num_int))
+  IVA_eq = array(IVA_eq, c(na, nh, num_int))
   
   # find database seasonal parameters
   admin_matches <- admin_match(admin, country, quiet)
@@ -331,7 +344,8 @@ equilibrium_init_create <- function(age_vector,
               age_mid_point = age_mid_point, het_bounds = het_bounds, pi = pi,
               p_det_eq = p_det_eq,
               age20l = age20l, age20u = age20u, age_20_factor = age_20_factor,
-              country = country, admin = admin)
+              country = country, admin = admin,
+              init_IVA = IVA_eq, IVM_init_eq = IVM_init_eq)
   
   res <- append(res,mpl)
   

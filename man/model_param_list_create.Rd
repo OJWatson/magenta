@@ -45,6 +45,17 @@ model_param_list_create(
   uCA = 6.06349,
   PM = 0.774368,
   dCM = 67.6952,
+  theta0 = 0.0749886,
+  theta1 = 0.0001191,
+  dVA = 10950,
+  IV0 = 1.09629,
+  kV = 2.00048,
+  uVA = 11.4321,
+  fV0 = 0.141195,
+  aV = 2493.41,
+  gammaV = 2.91282,
+  PVM = 0.195768,
+  dVM = 76.8365,
   delayMos = 10,
   tau1 = 0.69,
   tau2 = 2.31,
@@ -160,6 +171,31 @@ model_param_list_create(
 
 \item{dCM}{Inverse of decay rate of maternal immunity. Default = 67.6952}
 
+\item{theta0}{Maximum probability that an infection is severe, i.e. with
+no severe immunity. Default = 0.0749886}
+
+\item{theta1}{Maximum relative reduction in the probability of severe
+disease due to immunity. Default = 0.0001191}
+
+\item{dVA}{Inverse of decay rate of acquired severe immunity (30 years).
+Default = 10950}
+
+\item{IV0}{Severe immunity scale parameter. Default = 1.09629}
+
+\item{kV}{Severe immunity shape parameter. Default = 2.00048}
+
+\item{uVA}{Duration in which severe immunity is not boosted. Default = 11.4321}
+
+\item{fV0}{Severe immunity age modifier at birth. Default = 0.141195}
+
+\item{aV}{Severe immunity age modifier scale. Default = 2493.41}
+
+\item{gammaV}{Severe immunity age modifier shape. Default = 2.91282}
+
+\item{PVM}{New-born severe immunity relative to mother. Default = 0.195768}
+
+\item{dVM}{Inverse of decay rate of maternal severe immunity. Default = 76.8365}
+
 \item{delayMos}{Extrinsic incubation period. Default = 10}
 
 \item{tau1}{Duration of host seeking, assumed to be constant between species. Default = 0.69}
@@ -227,4 +263,13 @@ model_param_list_create(
 \description{
 \code{model_param_list_create} creates list of model parameters to be used
 within \code{equilibrium_init_create}
+}
+\details{
+The severe disease parameters follow Griffin JT, Hollingsworth TD,
+  Reyburn H, Drakeley CJ, Riley EM, Ghani AC. Gradual acquisition of
+  immunity to severe malaria with increasing exposure. Proc R Soc B
+  2015;282:20142657 (Table S3). The defaults are the values used in
+  malariasimulation, which differ slightly from the published medians
+  (IV0 1.05, kV 1.99, uVA 11.3). fV0, aV and gammaV are not tabulated in
+  the 2015 paper; they are the fitted values as used in malariasimulation.
 }
