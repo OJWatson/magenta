@@ -217,8 +217,9 @@ pipeline <- function(EIR = 120,
     # Create parameter list, changine any key parameters
     mpl <- model_param_list_create(...)
     
-    # Create geometric age brackets
-    age_vector <- age_brackets(100, 40, TRUE)
+    # Fine age groups, so the starting equilibrium (and its mosquito density) matches
+    # the deterministic model rather than a coarse approximation of it
+    age_vector <- c(seq(0, 10, 0.1), seq(10.5, 100, 0.5))
     
     # check to change the ft for the initial and odin to reflect 28 day failure rates
     lpfs <- unlist(lapply(drug_list$drugs, function(x) {x$lpf[1]}))
@@ -322,8 +323,9 @@ pipeline <- function(EIR = 120,
     nmf_list <- saved_inputs$nmf_list
     mpl <- saved_inputs$core_parameter_list
     
-    # Create geometric age brackets
-    age_vector <- age_brackets(100, 40, TRUE)
+    # Fine age groups, so the starting equilibrium (and its mosquito density) matches
+    # the deterministic model rather than a coarse approximation of it
+    age_vector <- c(seq(0, 10, 0.1), seq(10.5, 100, 0.5))
     
     # check to change the ft for the initial and odin to reflect 28 day failure rates
     lpfs <- unlist(lapply(drug_list$drugs, function(x) {x$lpf[1]}))
