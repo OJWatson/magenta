@@ -78,6 +78,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_pending_infection
+Rcpp::List test_pending_infection(int state, int day_of_change, int bite_day, bool treated, int days);
+RcppExport SEXP _magenta_test_pending_infection(SEXP stateSEXP, SEXP day_of_changeSEXP, SEXP bite_daySEXP, SEXP treatedSEXP, SEXP daysSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type state(stateSEXP);
+    Rcpp::traits::input_parameter< int >::type day_of_change(day_of_changeSEXP);
+    Rcpp::traits::input_parameter< int >::type bite_day(bite_daySEXP);
+    Rcpp::traits::input_parameter< bool >::type treated(treatedSEXP);
+    Rcpp::traits::input_parameter< int >::type days(daysSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_pending_infection(state, day_of_change, bite_day, treated, days));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test_barcode_from_PLAF
 SEXP test_barcode_from_PLAF(Rcpp::NumericVector plaf, unsigned int n);
 RcppExport SEXP _magenta_test_barcode_from_PLAF(SEXP plafSEXP, SEXP nSEXP) {

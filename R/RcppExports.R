@@ -50,6 +50,10 @@ test_severe_probability <- function(age, IVA, IVM) {
     .Call('_magenta_test_severe_probability', PACKAGE = 'magenta', age, IVA, IVM)
 }
 
+test_pending_infection <- function(state, day_of_change, bite_day, treated, days) {
+    .Call('_magenta_test_pending_infection', PACKAGE = 'magenta', state, day_of_change, bite_day, treated, days)
+}
+
 test_barcode_from_PLAF <- function(plaf, n) {
     .Call('_magenta_test_barcode_from_PLAF', PACKAGE = 'magenta', plaf, n)
 }

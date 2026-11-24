@@ -481,12 +481,15 @@ void Person::allocate_bite(Parameters &parameters, Mosquito &mosquito)
 // Allocate an infection to person
 void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
 {
-  // Can the bite lead to an infection, i.e. are they susceptible, asymptomatic or subpatent,
-  // or in prophylaxis and we're doing resistance modelling
-  bool infectable = (m_infection_state == SUSCEPTIBLE ||
-                     m_infection_state == ASYMPTOMATIC || 
-                     m_infection_state == SUBPATENT || 
-                     (parameters.g_resistance_flag && m_infection_state == PROPHYLAXIS));
+  // Any infectious bite gives a pending infection, whatever the person's state today. As in the
+  // Griffin et al. model and malariasimulation, whether it starts is decided when it would start,
+  // g_dur_E days later (see event_handle). The drug for a treated outcome is only chosen here when
+  // the person is susceptible, asymptomatic or subpatent (or in prophylaxis with resistance
+  // modelling), as before, so that a bite does not change the drug of a current treatment
+  bool choose_drug = (m_infection_state == SUSCEPTIBLE ||
+                      m_infection_state == ASYMPTOMATIC || 
+                      m_infection_state == SUBPATENT || 
+                      (parameters.g_resistance_flag && m_infection_state == PROPHYLAXIS));
   
   // Only need to calculate this once per day step
   if (!m_number_of_succesful_bites)
@@ -502,11 +505,11 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
     // Update last calculated time
     m_I_C_D_CM_last_calculated_time = parameters.g_current_time;
     
-    // Probability that today's infection is severe, calculated before IVA is boosted
-    m_severe_probability = severe_probability(m_person_age, m_IVA, m_IVM, parameters);
-    
-    // Calculate a symptom success rate (phi) dependent on acquired and maternal immunity, also before ICA
-    // is boosted. As in malariasimulation 0.5 is added to any non-zero ICA
+    // Calculate a symptom success rate (phi) dependent on acquired and maternal immunity. As in
+    // malariasimulation 0.5 is added to any non-zero ICA. ICA is boosted when an infection starts, so
+    // this is ICA on the bite day from infections that have started by then. The Griffin et al. model
+    // uses ICA on the day the infection starts, g_dur_E days later, but ICA barely decays over that
+    // time and is boosted at most twice (g_uCA), so the clinical outcome is still drawn at the bite
     m_symptom_success_rate = parameters.g_phi0 * (parameters.g_phi1 + ((1 - parameters.g_phi1) / (1 + (pow((((m_ICA > 0 ? m_ICA + 0.5 : m_ICA) + m_ICM) / parameters.g_IC0), parameters.g_kC)))));
     
     // Calculate individuals InfectionStatus change 
@@ -530,15 +533,10 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
   // Increase number of succesful bites
   m_number_of_succesful_bites++;
   
-  // Will the infectious bite actually lead to an infection
-  // Firstly can they be infected again
-  if (infectable)
-  {
+  // If the strain will lead to them being treated. What drug do they get?
+  // If they were already drawn to receive a drug in the last 15 days then it will still be that drug
+  if(choose_drug && (m_drug_choice_time == 0 || m_drug_choice_time < (parameters.g_current_time - 15))) {
     
-    // If the strain will lead to them being treated. What drug do they get?
-    // If they were already drawn to receive a drug in the last 15 days then it will still be that drug
-    if(m_drug_choice_time == 0 || m_drug_choice_time < (parameters.g_current_time - 15)) {
-      
     // the default drug to be given
     m_drug_choice = parameters.g_drug_choice;
     
@@ -548,162 +546,148 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
     }
     
     m_drug_choice_time = parameters.g_current_time;
-    }
+  }
+  
+  // Allocate strains being passed on
+  for(int cotransmission = 0; cotransmission < parameters.g_cotransmission_frequencies[parameters.g_cotransmission_frequencies_counter]; cotransmission++)
+  {
     
-    // Allocate strains being passed on
-    for(int cotransmission = 0; cotransmission < parameters.g_cotransmission_frequencies[parameters.g_cotransmission_frequencies_counter]; cotransmission++)
+    // if it is the first sporozoite then it is always taken. For successive sporozoites, we probabilistically decide based on their immunity
+    if(cotransmission == 0 || rbernoulli1(m_biting_success_rate)) 
     {
       
-      // if it is the first sporozoite then it is always taken. For successive sporozoites, we probabilistically decide based on their immunity
-      if(cotransmission == 0 || rbernoulli1(m_biting_success_rate)) 
+      // Push the resultant state of infection
+      m_infection_state_realisation_vector.emplace_back(m_temp_infection_state);
+      
+      // Push the resultant state change time
+      m_infection_time_realisation_vector.emplace_back(static_cast<int>(parameters.g_dur_E + parameters.g_current_time));
+      
+      // Allocate strains from mosquito
+      
+      // if we are doing spatial then use the exported barcodes first - the human biting quueue is shuffled so distributed across humans fine.
+      if(parameters.g_spatial_imported_human_infection_counter < parameters.g_spatial_total_imported_human_infections || 
+         parameters.g_percentage_imported_human_infections == 1.0)
       {
         
-        // Push the resultant state of infection
-        m_infection_state_realisation_vector.emplace_back(m_temp_infection_state);
-        
-        // Push the resultant state change time
-        m_infection_time_realisation_vector.emplace_back(static_cast<int>(parameters.g_dur_E + parameters.g_current_time));
-        
-        // Allocate strains from mosquito
-        
-        // if we are doing spatial then use the exported barcodes first - the human biting quueue is shuffled so distributed across humans fine.
-        if(parameters.g_spatial_imported_human_infection_counter < parameters.g_spatial_total_imported_human_infections || 
-           parameters.g_percentage_imported_human_infections == 1.0)
+        // assign the exported barcode and increase the count
+        if(parameters.g_spatial_type == Parameters::METAPOPULATION)
         {
-          
-          // assign the exported barcode and increase the count
-          if(parameters.g_spatial_type == Parameters::METAPOPULATION)
-          {
-            m_infection_barcode_realisation_vector.emplace_back(parameters.g_spatial_imported_barcodes[parameters.g_spatial_imported_human_infection_counter]);
-          } 
-          else 
-          {
-              m_infection_barcode_realisation_vector.emplace_back(Strain::generate_next_barcode());    
-          }
-          
-          parameters.g_spatial_imported_human_infection_counter++;
-          
-        }
+          m_infection_barcode_realisation_vector.emplace_back(parameters.g_spatial_imported_barcodes[parameters.g_spatial_imported_human_infection_counter]);
+        } 
         else 
         {
-          
-          m_infection_barcode_realisation_vector.emplace_back(mosquito.sample_sporozoite());
-          
-          // export a barcode if doing metapopulation spatial
-          if(parameters.g_spatial_exported_barcode_counter < parameters.g_spatial_total_exported_barcodes)
-          {
-            parameters.g_spatial_exported_barcodes[parameters.g_spatial_exported_barcode_counter] = m_infection_barcode_realisation_vector.back();
-            parameters.g_spatial_exported_barcode_counter++;  
-          }
-          
+            m_infection_barcode_realisation_vector.emplace_back(Strain::generate_next_barcode());    
         }
         
-        // are we simulating mutations
-        if (parameters.g_mutation_flag)
+        parameters.g_spatial_imported_human_infection_counter++;
+        
+      }
+      else 
+      {
+        
+        m_infection_barcode_realisation_vector.emplace_back(mosquito.sample_sporozoite());
+        
+        // export a barcode if doing metapopulation spatial
+        if(parameters.g_spatial_exported_barcode_counter < parameters.g_spatial_total_exported_barcodes)
         {
+          parameters.g_spatial_exported_barcodes[parameters.g_spatial_exported_barcode_counter] = m_infection_barcode_realisation_vector.back();
+          parameters.g_spatial_exported_barcode_counter++;  
+        }
+        
+      }
+      
+      // are we simulating mutations
+      if (parameters.g_mutation_flag)
+      {
+        
+        // if the mutation treated modifier is 1 then the same mutation rate is assumed regardless of the 
+        // infection outcome, i.e. treated vs not treated. If this is true we can use the pre-calculated mutations
+        if(parameters.g_mutation_treated_modifier == 1.0) {
           
-          // if the mutation treated modifier is 1 then the same mutation rate is assumed regardless of the 
-          // infection outcome, i.e. treated vs not treated. If this is true we can use the pre-calculated mutations
-          if(parameters.g_mutation_treated_modifier == 1.0) {
+          // are we still allocating mutations
+          if(parameters.g_mutation_pos_allocator < parameters.g_num_loci) {
             
-            // are we still allocating mutations
-            if(parameters.g_mutation_pos_allocator < parameters.g_num_loci) {
+            // were there any mutations at this position for the population
+            if(parameters.g_mutations_today[parameters.g_mutation_pos_allocator]>0) {
               
-              // were there any mutations at this position for the population
-              if(parameters.g_mutations_today[parameters.g_mutation_pos_allocator]>0) {
-                
-                m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][parameters.g_mutation_pos_allocator].flip();
-                parameters.g_mutations_today[parameters.g_mutation_pos_allocator]--;
-                
-                if(parameters.g_mutations_today[parameters.g_mutation_pos_allocator] == 0) {
-                  parameters.g_mutation_pos_allocator++;
-                }
-              } else {
+              m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][parameters.g_mutation_pos_allocator].flip();
+              parameters.g_mutations_today[parameters.g_mutation_pos_allocator]--;
+              
+              if(parameters.g_mutations_today[parameters.g_mutation_pos_allocator] == 0) {
                 parameters.g_mutation_pos_allocator++;
               }
+            } else {
+              parameters.g_mutation_pos_allocator++;
             }
+          }
+          
+          
+        } else {
+          
+          // if they are treated then we use a different mutation rate if the position would mutate into a resistant locus
+          if(m_infection_state_realisation_vector.back() == TREATED) {
             
-            
-          } else {
-            
-            // if they are treated then we use a different mutation rate if the position would mutate into a resistant locus
-            if(m_infection_state_realisation_vector.back() == TREATED) {
+            // what positions in the barcode relate the drug being used. 
+              std::vector<unsigned int> drug_pos = parameters.g_drugs[m_drug_choice].get_m_barcode_positions();
+              unsigned int drug_pos_iter = 0;
               
-              // what positions in the barcode relate the drug being used. 
-                std::vector<unsigned int> drug_pos = parameters.g_drugs[m_drug_choice].get_m_barcode_positions();
-                unsigned int drug_pos_iter = 0;
+              for(unsigned int l = 0; l < parameters.g_num_loci; l++) {
                 
-                for(unsigned int l = 0; l < parameters.g_num_loci; l++) {
+                if(drug_pos[drug_pos_iter] == l) {
                   
-                  if(drug_pos[drug_pos_iter] == l) {
-                    
-                    // Increase the iterator first
-                    drug_pos_iter++;
-                    
-                    // Is the locus already resistant. If so then the normal mutation rate
-                    if(m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][l]) {
-                      if(rbernoulli1(parameters.g_mutation_rate[l])) {
-                        m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][l].flip();
-                        parameters.g_mutations_today[l]++;
-                      }
-                    } else {
-                      if(rbernoulli1(parameters.g_mutation_rate[l]*parameters.g_mutation_treated_modifier)) {
-                        m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][l].flip();
-                        parameters.g_mutations_today[l]++;
-                      }
-                    }
-                    // If it's not a resitsance loci associated with the used drug then normal rate
-                  } else {
-                    
+                  // Increase the iterator first
+                  drug_pos_iter++;
+                  
+                  // Is the locus already resistant. If so then the normal mutation rate
+                  if(m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][l]) {
                     if(rbernoulli1(parameters.g_mutation_rate[l])) {
                       m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][l].flip();
                       parameters.g_mutations_today[l]++;
                     }
-                    
+                  } else {
+                    if(rbernoulli1(parameters.g_mutation_rate[l]*parameters.g_mutation_treated_modifier)) {
+                      m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][l].flip();
+                      parameters.g_mutations_today[l]++;
+                    }
                   }
-                      
+                  // If it's not a resitsance loci associated with the used drug then normal rate
+                } else {
+                  
+                  if(rbernoulli1(parameters.g_mutation_rate[l])) {
+                    m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][l].flip();
+                    parameters.g_mutations_today[l]++;
+                  }
+                  
                 }
+                    
+              }
+            
+          } else {
+            
+            for(unsigned int l = 0; l < parameters.g_num_loci; l++) {
               
-            } else {
-              
-              for(unsigned int l = 0; l < parameters.g_num_loci; l++) {
-                
-                if(rbernoulli1(parameters.g_mutation_rate[l])) {
-                  m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][l].flip();
-                  parameters.g_mutations_today[l]++;
-                }
-                
+              if(rbernoulli1(parameters.g_mutation_rate[l])) {
+                m_infection_barcode_realisation_vector[m_infection_barcode_realisation_vector.size()-1][l].flip();
+                parameters.g_mutations_today[l]++;
               }
               
             }
+            
           }
-          
         }
         
-        // remove this strain if it would have been cleared by prophylaxis, otherwise it is an infection
-        if (!clear_strain_if_prophylactic(parameters)) {
-          
-          // Log the expected severe cases from this infection (once per day, as the probability is zeroed once logged)
-          m_expected_severe += m_severe_probability;
-          m_severe_probability = 0;
-          
-          // Only infections boost ICA, ID and IVA, as in malariasimulation
-          boost_infection_immunity(parameters);
-        }
-        
-        
-        
       }
-      
-      // Increase cotransmission counter and catch for overflow
-      if(++parameters.g_cotransmission_frequencies_counter == parameters.g_cotransmission_frequencies_size) {
-        parameters.g_cotransmission_frequencies_counter = 0;
-      }
-      
-      // Set next event date as may have changed as a result of the bite
-      set_m_day_of_next_event();
       
     }
+    
+    // Increase cotransmission counter and catch for overflow
+    if(++parameters.g_cotransmission_frequencies_counter == parameters.g_cotransmission_frequencies_size) {
+      parameters.g_cotransmission_frequencies_counter = 0;
+    }
+    
+    // Set next event date as may have changed as a result of the bite
+    set_m_day_of_next_event();
+    
   }
 }
 
@@ -846,6 +830,15 @@ void Person::all_strain_clearance(const Parameters &parameters) {
   m_active_strain_contribution.clear();
   m_active_female_strain_contribution.clear();
   
+  // Drop the realised infections from the front of the infection vectors. Pending infections are
+  // kept, as whether they start is decided on the day they would start (only death drops them)
+  m_infection_time_realisation_vector.erase(m_infection_time_realisation_vector.begin(),
+                                            m_infection_time_realisation_vector.begin() + m_number_of_realised_infections);
+  m_infection_state_realisation_vector.erase(m_infection_state_realisation_vector.begin(),
+                                             m_infection_state_realisation_vector.begin() + m_number_of_realised_infections);
+  m_infection_barcode_realisation_vector.erase(m_infection_barcode_realisation_vector.begin(),
+                                               m_infection_barcode_realisation_vector.begin() + m_number_of_realised_infections);
+  
   // Update numbers of strains and clearance dates
   m_number_of_strains = 0;
   m_number_of_realised_infections = 0;
@@ -853,33 +846,28 @@ void Person::all_strain_clearance(const Parameters &parameters) {
   m_day_of_next_strain_state_change = std::numeric_limits<int>::max();
   m_more_than_one_strain_to_change_today_bool = false;
   
-  // Clear all associated vectors
-  m_infection_time_realisation_vector.clear();
-  m_infection_state_realisation_vector.clear();
-  m_infection_barcode_realisation_vector.clear();
-  
   // Set new day of next event
   set_m_day_of_next_event();
   
 }
 
-// Clear the last strain if it would have been cleared by prophylaxis
-bool Person::clear_strain_if_prophylactic(const Parameters &parameters)
+// Clear the pending infection at position i, which starts today, if it would be cleared by prophylaxis
+bool Person::clear_strain_if_prophylactic(const Parameters &parameters, unsigned int i)
 {
 
     // are they prophylactic
     if (m_infection_state == PROPHYLAXIS) {
       
       if (parameters.g_drugs[m_drug_choice].early_reinfection(
-          m_infection_barcode_realisation_vector.back(),
+          m_infection_barcode_realisation_vector[i],
           parameters.g_current_time,
           m_day_of_InfectionStatus_change,
           m_day_last_treated) ) {
         
-        // if so then remove the last strain added
-        m_infection_barcode_realisation_vector.pop_back();
-        m_infection_state_realisation_vector.pop_back();
-        m_infection_time_realisation_vector.pop_back();
+        // if so then remove this infection
+        m_infection_barcode_realisation_vector.erase(m_infection_barcode_realisation_vector.begin() + i);
+        m_infection_state_realisation_vector.erase(m_infection_state_realisation_vector.begin() + i);
+        m_infection_time_realisation_vector.erase(m_infection_time_realisation_vector.begin() + i);
         return true;
       }
       
@@ -892,15 +880,15 @@ bool Person::clear_strain_if_prophylactic(const Parameters &parameters)
       rcpp_out(parameters.g_h_quiet_test_print, "Asymptomatic LPF Prophylaxis Check!\n");
       
       if (parameters.g_drugs[m_drug_choice].early_reinfection(
-          m_infection_barcode_realisation_vector.back(),
+          m_infection_barcode_realisation_vector[i],
           parameters.g_current_time,
           m_day_prophylaxis_wanes,
           m_day_last_treated) ) {
         
-        // if so then remove the last strain added
-        m_infection_barcode_realisation_vector.pop_back();
-        m_infection_state_realisation_vector.pop_back();
-        m_infection_time_realisation_vector.pop_back();
+        // if so then remove this infection
+        m_infection_barcode_realisation_vector.erase(m_infection_barcode_realisation_vector.begin() + i);
+        m_infection_state_realisation_vector.erase(m_infection_state_realisation_vector.begin() + i);
+        m_infection_time_realisation_vector.erase(m_infection_time_realisation_vector.begin() + i);
         return true;
       }
       
@@ -939,6 +927,12 @@ void Person::die(const Parameters &parameters)
 {
   // recover first
   recover(parameters);
+  
+  // death is the only thing that drops pending infections
+  m_infection_time_realisation_vector.clear();
+  m_infection_state_realisation_vector.clear();
+  m_infection_barcode_realisation_vector.clear();
+  m_number_of_realised_infections = 0;
   
   // a newborn has no infection history or recently cleared strains
   m_state_history_day.clear();
@@ -986,8 +980,8 @@ void Person::recover(const Parameters &parameters)
   // Reset other events to 0
   m_day_of_InfectionStatus_change = 0;
   
-  // Update next event counter - due to nature of recovering the next event has to be their death
-  m_day_of_next_event = m_day_of_death;
+  // Update next event counter, which is now a pending infection or their death
+  set_m_day_of_next_event();
   
 }
 
@@ -1031,7 +1025,7 @@ void Person::treatment_outcome(const Parameters &parameters) {
       } else {
         m_infection_state = PROPHYLAXIS;
         schedule_m_day_of_InfectionStatus_change(parameters); // schedule next state change
-        all_strain_clearance(parameters); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains (this includes pending strains)
+        all_strain_clearance(parameters); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains
       }
     }
   } else {
@@ -1059,7 +1053,7 @@ void Person::treatment_outcome(const Parameters &parameters) {
     } else {
       m_infection_state = PROPHYLAXIS;
       schedule_m_day_of_InfectionStatus_change(parameters); // schedule next state change
-      all_strain_clearance(parameters); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains (this includes pending strains)
+      all_strain_clearance(parameters); // When they are in prophylaxis we remove all the strains, as treated individuals still have strains
     }
   }
     
@@ -1256,11 +1250,6 @@ void Person::seek_nmf_treatment(const Parameters &parameters){
           m_infection_state = TREATED;
           schedule_m_day_of_InfectionStatus_change(parameters);
           
-          // Clear all pending infection vectors 
-          m_infection_time_realisation_vector.clear();
-          m_infection_state_realisation_vector.clear();
-          m_infection_barcode_realisation_vector.clear();
-          
           // If they were already drawn to receive a drug in the last 15 days then it will still be that drug
           if(m_drug_choice_time == 0 || m_drug_choice_time < (parameters.g_current_time - 15)) {
             
@@ -1286,11 +1275,6 @@ void Person::seek_nmf_treatment(const Parameters &parameters){
         // then trigger treatment
         m_infection_state = TREATED;
         schedule_m_day_of_InfectionStatus_change(parameters);
-        
-        // Clear all pending infection vectors 
-        m_infection_time_realisation_vector.clear();
-        m_infection_state_realisation_vector.clear();
-        m_infection_barcode_realisation_vector.clear();
         
         // If they were already drawn to receive a drug in the last 15 days then it will still be that drug
         if(m_drug_choice_time == 0 || m_drug_choice_time < (parameters.g_current_time - 15)) {
@@ -1321,11 +1305,6 @@ void Person::seek_nmf_treatment(const Parameters &parameters){
     // And schedule the move P and T durations into the future
     m_day_of_InfectionStatus_change = rexpint1(parameters.g_dur_T) + 
       rexpint1(parameters.g_dur_P) + parameters.g_current_time + 1;
-    
-    // Clear all pending infection vectors 
-    m_infection_time_realisation_vector.clear();
-    m_infection_state_realisation_vector.clear();
-    m_infection_barcode_realisation_vector.clear();
     
   }
   
@@ -1499,45 +1478,53 @@ void Person::event_handle(const Parameters &parameters) {
     }
     
     // Realise infection if time to do so
-    // First check if there are any pending infections
-    if (m_infection_time_realisation_vector.size() > static_cast<unsigned int>(m_number_of_realised_infections))
+    // Whether a pending infection starts is decided today, the day it starts, as in the Griffin et al. model
+    // and malariasimulation: it only starts in people who are now susceptible, asymptomatic or subpatent, or
+    // in prophylaxis if we're doing resistance modelling (where clear_strain_if_prophylactic decides)
+    if (m_infection_time_realisation_vector.size() > m_number_of_realised_infections &&
+        m_infection_time_realisation_vector[m_number_of_realised_infections] == parameters.g_current_time)
     {
-      // Is the next pending infection for today
-      if (m_infection_time_realisation_vector[m_number_of_realised_infections] == m_day_of_next_event)
+      
+      // Find today's pending infections, removing any that are cleared by prophylaxis
+      unsigned int pending_end = m_number_of_realised_infections;
+      while (pending_end < m_infection_time_realisation_vector.size() &&
+             m_infection_time_realisation_vector[pending_end] == parameters.g_current_time)
+      {
+        if (m_infection_state == DISEASED || m_infection_state == TREATED ||
+            (m_infection_state == PROPHYLAXIS && !parameters.g_resistance_flag) ||
+            clear_strain_if_prophylactic(parameters, pending_end)) {
+          m_infection_time_realisation_vector.erase(m_infection_time_realisation_vector.begin() + pending_end);
+          m_infection_state_realisation_vector.erase(m_infection_state_realisation_vector.begin() + pending_end);
+          m_infection_barcode_realisation_vector.erase(m_infection_barcode_realisation_vector.begin() + pending_end);
+        } else {
+          pending_end++;
+        }
+      }
+      
+      // Are any left to start today
+      if (pending_end > m_number_of_realised_infections)
       {
         
-        // Assign infection state
+        // Only infections boost ICA, ID and IVA, as in malariasimulation. Log the expected severe cases
+        // from today's infections first, using IVA before today's boost
+        update_immunities_to_today(parameters);
+        m_expected_severe += severe_probability(m_person_age, m_IVA, m_IVM, parameters);
+        boost_infection_immunity(parameters);
         
-        // If you are treated then no matter what other strains you get today you are still
-        // going to be treated
-        if (m_infection_state != TREATED) {
-          
-          // If you are diseased already and the next infection would make you asymptomatic then remain diseased
-          // If it were to make you treated then this is plausible as maybe the extended duration of the fever that would result 
-          // from an additional clinical disease may cause you to seek treatment
-          if (m_infection_state == DISEASED)
-          {
-            if (m_infection_state_realisation_vector[m_number_of_realised_infections] == TREATED) {
-              m_infection_state = TREATED;
-              m_day_last_treated = parameters.g_current_time;
-            }
-          }
-          // If you are not diseased you can go to any of treated, diseased, and remain asymptomatic
-          else  
-          {
-            m_infection_state = m_infection_state_realisation_vector[m_number_of_realised_infections];
-            
-            // if you are now diseased this is a treatment failure
-            if (m_infection_state == DISEASED){
-              m_treatment_outcome = NOT_TREATED;
-            } 
-            if (m_infection_state == TREATED){
-              m_day_last_treated = parameters.g_current_time;
-            } 
-            
-          }
-          
-        }
+        // Assign infection state, i.e. treated, diseased or asymptomatic
+        m_infection_state = m_infection_state_realisation_vector[m_number_of_realised_infections];
+        
+        // if you are now diseased this is a treatment failure
+        if (m_infection_state == DISEASED){
+          m_treatment_outcome = NOT_TREATED;
+        } 
+        if (m_infection_state == TREATED){
+          m_day_last_treated = parameters.g_current_time;
+        } 
+        
+        // a new clinical case today
+        m_clinical_case_today = (m_infection_state == DISEASED || m_infection_state == TREATED);
+        
         // schedule next state change
         // The new infection dominates, as in the Griffin et al. model: its drawn time sets the
         // person's next state change. Leaving A is memoryless (rate 1/dA), so a fresh draw has
@@ -1617,18 +1604,6 @@ void Person::event_handle(const Parameters &parameters) {
           
         }
         
-        // If infection state is treated then we clear all pending infection times meaning that we 
-        // don't allow a new infection occurring bettween today and when the individual moves from T->P 
-        // to cause them to move out of T back to D/A.
-        if (m_infection_state == TREATED)
-        {
-          // Clear all pending infection vectors 
-          m_infection_time_realisation_vector.clear();
-          m_infection_state_realisation_vector.clear();
-          m_infection_barcode_realisation_vector.clear();
-          m_number_of_realised_infections = 0;
-        }
-        
       }
     }
     
@@ -1655,6 +1630,10 @@ double Person::update(Parameters &parameters)
   // reset this now so we know who has gone to be treated
   m_treatment_outcome = NOT_CLINICAL;
   
+  // reset today's clinical case and expected severe cases, which are set when infections start
+  m_clinical_case_today = false;
+  m_expected_severe = 0;
+  
   // Handle any events that are happening today
   if (m_day_of_next_event == parameters.g_current_time || m_person_age >= parameters.g_max_age) {
     event_handle(parameters);
@@ -1663,7 +1642,6 @@ double Person::update(Parameters &parameters)
   // Reset total bites and other counters designed to prevent unnecessary recalculations in cases of successive same day bites on an inidividual
   m_number_of_bites = 0;
   m_number_of_succesful_bites = 0;
-  m_expected_severe = 0;
   m_contribution_counter = 0;
   m_cA_counter = true;
   m_active_strain_contribution.clear();
@@ -1726,30 +1704,17 @@ double Person::update(Parameters &parameters)
 
 int Person::log_daily_incidence(const Parameters &parameters) {
   
-  // Are they considered to be a new case, i.e. S, A, U
-  if (m_infection_state == SUSCEPTIBLE || m_infection_state == ASYMPTOMATIC || m_infection_state == SUBPATENT)
+  // Did an infection that started today give a clinical case
+  if (m_clinical_case_today)
   {
-    // Do they have any infections pending
-    if (m_infection_time_realisation_vector.size() > static_cast<unsigned int>(m_number_of_realised_infections))
+    // Are they aged 0 - 5 years
+    if (m_person_age <= (5 * 365))
     {
-      // Is that infection pending for tomorrow (thuis we assume that this function is always called at the end of a day before the next day starts)
-      if (m_infection_time_realisation_vector[m_number_of_realised_infections] == parameters.g_current_time + 1)
-      {
-        // Is that infection yielding a clinical case
-        if (m_infection_state_realisation_vector[m_number_of_realised_infections] == TREATED || m_infection_state_realisation_vector[m_number_of_realised_infections] == DISEASED)
-        {
-          
-          // Are they aged 0 - 5 years
-          if (m_person_age <= (5 * 365))
-          {
-            return(2);
-          }
-          else
-          {
-            return(1);
-          }
-        }
-      }
+      return(2);
+    }
+    else
+    {
+      return(1);
     }
   }
   
@@ -1793,3 +1758,70 @@ double test_severe_probability(double age, double IVA, double IVM) {
 
 
 
+
+// Follow one person who is bitten once, to check when a pending infection starts. The person starts in
+// `state` (0-5 for S, D, A, U, T, P) with their next state change on `day_of_change`, and is bitten on
+// `bite_day` by an infectious mosquito with a bite that always infects. The infection is asymptomatic, or
+// treated if `treated`. Prophylaxis lasts a day. Returns the person's state, strains, pending infections, ICA
+// and incident clinical cases at the end of each day
+// [[Rcpp::export]]
+Rcpp::List test_pending_infection(int state, int day_of_change, int bite_day, bool treated, int days) {
+  
+  Parameters parameters;
+  parameters.g_current_time = 0;
+  
+  // every bite infects and the outcome is fixed
+  parameters.g_b0 = 1.0;
+  parameters.g_b1 = 1.0;
+  parameters.g_phi0 = treated ? 1.0 : 0.0;
+  parameters.g_phi1 = 1.0;
+  parameters.g_ft = 1.0;
+  parameters.g_cotransmission_frequencies = {1};
+  parameters.g_cotransmission_frequencies_size = 1;
+  
+  // the infecting barcode is imported, so the mosquito needs no oocysts
+  parameters.g_spatial_type = Parameters::METAPOPULATION;
+  parameters.g_percentage_imported_human_infections = 1.0;
+  parameters.g_spatial_total_imported_human_infections = 1;
+  parameters.g_spatial_imported_barcodes = { boost::dynamic_bitset<>(Parameters::g_barcode_length) };
+  
+  // a drug that always clears, with prophylaxis lasting a day
+  parameters.g_drugs.emplace_back(Drug({1.0}, {0}, {0}, 0.01, 1.0, 1.0, 1.0, 1.0, 1.0));
+  
+  Person person(parameters);
+  Mosquito mosquito;
+  person.set_m_person_age(20 * 365);
+  person.set_m_day_of_death(100000);
+  person.set_m_IB(0);
+  person.set_m_ID(0);
+  person.set_m_ICA(0);
+  person.set_m_ICM_init(0);
+  person.set_m_IVA(0);
+  person.set_m_IVM_init(0);
+  person.set_m_IB_last_calculated_time(0);
+  person.set_m_I_C_D_CM_last_calculated_time(0);
+  person.set_m_infection_state(static_cast<Person::InfectionStatus>(state));
+  person.set_m_day_of_InfectionStatus_change(day_of_change);
+  person.set_m_day_of_next_strain_state_change();
+  person.set_m_day_of_next_event();
+  
+  std::vector<int> states(days), strains(days), pending(days), incidence(days);
+  std::vector<double> ICA(days);
+  
+  // as in the model each day, people are updated and then bitten
+  for (int t = 1; t <= days; t++) {
+    parameters.g_current_time = t;
+    person.update(parameters);
+    if (t == bite_day) person.allocate_bite(parameters, mosquito);
+    person.update_immunities_to_today(parameters);
+    states[t - 1] = person.get_m_infection_state();
+    strains[t - 1] = person.get_m_number_of_strains();
+    pending[t - 1] = person.get_m_infection_time_realisation_vector().size() - person.get_m_number_of_realised_infections();
+    ICA[t - 1] = person.get_m_ICA();
+    incidence[t - 1] = person.log_daily_incidence(parameters);
+  }
+  
+  return(Rcpp::List::create(Rcpp::Named("state") = states, Rcpp::Named("strains") = strains,
+                            Rcpp::Named("pending") = pending, Rcpp::Named("ICA") = ICA,
+                            Rcpp::Named("incidence") = incidence));
+}

@@ -26,6 +26,7 @@ extern SEXP _magenta_test_bitset_serialisation(SEXP, SEXP);
 extern SEXP _magenta_test_dependent_barcode_from_PLAF(SEXP, SEXP);
 extern SEXP _magenta_test_generate_next_ibd(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _magenta_test_ibd_conversion(SEXP, SEXP, SEXP, SEXP);
+extern SEXP _magenta_test_pending_infection(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _magenta_test_recombinant_with_ibd(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _magenta_test_severe_probability(SEXP, SEXP, SEXP);
 extern SEXP odin_itn_irs_contents(SEXP);
@@ -57,6 +58,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_magenta_test_dependent_barcode_from_PLAF", (DL_FUNC) &_magenta_test_dependent_barcode_from_PLAF, 2},
     {"_magenta_test_generate_next_ibd",           (DL_FUNC) &_magenta_test_generate_next_ibd,           5},
     {"_magenta_test_ibd_conversion",              (DL_FUNC) &_magenta_test_ibd_conversion,              4},
+    {"_magenta_test_pending_infection",           (DL_FUNC) &_magenta_test_pending_infection,           5},
     {"_magenta_test_recombinant_with_ibd",        (DL_FUNC) &_magenta_test_recombinant_with_ibd,        6},
     {"_magenta_test_severe_probability",          (DL_FUNC) &_magenta_test_severe_probability,          3},
     {"odin_itn_irs_contents",                     (DL_FUNC) &odin_itn_irs_contents,                     1},

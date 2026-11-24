@@ -40,4 +40,12 @@ test_that("reinfection in A keeps the person's and strains' state change days co
   }, logical(1))
   expect_true(all(next_ok))
 
+  # pending infections are all still to start, and are kept through treatment and prophylaxis
+  pending <- lapply(seq_along(states), function(i) {
+    times <- pl$Infection_time_realisation_vectors[[i]]
+    times[seq_along(times) > pl$Number_of_Realised_Infections[i]]
+  })
+  expect_true(all(unlist(pending) > last_day))
+  expect_true(any(lengths(pending)[states %in% 4:5] > 0))
+
 })

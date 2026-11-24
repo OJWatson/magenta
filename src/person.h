@@ -142,8 +142,8 @@ private:
   double m_IVM = 0;               // maternally acquired severe immunity (IVM)
   double m_IVA = 0;               // exposure acquired severe immunity (IVA)
   double m_IVA_last_boost_time = m_ICA_last_boost_time;  // time that IVA was last boosted (copies ICA so no new random draw)
-  double m_severe_probability = 0;    // Temporary probability that today's infection is severe (theta)
-  double m_expected_severe = 0;       // Expected severe cases from today's infection, i.e. theta, reset daily
+  double m_expected_severe = 0;       // Expected severe cases from infections that started today, i.e. theta, reset daily
+  bool m_clinical_case_today = false; // Did an infection that started today give a clinical case, reset daily
   
   // Person's blood stage immunity (I.D), i.e. reducing probability of detectiona ond onwards contribution to infectiousness
   double m_ID;                // infection-blocking immunity 
@@ -607,8 +607,8 @@ public:
   // Probability that a person in a given infection state infects a biting mosquito
   double state_infectivity(InfectionStatus state, const Parameters &parameters);
   
-  // Clear the last strain if it would have been cleared by prophylaxis
-  bool clear_strain_if_prophylactic(const Parameters &parameters);
+  // Clear the pending infection at position i, which starts today, if it would be cleared by prophylaxis
+  bool clear_strain_if_prophylactic(const Parameters &parameters, unsigned int i);
   
   // Boost ICA, ID and IVA after an infection
   void boost_infection_immunity(const Parameters &parameters);
@@ -641,7 +641,7 @@ public:
   // LOGGERS - functions that report summaries on an individual
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   
-  // Caluclate daily incidence for population and 0-5 years, i.e. would they cause an incident case today.
+  // Caluclate daily incidence for population and 0-5 years, i.e. did an infection that started today give a clinical case.
   // Returns 2 if 0-5 and incident, 1 if just incident, and 0 if neither
   int log_daily_incidence(const Parameters &parameters);
   

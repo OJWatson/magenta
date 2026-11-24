@@ -462,8 +462,9 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     
     std::vector<double> trans_prob = {0.0, 0.0, 0.0};
     
-    // Set infection time,state and barcode realisations if they are likely to be harbouring an infection 
-    if (population[n].get_m_infection_state() != Person::DISEASED && population[n].get_m_infection_state() != Person::PROPHYLAXIS) {
+    // Set infection time,state and barcode realisations if they are likely to be harbouring an infection.
+    // This is for everyone, as whether the infection starts is decided on the day it starts
+    {
       if (rbernoulli1(1.0-exp(-parameters.g_dur_E*FOImat(age_bracket_in, het_bracket_in)))){
         
         // N -> D

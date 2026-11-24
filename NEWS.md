@@ -22,6 +22,12 @@
     infection sets when the person moves to U, rather than the later of the
     new and current times, as A -> U is memoryless in the Griffin et al. model.
     Strains in A are kept from outlasting the person's move to U.
+  * Whether an infectious bite infects is decided when the infection starts,
+    after the latent period, as in the Griffin et al. model, rather than on
+    the day of the bite. Pending infections are kept through recovery and
+    treatment, and `ICA`, `ID` and `IVA` boosts, severe cases and clinical
+    incidence are counted on the day the infection starts. This raises
+    transmission by about 3-6%.
   * `pipeline()` starts from an equilibrium with fine age groups (0.1 years
     to age 10, then 0.5 years), which raises the mosquito density by about
     3% to match the deterministic model.
