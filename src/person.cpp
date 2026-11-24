@@ -740,6 +740,25 @@ void Person::schedule_m_day_of_InfectionStatus_change(const Parameters &paramete
   m_day_of_InfectionStatus_change = draw_m_day_of_InfectionStatus_change(parameters);
 }
 
+// Called when someone in A has a new A -> U day. No strain can stay patent after the person
+// moves to U, so A strain change days later than the person's are brought back to it. A D strain
+// is left over from a clinical episode, so it becomes A too, otherwise it would take the person's
+// U -> S day if it changed state on their A -> U day.
+void Person::align_patent_strains(const Parameters &parameters)
+{
+  for (int s = 0; s < m_number_of_strains; s++) {
+    if (m_active_strains[s].get_m_strain_infection_status() == Strain::DISEASED) {
+      m_active_strains[s].set_m_strain_infection_status(Strain::ASYMPTOMATIC);
+      m_active_strains[s].set_m_day_of_strain_infection_status_change(m_day_of_InfectionStatus_change);
+    }
+    if (m_active_strains[s].get_m_strain_infection_status() == Strain::ASYMPTOMATIC &&
+        m_active_strains[s].get_m_day_of_strain_infection_status_change() > m_day_of_InfectionStatus_change) {
+      m_active_strains[s].set_m_day_of_strain_infection_status_change(m_day_of_InfectionStatus_change);
+    }
+  }
+  set_m_day_of_next_strain_state_change();
+}
+
 // Schedule person's death day
 void Person::schedule_m_day_of_death(const Parameters &parameters)
 {
@@ -1342,6 +1361,7 @@ void Person::event_handle(const Parameters &parameters) {
       case DISEASED:
         m_infection_state = ASYMPTOMATIC;
         schedule_m_day_of_InfectionStatus_change(parameters); // schedule next state change
+        align_patent_strains(parameters);
         break;
       case ASYMPTOMATIC:
         m_infection_state = SUBPATENT;
@@ -1519,20 +1539,18 @@ void Person::event_handle(const Parameters &parameters) {
           
         }
         // schedule next state change
-        // Draw a potential time for this new resultant infection to change state
-        // Reason it is a potential time is that if you are  in state A for example, 
-        // and currently you would move to U in 100 days, it is not right that this additonal
-        // infection could produce a change to U sooner, however, greater than does. 
+        // The new infection dominates, as in the Griffin et al. model: its drawn time sets the
+        // person's next state change. Leaving A is memoryless (rate 1/dA), so a fresh draw has
+        // the same distribution as the time left on the current one, and reinfection does not
+        // lengthen the time spent in A.
         m_temp_int = draw_m_day_of_InfectionStatus_change(parameters);
-        
+        m_day_of_InfectionStatus_change = m_temp_int;
+
+        // No strain can stay patent after the person has moved on
         if (m_infection_state == Person::ASYMPTOMATIC) {
-          if (m_temp_int > m_day_of_InfectionStatus_change) {
-            m_day_of_InfectionStatus_change = m_temp_int;
-          } else {
-            m_temp_int = m_day_of_InfectionStatus_change;
-          }
-        } else {
-          m_day_of_InfectionStatus_change = m_temp_int;
+          align_patent_strains(parameters);
+          // set_m_day_of_next_strain_state_change uses m_temp_int, so restore the new strain's day
+          m_temp_int = m_day_of_InfectionStatus_change;
         }
         
         // Reset this catch variable which ensiures multiple infections on the same day can be realised

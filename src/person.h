@@ -578,6 +578,9 @@ public:
   // Schedule person's infection state change
   void schedule_m_day_of_InfectionStatus_change(const Parameters &parameters);
   
+  // Keep A strains from outlasting the person's A -> U day
+  void align_patent_strains(const Parameters &parameters);
+  
   // Schedule person's death day
   void schedule_m_day_of_death(const Parameters &parameters);
   

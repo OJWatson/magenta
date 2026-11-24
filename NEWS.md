@@ -18,6 +18,10 @@
     (`delay_gam`), as in the Griffin et al. model, so people stay infectious
     for 12.5 days after recovery or treatment. Saved states now keep each
     person's recent infection states and cleared strains.
+  * Reinfection in A no longer lengthens the time spent in A. The new
+    infection sets when the person moves to U, rather than the later of the
+    new and current times, as A -> U is memoryless in the Griffin et al. model.
+    Strains in A are kept from outlasting the person's move to U.
 * Bug fix: maternal immunity at birth (`ICM_init`) is now kept in saved states.
 
 ## magenta 1.3.8
