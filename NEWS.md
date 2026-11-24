@@ -32,6 +32,8 @@
     to age 10, then 0.5 years), which raises the mosquito density by about
     3% to match the deterministic model.
 * Bug fix: maternal immunity at birth (`ICM_init`) is now kept in saved states.
+* Bug fix: a new treated strain no longer sets the day of the next strain
+  state change, as treated strains have no scheduled change.
 
 ## magenta 1.3.8
 

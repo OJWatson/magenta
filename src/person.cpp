@@ -1575,7 +1575,9 @@ void Person::event_handle(const Parameters &parameters) {
           m_infection_realisation_empty_catch++;
           
           // If the new strain will change state earlier than anyother strain then update the state change event day
-          if (m_temp_int <= m_day_of_next_strain_state_change) {
+          // (treated strains are left out, as in set_m_day_of_next_strain_state_change)
+          if (m_temp_int <= m_day_of_next_strain_state_change &&
+              m_active_strains.back().get_m_strain_infection_status() != Strain::TREATED) {
             
             // if the next strain state change day is the same as the temp flag the bool
             if (m_day_of_next_strain_state_change == m_temp_int)
