@@ -61,10 +61,11 @@ There are three models compared to `magenta`:
 
 malariasimulation rounds a few of the published parameters (e.g. `b0` 0.59
 rather than 0.590076), so these are set to `magenta`'s values. The two models
-then differ only in how quickly maternal severe immunity decays (`magenta`
-uses its own rate, while malariasimulation uses the maternal clinical immunity
-rate) and in how severe cases are counted (`magenta` sums each person's
-probability of severe disease, malariasimulation draws them).
+then differ in how severe cases are counted (`magenta` sums each person's
+probability of severe disease, malariasimulation draws them), and in biting
+heterogeneity: each person in `magenta` has their own relative biting rate,
+drawn from a log-normal distribution, while malariasimulation puts people into
+5 biting groups.
 
 ```{r malariasimulation, eval = FALSE}
 library(malariasimulation)
@@ -215,10 +216,10 @@ ggplot(pct, aes(EIR, pct, colour = model)) +
   theme(legend.position = "top", legend.direction = "vertical")
 ```
 
-Against malariasimulation with matched prophylaxis, the realised EIR, kappa
-and PfPR2-10 agree to within 2% at every EIR, and clinical incidence to within
-3%. Severe incidence agrees up to an EIR of 8, but `magenta` is 3% to 8% higher
-at EIRs of 16 to 64. malariasimulation as released gives 3% to 4.5% more
+Against malariasimulation with matched prophylaxis, the realised EIR, kappa,
+PfPR2-10 and clinical incidence agree to within 3% at every EIR, and mostly to
+within 1% to 2%. Severe incidence agrees to within 2.5% up to an EIR of 8, and
+`magenta` is 3% to 4% higher at EIRs of 16 to 64. malariasimulation as released gives 3% to 4.5% more
 prevalence, as its shorter drug protection lets treated people be reinfected
 sooner.
 
@@ -297,9 +298,10 @@ ggplot(pim, aes(band, pct_magenta_vs_ms_p25)) +
 
 Clinical, detection and severe immunity (`ICA`, `ID` and `IVA`) agree to within
 1% from age 10, and are a few percent lower in `magenta` in young children
-(about 5% in the first year of life at an EIR of 8). `IB` is 2% to 3% lower in
-`magenta` at most ages. Maternal immunity is 4% to 6% lower in children under
-5. Against malariasimulation as released, `magenta`'s immunity in young
+(about 5% in the first year of life). `IB` is 2% to 4% lower in `magenta` at
+most ages. Maternal immunity agrees to within 2% in children under 5, as
+newborns in both models take it from a 20 year old in their own biting group.
+Against malariasimulation as released, `magenta`'s immunity in young
 children is lower still, by up to 9%, as people in malariasimulation are
 reinfected sooner after treatment.
 
@@ -319,10 +321,13 @@ plot_immunity(c(2, 8, 32), c("b", "phi", "theta", "q"), d = probs) +
   labs(y = "Mean probability")
 ```
 
-`b` and `q` agree to within 0.5% in every age group, and `phi` to within 1.5%
-at an EIR of 8. `theta` is higher in `magenta` in infants (by 4% at an EIR of
-8, and 23% at 64) and lower from age 10, which is where `magenta`'s extra
-severe incidence at high EIR comes from.
+`b` and `q` agree to within 1% in every age group. Under 10, where nearly all
+severe cases are, `phi` agrees to within 2% and `theta` to within 4%. From age
+10, `phi` and `theta` are lower on average in `magenta`, by up to 7% and 17%
+at an EIR of 64. These are averages over people, and both probabilities are
+very small in older people, so I think they are sensitive to the few people with
+little immunity, who differ between `magenta`'s continuous biting rates and
+malariasimulation's 5 biting groups.
 
 ## Infection states by age
 
