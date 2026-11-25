@@ -123,6 +123,13 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   if (parameters_List.containsElementNamed("g_zeta_sdlog")) {
     parameters.g_zeta_sdlog = Rcpp::as<double>(parameters_List["g_zeta_sdlog"]);
   }
+  // biting heterogeneity groups for maternal immunity. Older saved states do not have these, so use the
+  // equilibrium's default 5 groups
+  if (parameters_List.containsElementNamed("g_het_brackets")) {
+    parameters.g_het_brackets = Rcpp::as<std::vector<double> >(parameters_List["g_het_brackets"]);
+  } else {
+    parameters.set_default_het_brackets();
+  }
   if (parameters_List.containsElementNamed("g_ft")) {
     parameters.g_ft = Rcpp::as<double>(parameters_List["g_ft"]);
   }
@@ -788,6 +795,16 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     population[n].set_m_individual_biting_rate(Zetas[n]);
     zeta_vector[n] = population[n].get_m_individual_biting_rate();
     
+  }
+  
+  // Rebuild today's mothers, which tomorrow's newborns draw their maternal immunity from
+  parameters.clear_mothers_today();
+  for (unsigned int n = 0; n < parameters.g_N; n++)
+  {
+    if (Parameters::is_mother_age(population[n].get_m_person_age()))
+    {
+      parameters.add_mother(population[n].get_m_individual_biting_rate(), population[n].get_m_ICA(), population[n].get_m_IVA());
+    }
   }
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

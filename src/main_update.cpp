@@ -219,6 +219,9 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
     u_ptr->parameters.g_sum_maternal_severe_immunity = 0;
     u_ptr->parameters.g_total_mums = 0;
     
+    // Today's newborns draw their maternal immunity from yesterday's mothers
+    u_ptr->parameters.start_mothers_day();
+    
     // Second reset counters
     // --------------------------------------------------------------------------------------------------------------------------------------------------
     

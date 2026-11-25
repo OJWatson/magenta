@@ -31,6 +31,10 @@
   * `pipeline()` starts from an equilibrium with fine age groups (0.1 years
     to age 10, then 0.5 years), which raises the mosquito density by about
     3% to match the deterministic model.
+  * Newborns take maternal immunity from a random 20-year-old in the same
+    biting heterogeneity group, as in malariasimulation and the Griffin et al.
+    model, rather than the mean immunity of 15-25 year olds scaled by their
+    own biting rate. This lowers severe incidence at high EIR by about 5-8%.
 * Bug fix: maternal immunity at birth (`ICM_init`) is now kept in saved states.
 * Bug fix: a new treated strain no longer sets the day of the next strain
   state change, as treated strains have no scheduled change.

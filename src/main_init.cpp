@@ -222,6 +222,10 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
   Rcpp::NumericMatrix IDmat(Rcpp::as<Rcpp::NumericMatrix>(eqSS["IDmat"]));
   vector<double> age_brackets = Rcpp::as<vector<double> >(eqSS["age_brackets"]);
   vector<double> het_brackets = Rcpp::as<vector<double> >(eqSS["het_brackets"]);
+  
+  // the heterogeneity groups are kept for newborns' maternal immunity
+  parameters.g_het_brackets = het_brackets;
+  parameters.clear_mothers_today();
   std::vector<double>  ICM_Init = Rcpp::as<std::vector<double> >(eqSS["ICM_Init"]);
   
   // severe disease immunity at equilibrium. Older equilibrium states do not have this so start with none
@@ -243,7 +247,6 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
   infected_human_count.reserve(parameters.g_N);
   int id_counter = 0;
   int num_age_brackets = age_brackets.size();
-  int num_het_brackets = het_brackets.size();
   int age_bracket_in = 0;
   int het_bracket_in = 0;
   std::vector<double> infection_state_probability(6);
@@ -312,22 +315,7 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     }
     
     // second find out what heterogeneity bracket they are in
-    // are they in the last - do this first for those people with heterogeneities that happen to be above the max 
-    if(population[n].get_m_individual_biting_rate() >= het_brackets[num_het_brackets-2]) 
-    {
-      het_bracket_in = num_het_brackets-1;
-    }
-    if(population[n].get_m_individual_biting_rate() < het_brackets[0])
-    {
-      het_bracket_in = 0;
-    }
-    for(int het_i = 1 ; het_i < (num_het_brackets-1) ; het_i++)
-    {
-      if(population[n].get_m_individual_biting_rate() >= het_brackets[het_i-1] && population[n].get_m_individual_biting_rate() < het_brackets[het_i])
-      {
-        het_bracket_in = het_i;
-      }
-    }
+    het_bracket_in = parameters.het_group(population[n].get_m_individual_biting_rate());
     
     infection_state_probability[0] = Smat(age_bracket_in, het_bracket_in);
     infection_state_probability[1] = Dmat(age_bracket_in, het_bracket_in);
@@ -365,6 +353,12 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
       parameters.g_sum_maternal_immunity += population[n].get_m_ICA();
       parameters.g_sum_maternal_severe_immunity += population[n].get_m_IVA();
       parameters.g_total_mums++;
+    }
+    
+    // Mothers whose immunity the first day's newborns draw from
+    if (Parameters::is_mother_age(population[n].get_m_person_age()))
+    {
+      parameters.add_mother(population[n].get_m_individual_biting_rate(), population[n].get_m_ICA(), population[n].get_m_IVA());
     }
     
     // If they are infected, i.e. not S or P, then assign their strains and next strain clearance date

@@ -579,6 +579,7 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     Rcpp::Named("g_dVM")=universe_ptr->parameters.g_dVM,
     Rcpp::Named("g_mean_maternal_severe_immunity")=universe_ptr->parameters.g_mean_maternal_severe_immunity,
     Rcpp::Named("g_sum_maternal_severe_immunity")=universe_ptr->parameters.g_sum_maternal_severe_immunity,
+    Rcpp::Named("g_het_brackets")=universe_ptr->parameters.g_het_brackets,
     Rcpp::Named("g_gamma1")=universe_ptr->parameters.g_gamma1,
     Rcpp::Named("g_cD")=universe_ptr->parameters.g_cD,
     Rcpp::Named("g_cT")=universe_ptr->parameters.g_cT,

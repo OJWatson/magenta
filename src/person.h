@@ -631,6 +631,9 @@ public:
   // Kill person, i.e. reset age to 0, infections to 0, state to susceptible, immunities reset etc
   void die(const Parameters &parameters);
   
+  // Set a newborn's maternal immunity from a random mother in its biting heterogeneity group
+  void set_maternal_immunity(const Parameters &parameters);
+  
   // Daily update function, i.e. increase ages, set maternal booleans, calculate biting proportions etc
   double update(Parameters &parameters);
   

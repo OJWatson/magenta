@@ -952,8 +952,7 @@ void Person::die(const Parameters &parameters)
   m_IVA_last_boost_time -= parameters.g_uVA;
   
   // Set maternal immunity
-  m_ICM = m_ICM_init = parameters.g_PM * parameters.g_mean_maternal_immunity * m_individual_biting_rate;
-  m_IVM = m_IVM_init = parameters.g_PVM * parameters.g_mean_maternal_severe_immunity * m_individual_biting_rate;
+  set_maternal_immunity(parameters);
   
   // Schedule death
   schedule_m_day_of_death(parameters);
@@ -1615,6 +1614,18 @@ void Person::event_handle(const Parameters &parameters) {
   
 }
 
+// Maternal immunity of a newborn, as in malariasimulation and the Griffin et al. model: a proportion of the
+// immunity of a random mother (aged 20 to <21 years yesterday) in the newborn's biting heterogeneity group.
+// The newborn keeps its biting rate. If there were no mothers, use the mean immunity of 15-25 year olds
+void Person::set_maternal_immunity(const Parameters &parameters)
+{
+  double ICA = parameters.g_mean_maternal_immunity;
+  double IVA = parameters.g_mean_maternal_severe_immunity;
+  parameters.draw_maternal_immunity(m_individual_biting_rate, ICA, IVA);
+  m_ICM = m_ICM_init = parameters.g_PM * ICA;
+  m_IVM = m_IVM_init = parameters.g_PVM * IVA;
+}
+
 // Daily update function, i.e. increase ages, set maternal booleans, age dependent biting rate etc
 double Person::update(Parameters &parameters)
 {
@@ -1627,6 +1638,11 @@ double Person::update(Parameters &parameters)
     parameters.g_sum_maternal_immunity += m_ICA;
     parameters.g_sum_maternal_severe_immunity += m_IVA;
     parameters.g_total_mums++;
+  }
+  
+  // Mothers whose immunity tomorrow's newborns draw from
+  if (Parameters::is_mother_age(m_person_age)) {
+    parameters.add_mother(m_individual_biting_rate, m_ICA, m_IVA);
   }
   
   // reset this now so we know who has gone to be treated
@@ -1752,6 +1768,30 @@ double Person::severe_probability(double age, double IVA, double IVM, const Para
 
 // Tests
 // ------------------------------
+
+// Newborn maternal immunity. Mothers with biting rates `mother_zeta` and immunity `mother_ICA`, `mother_IVA` are
+// collected for a day, then `n` newborns with biting rate `zeta` are born. Returns each newborn's ICM and IVM
+// [[Rcpp::export]]
+Rcpp::List test_maternal_immunity(std::vector<double> mother_zeta, std::vector<double> mother_ICA,
+                                  std::vector<double> mother_IVA, double zeta, int n) {
+  Parameters parameters;
+  parameters.clear_mothers_today();
+  for (unsigned int i = 0; i < mother_zeta.size(); i++) {
+    parameters.add_mother(mother_zeta[i], mother_ICA[i], mother_IVA[i]);
+  }
+  parameters.start_mothers_day();
+  Person person(parameters);
+  person.set_m_individual_biting_rate(zeta);
+  std::vector<double> ICM(n), IVM(n);
+  for (int i = 0; i < n; i++) {
+    person.set_maternal_immunity(parameters);
+    ICM[i] = person.get_m_ICM();
+    IVM[i] = person.get_m_IVM();
+  }
+  return(Rcpp::List::create(Rcpp::Named("ICM") = ICM, Rcpp::Named("IVM") = IVM,
+                            Rcpp::Named("group") = parameters.het_group(zeta),
+                            Rcpp::Named("het_brackets") = parameters.g_het_brackets));
+}
 // [[Rcpp::export]]
 double test_severe_probability(double age, double IVA, double IVM) {
   Parameters parameters;

@@ -155,6 +155,14 @@ public:
   double g_dVM;
   double g_mean_maternal_severe_immunity;
   double g_sum_maternal_severe_immunity;
+  // Newborns take maternal immunity from a random mother (aged 20 to <21 years) in their biting heterogeneity
+  // group. g_het_brackets are the upper bounds of the groups (the equilibrium's het brackets). Mothers'
+  // ICA and IVA are collected by group each day, and newborns draw from yesterday's mothers
+  std::vector<double> g_het_brackets;
+  std::vector<std::vector<double> > g_mother_ICA_today;
+  std::vector<std::vector<double> > g_mother_IVA_today;
+  std::vector<std::vector<double> > g_mother_ICA;
+  std::vector<std::vector<double> > g_mother_IVA;
   // contributions to infectious reservoir by state and age;
   double g_gamma1;
   double g_cD;
@@ -219,6 +227,15 @@ public:
   
   // Default Constructor
   Parameters();
+  
+  // Maternal immunity helpers
+  static bool is_mother_age(int age) { return(age >= 20 * 365 && age < 21 * 365); }
+  int het_group(double zeta) const;
+  void set_default_het_brackets();
+  void clear_mothers_today();
+  void add_mother(double zeta, double ICA, double IVA);
+  void start_mothers_day();
+  bool draw_maternal_immunity(double zeta, double &ICA, double &IVA) const;
   
 };
 

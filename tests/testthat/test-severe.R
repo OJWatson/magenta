@@ -152,3 +152,39 @@ test_that("maternal immunity at birth survives a save and reload", {
   expect_lt(max(re$population_List$ICM_init), 10 * max(fs$population_List$ICM_init))
   expect_true(all(is.finite(re$Loggers$ICM)))
 })
+
+
+test_that("newborns take maternal immunity from a mother in their biting group", {
+
+  mpl <- model_param_list_create()
+  set.seed(1)
+
+  # mothers in the lowest group, the middle group and the highest group
+  zeta <- c(0.01, 0.01, 1, 1, 1, 50)
+  ica <- c(1, 3, 10, 20, 30, 50)
+  iva <- c(0.1, 0.3, 1, 2, 3, 5)
+
+  # a newborn takes a proportion of a random mother's immunity in its group, not scaled by its own
+  # biting rate, so newborns anywhere in the middle group get the same maternal immunity
+  for (z in c(0.2, 0.6, 1.1)) {
+    r <- test_maternal_immunity(zeta, ica, iva, z, 3000)
+    expect_equal(r$group, 2)
+    expect_setequal(r$ICM, mpl$PM * c(10, 20, 30))
+    expect_setequal(r$IVM, mpl$PVM * c(1, 2, 3))
+    expect_equal(r$IVM / r$ICM, mpl$PVM / mpl$PM * rep(0.1, 3000))
+    expect_equal(mean(r$ICM), mpl$PM * 20, tolerance = 0.05)
+  }
+  r <- test_maternal_immunity(zeta, ica, iva, 0.01, 1000)
+  expect_setequal(r$ICM, mpl$PM * c(1, 3))
+  r <- test_maternal_immunity(zeta, ica, iva, 50, 10)
+  expect_equal(r$ICM, rep(mpl$PM * 50, 10))
+
+  # with no mothers in its group, a newborn takes a random mother from any group
+  r <- test_maternal_immunity(zeta[1:2], ica[1:2], iva[1:2], 1, 1000)
+  expect_setequal(r$ICM, mpl$PM * c(1, 3))
+
+  # with no mothers at all, a newborn falls back to the mean immunity (zero here)
+  r <- test_maternal_immunity(numeric(0), numeric(0), numeric(0), 1, 10)
+  expect_equal(r$ICM, rep(0, 10))
+
+})
