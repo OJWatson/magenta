@@ -1,0 +1,3 @@
+repo::https://mrc-ide.r-universe.dev
+OJWatson/magenta@1d424e6813a559739f8a4dee288aac3ea42d6065
+mrc-ide/malariasimulation@v3.0.0

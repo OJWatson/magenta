@@ -1,0 +1,5 @@
+library(hipercow)
+hipercow_init(driver = "dide-windows", r_version = "4.5.3")
+stopifnot(dide_check())
+hipercow_environment_create(name = "h2h", sources = c("funs.R", "funs_forensic.R", "funs_smoke.R"))
+id <- hipercow_provision(environment = "h2h")
