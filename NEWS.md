@@ -34,7 +34,8 @@
   * Newborns take maternal immunity from a random 20-year-old in the same
     biting heterogeneity group, as in malariasimulation and the Griffin et al.
     model, rather than the mean immunity of 15-25 year olds scaled by their
-    own biting rate. This lowers severe incidence at high EIR by about 5-8%.
+    own biting rate. This raises infant maternal immunity by 4-6% and lowers
+    severe incidence by about 2% at EIR 32 and 5% at EIR 64.
 * Bug fix: maternal immunity at birth (`ICM_init`) is now kept in saved states.
 * Bug fix: a new treated strain no longer sets the day of the next strain
   state change, as treated strains have no scheduled change.
