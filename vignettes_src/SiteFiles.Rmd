@@ -190,7 +190,38 @@ stats::aggregate(cbind(mean_abs_diff = abs(diff), mean_diff = diff) ~ unit,
                  data = w, FUN = mean)
 ```
 
-RESULTS_DISCUSSION
+Over 2000 to 2024 `magenta` follows malariasimulation's trends in both units:
+prevalence falls as treatment and bed net use rise, and both models show the
+rise in 2018 when Busia's net use dropped. The two are closest at low
+transmission: in Nyandarua rural prevalence differs by about one percentage
+point. In Busia urban the models are close at the start (PfPR2-10 0.52 against
+0.49 in 2000), but `magenta` falls more slowly as interventions scale up, so by
+2024 it is about 5 percentage points higher (0.24 against 0.19).
+
+Clinical incidence differs more. At similar prevalence, `magenta` has about 20%
+more clinical cases in 2000. In the later years, after mass net campaigns, the
+gap grows: in Busia urban in 2024 `magenta` has 0.42 cases per person per year
+against malariasimulation's 0.17, and 0.78 against 0.33 in children under 5.
+Some of this is likely from the bed nets. malariasimulation gives everyone
+fresh nets at each mass campaign, and their efficacy then decays. `magenta`
+holds efficacy at its mean over a net life, so it misses the drop in
+transmission after each campaign. The rest has not been worked out, and is
+worth looking at before using clinical incidence from `magenta` runs set up
+this way.
+
+Both models are well below the site file's PfPR2-10 in Busia urban in 2000 to
+2004 (about 0.5 against 0.54 to 0.98), and from 2005 on both are close to it.
+malariasimulation is below it too, so this
+comes from how the site was calibrated, or from how these runs differ from
+foresite's (for example the burn-in), rather than from `magenta`.
+
+Overall, `site_to_pipeline()` puts `magenta` in the right transmission setting.
+Prevalence is in the ballpark of malariasimulation, which is what is needed as
+the starting point for scenario modelling of drug resistance. Clinical
+incidence after net campaigns should be treated with care.
+
+A `magenta` run took about 70 minutes and a malariasimulation run about 35
+minutes (50,000 people, 45 years).
 
 ## Rerunning the comparison
 

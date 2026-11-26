@@ -5,7 +5,15 @@
   arguments (EIR, seasonality, burn-in, yearly ITN use, IRS and treatment, net
   efficacy and vector bionomics). `site_ft()` turns the site's effective
   treatment coverage into `ft` for the drugs used, and `site_seasonality()`
-  gives the seasonal parameters. `site` is a suggested package.
+  gives the seasonal parameters. `site` is a suggested package. Only
+  treatment, bed nets and IRS are used (not SMC, PMC, vaccines or larval
+  source management): the aim is the right transmission setting for scenario
+  modelling of drug resistance.
+* New vignette, "Running from a site file", which compares `magenta` with
+  malariasimulation over 2000-2024 for two Kenya units.
+* `drug_create()`, `drug_create_al()`, `drug_create_asaq()`,
+  `drug_create_dhappq()` and `drug_create_default_no_resistance()` are now
+  exported.
 * `pipeline()` and `equilibrium_init_create()` take `seasonality`, seasonal
   parameters given directly rather than looked up by country and admin.
 * New `itn_decay_clock` in `model_param_list_create()`. The default,
