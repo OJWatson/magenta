@@ -1295,16 +1295,21 @@ void Person::seek_nmf_treatment(const Parameters &parameters){
     
   }
   
-  // if they are not infected them move them to P but include the extra duration in T
+  // if they are not infected they only get drugs if they seek treatment and are not tested (a test would
+  // be negative), in which case move them to P but include the extra duration in T
   } else {
-    
-    // then move to P now
-    m_infection_state = PROPHYLAXIS;
-    
-    // And schedule the move P and T durations into the future
-    m_day_of_InfectionStatus_change = rexpint1(parameters.g_dur_T) + 
-      rexpint1(parameters.g_dur_P) + parameters.g_current_time + 1;
-    
+
+    if(rbernoulli1(parameters.g_ft) && !rbernoulli1(parameters.g_prob_of_testing_nmf) && m_infection_state != TREATED) {
+
+      // then move to P now
+      m_infection_state = PROPHYLAXIS;
+
+      // And schedule the move P and T durations into the future
+      m_day_of_InfectionStatus_change = rexpint1(parameters.g_dur_T) +
+        rexpint1(parameters.g_dur_P) + parameters.g_current_time + 1;
+
+    }
+
   }
   
   // set the new nmf day

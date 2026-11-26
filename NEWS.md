@@ -39,6 +39,11 @@
 * Bug fix: maternal immunity at birth (`ICM_init`) is now kept in saved states.
 * Bug fix: a new treated strain no longer sets the day of the next strain
   state change, as treated strains have no scheduled change.
+* Bug fix: non-malarial fevers in uninfected people only give drugs (and so
+  prophylaxis) to people who seek treatment (`ft`) and are not tested, rather
+  than to everyone.
+* Bug fix: `pipeline()` with `ft = 0` ran the simulation with `ft = Inf`, so
+  every clinical case and non-malarial fever was treated.
 
 ## magenta 1.3.8
 

@@ -746,7 +746,7 @@ pipeline <- function(EIR = 120,
     
     # Set up update for years long
     pl2 <- param_list_simulation_update_create(
-      years = years, ft = min(ft[ft > 0]),
+      years = years, ft = if (any(ft > 0)) min(ft[ft > 0]) else 0,
       mu_vec = out$mu,
       fv_vec = out$fv,
       spatial_list = spatial_list,
