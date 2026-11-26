@@ -87,7 +87,9 @@ model_param_list_create(
   irs_half_life = 0.5 * DY,
   itn_half_life = 2.64 * DY,
   IRS_interval = 1 * DY,
-  ITN_interval = 3 * DY
+  ITN_interval = 3 * DY,
+  itn_decay_clock = c("breakpoint", "campaign", "constant"),
+  itn_campaign_t0 = 0
 )
 }
 \arguments{
@@ -258,7 +260,18 @@ Default = 10950}
 
 \item{IRS_interval}{How long before IRS is repeated, i.e. when IRS decay = 1. Default =   1 * DY}
 
-\item{ITN_interval}{How long before ITN is repeated, i.e. when IRS decay = 1.  Default =   3 * DY}
+\item{ITN_interval}{How long before ITN is repeated, i.e. when ITN decay = 1.  Default =   3 * DY}
+
+\item{itn_decay_clock}{How ITN efficacy decays over time in the mosquito model:
+"breakpoint" (default, the original behaviour) treats nets as new at each
+intervention breakpoint (each year in [pipeline()]), so nets are never more
+than a year old; "campaign" ages nets from `itn_campaign_t0` and re-issues
+them every `ITN_interval`; "constant" holds efficacy at its mean over a net
+life of `ITN_interval`, i.e. the steady state of continuous top-ups. IRS
+always resets at each breakpoint.}
+
+\item{itn_campaign_t0}{Day (simulation time) of a net campaign, used to anchor the
+"campaign" clock. Default = 0}
 }
 \description{
 \code{model_param_list_create} creates list of model parameters to be used

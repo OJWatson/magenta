@@ -1,3 +1,23 @@
+## magenta 1.5.0
+
+* Run from Imperial's malariasimulation site files: `site_to_pipeline()` turns
+  one unit of a site file (from `site::subset_site()`) into `pipeline()`
+  arguments (EIR, seasonality, burn-in, yearly ITN use, IRS and treatment, net
+  efficacy and vector bionomics). `site_ft()` turns the site's effective
+  treatment coverage into `ft` for the drugs used, and `site_seasonality()`
+  gives the seasonal parameters. `site` is a suggested package.
+* `pipeline()` and `equilibrium_init_create()` take `seasonality`, seasonal
+  parameters given directly rather than looked up by country and admin.
+* New `itn_decay_clock` in `model_param_list_create()`. The default,
+  "breakpoint", keeps the old behaviour, in which nets are new at every
+  intervention breakpoint (every year in `pipeline()`), so they are never more
+  than a year old. "campaign" ages nets from `itn_campaign_t0` and re-issues
+  them every `ITN_interval`, and "constant" holds net efficacy at its mean over
+  a net life of `ITN_interval`. IRS still resets every year.
+* Bug fix: `itn_half_life` and `irs_half_life` were overwritten with their
+  defaults, so other values had no effect. The defaults are unchanged, so
+  default outputs are the same.
+
 ## magenta 1.4.0
 
 * Severe malaria: acquired and maternal severe immunity (`IVA`, `IVM`) as in

@@ -1,7 +1,7 @@
 Package: magenta
 Type: Package
 Title: Individual-Based Simulation Model of Malaria Epidemiology and Genomics
-Version: 1.4.0
+Version: 1.5.0
 Authors@R: 
     c(person(given = "OJ",
              family = "Watson",
@@ -33,7 +33,8 @@ Imports:
     stringi
 Remotes: 
     mrc-ide/odin,
-    mrc-ide/dde
+    mrc-ide/dde,
+    mrc-ide/site
 LinkingTo: Rcpp, BH
 LazyData: TRUE
 LazyDataCompression: xz
@@ -47,5 +48,6 @@ Suggests:
     testthat,
     lattice,
     RColorBrewer,
-    cowplot
+    cowplot,
+    site
 Encoding: UTF-8

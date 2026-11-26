@@ -746,6 +746,40 @@ out14[[1]]$summary_within_ibd
 
 Note how the denominator is different between the two measures. This is because iIBD is the comparison of IBD (same integer at a given locus) of the strains within an individual. Thus if an individual is only infected with one parasite strain then iIBD can not be calculated and these individuals are not included. 
 
+## Running from a malariasimulation site file
+
+Imperial's malariasimulation site files (e.g. the calibrated, scaled sites from
+foresite) give each admin unit a calibrated EIR, seasonality, vector species and
+yearly interventions. `site_to_pipeline()` turns one unit, from `site::subset_site()`,
+into arguments for `pipeline()`, so `magenta` can run on the site's calibration
+without fitting its own EIR:
+
+``` r
+s <- readRDS("calibrated_scaled_site.rds")
+unit <- site::subset_site(s, s$sites[s$sites$name_1 == "Busia" & s$sites$urban_rural == "urban", ])
+dl <- drug_list_create(drugs = list(magenta:::drug_create_al()))
+args <- site_to_pipeline(unit, burnin = 20, drug_list = dl)
+out <- do.call(pipeline, c(args, list(N = 10000, seed = 1)))
+```
+
+The returned list holds the site's EIR and seasonality (`site_seasonality()`), a burn-in
+with no interventions (20 years by default) and then the site's yearly ITN use, IRS
+coverage (times 0.75) and treatment, net efficacy from `site::net_efficacy` at the unit's
+pyrethroid resistance, and species weighted vector bionomics. Its `year` attribute gives
+the calendar year of each simulated year.
+
+The site's treatment coverage `tx_cov` is effective coverage, as malariasimulation treats
+with fully effective drugs. `magenta` treats with real drugs, so `site_ft()` sets
+`ft = tx_cov / efficacy`, using the baseline (no resistance) efficacy of the drugs in
+`drug_list`: before resistance this gives the site's effective coverage, and resistance
+then lowers it. Drugs, resistance, non-malarial fevers and barcodes are left to you; add
+them to the list before calling `pipeline()`.
+
+Nets use the "constant" ITN decay clock (see `itn_decay_clock` in
+`model_param_list_create()`), which holds net efficacy at its mean over a net life of the
+site's retention half-life, with the site's insecticide decay. The default clock,
+"breakpoint", treats nets as new every year.
+
 ## Summary
 
 The above introduction gives an overview of how to run the model and covers all components of `magenta` that were used to produce the findings in the [BioArxiv manuscript](https://www.biorxiv.org/content/10.1101/793554v1). 
