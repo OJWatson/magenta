@@ -440,8 +440,18 @@ r_ITN1 <- user()
 irs_loss <- user()
 itn_loss <- user()
 
+# ITN decay clock (itn_clock_mode):
+# 0 = breakpoint: nets are new at every t_vector breakpoint (the original behaviour)
+# 1 = campaign: nets age from itn_campaign_t0 and are re-issued every ITN_interval
+# 2 = constant: the mean decay over a net's life of ITN_interval, i.e. the steady
+#     state of continuous top-ups, with no sawtooth
+itn_clock_mode <- user(0)
+itn_campaign_t0 <- user(0)
+itn_clock_start <- if (itn_clock_mode == 1) itn_campaign_t0 else eff_ITN_IRS_on
+itn_mean_decay <- (1 - exp(-itn_loss*ITN_interval)) / (itn_loss*ITN_interval)
+
 # Calculates decay for ITN/IRS
-ITN_decay = if(t < ITN_IRS_on) 0 else exp(-((t-eff_ITN_IRS_on)%%ITN_interval) * itn_loss)
+ITN_decay = if(t < ITN_IRS_on) 0 else if (itn_clock_mode == 2) itn_mean_decay else exp(-((t-itn_clock_start)%%ITN_interval) * itn_loss)
 IRS_decay = if(t < ITN_IRS_on) 0 else exp(-((t-eff_ITN_IRS_on)%%IRS_interval) * irs_loss)
 
 # The r,d and s values turn on after ITN_IRS_on and decay accordingly
@@ -509,6 +519,7 @@ av_human[1:num_int] <- av*yy[i]/wh # biting rate on humans in each int. cat.
 ##------------------------------------------------------------------------------
 
 # Outputs for each compartment across the sum across all ages, biting heterogeneities and intervention categories
+output(ITN_decay) <- TRUE
 output(Sout) <- sum(S[,,])
 output(Tout) <- sum(T[,,])
 output(Dout) <- sum(D[,,])
