@@ -516,6 +516,9 @@ covered across three further vignettes:
 * [Adding a new drug](NewDrugs.html) for defining therapies the package does not ship
   with, worked through with single low-dose primaquine.
 
+[Running from a site file](SiteFiles.html) shows how to set `magenta` up from one unit
+of an Imperial malariasimulation site file, and compares the two models over time.
+
 The [model output vignette](Loggers.html) describes everything a simulation can return
 and how to save and restart runs.
 

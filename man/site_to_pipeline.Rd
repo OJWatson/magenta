@@ -84,6 +84,12 @@ calibrated EIR without its own fitting.
 Drugs, resistance, non-malarial fevers, barcodes and the other
 \code{pipeline} arguments are left to the user: add them to the returned
 list. Use the same \code{drug_list} here and in \code{pipeline}.
+
+The aim is to put \code{magenta} in the right transmission setting for
+scenario modelling of drug resistance, not to reproduce every intervention
+in the site file. Only treatment, ITNs and IRS are used: SMC, PMC, vaccines
+and larval source management in the site file are not modelled, and IRS uses
+\code{magenta}'s default efficacy whatever the insecticide.
 }
 \examples{
 \dontrun{

@@ -59,7 +59,7 @@ as the least significant bit:
 
 
 ``` r
-new_drug <- magenta:::drug_create(
+new_drug <- drug_create(
   prob_of_lpf = c(0.98,   # wild type at both
                   0.93,   # kelch13 580Y only
                   0.80,   # new partner drug marker only
@@ -210,7 +210,7 @@ Look again at what a drug is in `magenta`:
 
 
 ``` r
-names(magenta:::drug_create_al())
+names(drug_create_al())
 ## [1] "lpf"                    "barcode_positions"      "prophylactic_positions"
 ## [4] "dur_P"                  "dur_SPC"                "hill_n"                
 ## [7] "hill_kA"                "hill_res_n"             "hill_res_kA"
@@ -290,7 +290,7 @@ oocysts by 99%:
 ``` r
 dl_al <- drug_list_create(
   resistance_flag = TRUE, number_of_resistance_loci = 6, artemisinin_loci = 4,
-  cost_of_resistance = rep(1, 6), drugs = list(magenta:::drug_create_al()),
+  cost_of_resistance = rep(1, 6), drugs = list(drug_create_al()),
   number_of_drugs = 1, partner_drug_ratios = 1
 )
 

@@ -98,6 +98,12 @@ site_ft <- function(tx_cov, drug_list = drug_list_create()) {
 #' \code{pipeline} arguments are left to the user: add them to the returned
 #' list. Use the same \code{drug_list} here and in \code{pipeline}.
 #'
+#' The aim is to put \code{magenta} in the right transmission setting for
+#' scenario modelling of drug resistance, not to reproduce every intervention
+#' in the site file. Only treatment, ITNs and IRS are used: SMC, PMC, vaccines
+#' and larval source management in the site file are not modelled, and IRS uses
+#' \code{magenta}'s default efficacy whatever the insecticide.
+#'
 #' @param site Site file for one unit, e.g. from \code{site::subset_site()}
 #' @param years Calendar years to run after the burn-in. Default = all years
 #'   with treatment coverage in the site file
