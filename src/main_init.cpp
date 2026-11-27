@@ -80,7 +80,51 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
   // Un pack core parameters
   // -------------------------------------------------
   parameters.g_phi0 = Rcpp::as<double>(core_parameter_list["phi0"]);
-  
+
+  // the rest of the core parameters the individual model uses (kept at their defaults if not
+  // provided). Their defaults here and in model_param_list_create() are the same, so default runs
+  // are unchanged. Not read: cU, eta, the state durations and mosquito delays, whose defaults differ
+  // slightly or that set up other vectors when the parameters are made
+  auto read_core = [&core_parameter_list](const char* name, double &value) {
+    if (core_parameter_list.containsElementNamed(name)) {
+      value = Rcpp::as<double>(core_parameter_list[name]);
+    }
+  };
+  read_core("Q0", parameters.g_Q0);
+  read_core("mu0", parameters.g_mu0);
+  parameters.g_mean_mosquito_age = 1.0 / parameters.g_mu0;
+  read_core("rho", parameters.g_rho);
+  read_core("a0", parameters.g_a0);
+  if (core_parameter_list.containsElementNamed("sigma2")) {
+    double sigma2 = Rcpp::as<double>(core_parameter_list["sigma2"]);
+    parameters.g_zeta_meanlog = -sigma2 / 2.0;
+    parameters.g_zeta_sdlog = sqrt(sigma2);
+  }
+  read_core("b0", parameters.g_b0);
+  read_core("b1", parameters.g_b1);
+  read_core("dB", parameters.g_dB);
+  read_core("IB0", parameters.g_IB0);
+  read_core("kB", parameters.g_kB);
+  read_core("uB", parameters.g_uB);
+  read_core("phi1", parameters.g_phi1);
+  read_core("dCA", parameters.g_dCA);
+  read_core("IC0", parameters.g_IC0);
+  read_core("kC", parameters.g_kC);
+  read_core("uCA", parameters.g_uCA);
+  read_core("PM", parameters.g_PM);
+  read_core("dCM", parameters.g_dCM);
+  read_core("d1", parameters.g_d1);
+  read_core("dID", parameters.g_dID);
+  read_core("ID0", parameters.g_ID0);
+  read_core("kD", parameters.g_kD);
+  read_core("uD", parameters.g_uD);
+  read_core("aD", parameters.g_aD);
+  read_core("fD0", parameters.g_fD0);
+  read_core("gamma1", parameters.g_gamma1);
+  read_core("alphaU", parameters.g_alphaU);
+  read_core("cD", parameters.g_cD);
+  read_core("cT", parameters.g_cT);
+
   // severe disease immunity parameters (kept at their defaults if not provided, e.g. older saved inputs)
   if (core_parameter_list.containsElementNamed("theta0")) {
     parameters.g_theta0 = Rcpp::as<double>(core_parameter_list["theta0"]);

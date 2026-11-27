@@ -100,31 +100,38 @@ seasonal_profile <- function(admin = NULL, country = NULL) {
   admin_units_seasonal <- magenta::admin_units_seasonal
   
   if (admin_matches != 0) {
-    ssa0 <- admin_units_seasonal$a0[admin_matches]
-    ssa1 <- admin_units_seasonal$a1[admin_matches]
-    ssa2 <- admin_units_seasonal$a2[admin_matches]
-    ssa3 <- admin_units_seasonal$a3[admin_matches]
-    ssb1 <- admin_units_seasonal$b1[admin_matches]
-    ssb2 <- admin_units_seasonal$b2[admin_matches]
-    ssb3 <- admin_units_seasonal$b3[admin_matches]
-    theta_c <- admin_units_seasonal$theta_c[admin_matches]
-    
-    t <- 1:365
-    y <- sapply(t, function(x) {
-      max((ssa0 + 
-             ssa1 * cos(2 * pi * x / 365) + 
-             ssa2 * cos(2 * 2 * pi * x / 365) + 
-             ssa3 * cos(3 * 2 * pi * x / 365) + 
-             ssb1 * sin(2 * pi * x / 365) + 
-             ssb2 * sin(2 * 2 * pi * x / 365) + 
-             ssb3 * sin(3 * 2 * pi * x / 365)) / theta_c, 0.001)
-    })
+    ss <- admin_units_seasonal[admin_matches,
+                               c("a0", "a1", "a2", "a3", "b1", "b2", "b3", "theta_c")]
   } else {
-    ssa0 <- ssa1 <- ssa2 <- ssa3 <- ssb1 <- ssb2 <- ssb3 <- theta_c <- 0
-    y <- rep(1, 365)
+    ss <- NULL
   }
   
-  return(y)
+  return(seasonal_theta(ss))
+}
+
+#---
+#' Daily seasonal theta from seasonal parameters
+#'
+#' @param ss Named list or vector with \code{a0, a1, a2, a3, b1, b2, b3,
+#'   theta_c}. If NULL, or \code{theta_c} is 0, there is no seasonality.
+#'
+#' @keywords internal
+seasonal_theta <- function(ss) {
+  
+  if (is.null(ss) || ss[["theta_c"]] == 0) {
+    return(rep(1, 365))
+  }
+  
+  t <- 1:365
+  sapply(t, function(x) {
+    max((ss[["a0"]] + 
+           ss[["a1"]] * cos(2 * pi * x / 365) + 
+           ss[["a2"]] * cos(2 * 2 * pi * x / 365) + 
+           ss[["a3"]] * cos(3 * 2 * pi * x / 365) + 
+           ss[["b1"]] * sin(2 * pi * x / 365) + 
+           ss[["b2"]] * sin(2 * 2 * pi * x / 365) + 
+           ss[["b3"]] * sin(3 * 2 * pi * x / 365)) / ss[["theta_c"]], 0.001)
+  })
 }
 
 #---

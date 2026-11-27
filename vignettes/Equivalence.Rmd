@@ -1,7 +1,7 @@
 ---
 title: "Equivalence with malariasimulation"
 author: "OJ Watson"
-date: "2026-11-25"
+date: "2026-11-27"
 output:
   rmarkdown::html_vignette:
     fig_width: 7
@@ -26,11 +26,21 @@ transmission, prevalence, incidence and immunity. This vignette compares them
 across a range of transmission intensities, and is the place to rerun the
 comparison after changes to the transmission or immunity code.
 
-The simulations are too large to run when building the package, so they were
-run on a cluster and the code is shown here without being evaluated. The
-scripts are in `vignettes_src/equivalence/` in the package repository, and the
-summarised results that make the figures below are in
-`vignettes_src/equivalence_summary.rds`.
+> **Where the results come from.** The runs take up to an hour each (240
+> tasks), so they were run once on a cluster rather than when this vignette is
+> built, and the code below only reads their saved output. Everything used is
+> in
+> [`vignettes_src/equivalence/`](https://github.com/OJWatson/magenta/tree/master/vignettes_src/equivalence)
+> in the package repository:
+>
+> * `run_equivalence.R` sets up the cluster, runs all the tasks and the
+>   deterministic reference, and writes the summary to
+>   `equivalence_summary.rds`, which is read below;
+> * `funs.R` has the magenta and malariasimulation run functions, which also
+>   record the mean immunity, infection state and probability of infection,
+>   clinical and severe disease of each age group, and the deterministic
+>   reference;
+> * `analysis.R` has the function that summarises the saved runs.
 
 ## Set up
 
@@ -109,17 +119,17 @@ out <- pipeline(EIR = eir, N = 1e5, years = 10, ft = FT, num_loci = 2,
 
 The full run functions, which also record the mean immunity, infection state
 and probability of infection, clinical and severe disease of each age group,
-are in `vignettes_src/equivalence/funs_forensic.R`.
+are in `vignettes_src/equivalence/funs.R`.
 
 
 ``` r
 library(ggplot2)
 
-res <- readRDS("equivalence_summary.rds")
-res$meta[c("magenta_sha", "malariasimulation", "N", "reps", "years",
+res <- readRDS("equivalence/equivalence_summary.rds")
+res$meta[c("magenta_version", "malariasimulation", "N", "reps", "years",
            "window_years")]
-## $magenta_sha
-## [1] "8a3e5ed3fafa0f67645204005703feb292610965"
+## $magenta_version
+## [1] "1.4.0"
 ## 
 ## $malariasimulation
 ## [1] "v3.0.0"
@@ -418,12 +428,10 @@ ggplot(st, aes(band, mean, colour = model, group = model,
 
 ## Rerunning the comparison
 
-To rerun it after changing the model, from a copy of
-`vignettes_src/equivalence/` on the cluster share:
-
-1. set the `magenta` branch or commit in `pkgdepends.txt` and run `setup.R`,
-2. submit the runs with `run_grid.R` (240 tasks, each 5 to 60 minutes),
-3. run `deterministic.R` for the deterministic reference,
-4. run `analyse_f140.R` to write `analysis/equivalence_summary.rds`, then copy
-   it to `vignettes_src/` and rebuild this vignette with
-   `Rscript vignettes_src/build_vignettes.R Equivalence`.
+Copy `vignettes_src/equivalence/` to a folder the cluster can see, and run
+`run_equivalence.R` from there (240 tasks, each 5 to 60 minutes). Copy the
+`equivalence_summary.rds` it writes back to `vignettes_src/equivalence/`, and
+rebuild this vignette with
+`Rscript vignettes_src/build_vignettes.R Equivalence`. The runs install
+magenta and malariasimulation from their current versions, which are recorded
+in the summary.

@@ -61,7 +61,7 @@ positions, so the efficacy vector has `2^2 = 4` entries, ordered with position 4
 as the least significant bit:
 
 ```{r new-drug}
-new_drug <- magenta:::drug_create(
+new_drug <- drug_create(
   prob_of_lpf = c(0.98,   # wild type at both
                   0.93,   # kelch13 580Y only
                   0.80,   # new partner drug marker only
@@ -207,7 +207,7 @@ infectivity is already close to zero, whereas after DHA-PPQ it is not.
 Look again at what a drug is in `magenta`:
 
 ```{r drug-fields}
-names(magenta:::drug_create_al())
+names(drug_create_al())
 ```
 
 Every one of these fields feeds into one of two things: the probability that
@@ -278,7 +278,7 @@ oocysts by 99%:
 ```{r hooks-demo}
 dl_al <- drug_list_create(
   resistance_flag = TRUE, number_of_resistance_loci = 6, artemisinin_loci = 4,
-  cost_of_resistance = rep(1, 6), drugs = list(magenta:::drug_create_al()),
+  cost_of_resistance = rep(1, 6), drugs = list(drug_create_al()),
   number_of_drugs = 1, partner_drug_ratios = 1
 )
 

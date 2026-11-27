@@ -7,6 +7,11 @@ export(Simulation_Init_cpp)
 export(Simulation_Saved_Init_cpp)
 export(Simulation_Update_cpp)
 export(convert_barcode_vectors)
+export(drug_create)
+export(drug_create_al)
+export(drug_create_asaq)
+export(drug_create_default_no_resistance)
+export(drug_create_dhappq)
 export(drug_list_create)
 export(equilibrium_init_create)
 export(intervention_grab)
@@ -22,56 +27,71 @@ export(population_get_genetics_ibd_df_n)
 export(severe_outcomes)
 export(severe_rates)
 export(simulation_R)
+export(site_ft)
+export(site_seasonality)
+export(site_to_pipeline)
 export(spl_grab)
 export(update_saved_state_barcode_plaf)
-importFrom(Rcpp,evalCpp)
-importFrom(Rcpp,sourceCpp)
-importFrom(ggplot2,aes)
-importFrom(ggplot2,element_blank)
-importFrom(ggplot2,geom_line)
-importFrom(ggplot2,geom_point)
-importFrom(ggplot2,geom_smooth)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,guide_legend)
-importFrom(ggplot2,guides)
-importFrom(ggplot2,scale_color_discrete)
-importFrom(ggplot2,scale_color_manual)
-importFrom(ggplot2,scale_shape_manual)
-importFrom(ggplot2,theme)
-importFrom(ggplot2,theme_bw)
-importFrom(ggplot2,xlim)
-importFrom(ggplot2,ylab)
-importFrom(ggplot2,ylim)
-importFrom(grDevices,dev.new)
-importFrom(grDevices,dev.off)
-importFrom(grDevices,hcl)
-importFrom(grDevices,tiff)
-importFrom(graphics,par)
-importFrom(graphics,plot)
+importFrom(Rcpp,
+  evalCpp,
+  sourceCpp
+)
+importFrom(ggplot2,
+  aes,
+  element_blank,
+  geom_line,
+  geom_point,
+  geom_smooth,
+  ggplot,
+  guide_legend,
+  guides,
+  scale_color_discrete,
+  scale_color_manual,
+  scale_shape_manual,
+  theme,
+  theme_bw,
+  xlim,
+  ylab,
+  ylim
+)
+importFrom(grDevices,
+  dev.new,
+  dev.off,
+  hcl,
+  tiff
+)
+importFrom(graphics,
+  par,
+  plot
+)
 importFrom(magrittr,"%>%")
 importFrom(odin,odin)
 importFrom(rlang,.data)
 importFrom(statmod,gauss.quad.prob)
-importFrom(stats,approx)
-importFrom(stats,dexp)
-importFrom(stats,heatmap)
-importFrom(stats,na.omit)
-importFrom(stats,optim)
-importFrom(stats,pgamma)
-importFrom(stats,qexp)
-importFrom(stats,qlnorm)
-importFrom(stats,qt)
-importFrom(stats,rbinom)
-importFrom(stats,rgeom)
-importFrom(stats,rlnorm)
-importFrom(stats,rnbinom)
-importFrom(stats,runif)
-importFrom(stats,sd)
-importFrom(stats,time)
-importFrom(stats,weighted.mean)
+importFrom(stats,
+  approx,
+  dexp,
+  heatmap,
+  na.omit,
+  optim,
+  pgamma,
+  qexp,
+  qlnorm,
+  qt,
+  rbinom,
+  rgeom,
+  rlnorm,
+  rnbinom,
+  runif,
+  sd,
+  time,
+  weighted.mean
+)
 importFrom(stringi,stri_trans_general)
-importFrom(utils,adist)
-importFrom(utils,packageVersion)
-importFrom(utils,read.csv)
-importFrom(utils,tail)
+importFrom(utils,
+  adist,
+  packageVersion,
+  read.csv,
+  tail
+)
 useDynLib(magenta)

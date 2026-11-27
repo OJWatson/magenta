@@ -12,7 +12,8 @@ equilibrium_init_create(
   model_param_list,
   country = NULL,
   admin = NULL,
-  quiet = FALSE
+  quiet = FALSE,
+  seasonality = NULL
 )
 }
 \arguments{
@@ -38,6 +39,11 @@ and admin are NULL then no seasonality is assumed. Default = NULL.}
 
 \item{quiet}{Whether function should be quiet. If FALSE (default) the 
 returned country and admin are printed.}
+
+\item{seasonality}{Optional named numeric vector (or list) of seasonal
+parameters, \code{a0, a1, a2, a3, b1, b2, b3, theta_c}, used instead of
+looking them up by country and admin (see \code{\link{site_seasonality}}).
+Default = NULL}
 }
 \description{
 \code{equilibrium_init_create} creates an equilibrium initialisation state to be

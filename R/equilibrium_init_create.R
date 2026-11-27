@@ -18,6 +18,10 @@
 #' @param model_param_list List of epidemiological parameters created by
 #' @param quiet Whether function should be quiet. If FALSE (default) the 
 #'   returned country and admin are printed. 
+#' @param seasonality Optional named numeric vector (or list) of seasonal
+#'   parameters, \code{a0, a1, a2, a3, b1, b2, b3, theta_c}, used instead of
+#'   looking them up by country and admin (see \code{\link{site_seasonality}}).
+#'   Default = NULL
 #'
 #' @importFrom stringi stri_trans_general
 #' @importFrom statmod gauss.quad.prob
@@ -32,7 +36,8 @@ equilibrium_init_create <- function(age_vector,
                                     model_param_list,
                                     country = NULL, 
                                     admin = NULL, 
-                                    quiet = FALSE)
+                                    quiet = FALSE,
+                                    seasonality = NULL)
 {
   
   # mpl is shorter :)
@@ -302,21 +307,37 @@ equilibrium_init_create <- function(age_vector,
   ICM_eq = array(ICM_eq, c(na, nh, num_int))
   IVA_eq = array(IVA_eq, c(na, nh, num_int))
   
-  # find database seasonal parameters
-  admin_matches <- admin_match(admin, country, quiet)
-  admins_seasonal <- magenta::admin_units_seasonal
-  
-  if(admin_matches!=0){
-    ssa0 <- admins_seasonal$a0[admin_matches]
-    ssa1 <- admins_seasonal$a1[admin_matches]
-    ssa2 <- admins_seasonal$a2[admin_matches]
-    ssa3 <- admins_seasonal$a3[admin_matches]
-    ssb1 <- admins_seasonal$b1[admin_matches]
-    ssb2 <- admins_seasonal$b2[admin_matches]
-    ssb3 <- admins_seasonal$b3[admin_matches]
-    theta_c <- admins_seasonal$theta_c[admin_matches]
+  # seasonal parameters, given directly or from the database
+  ss_names <- c("a0", "a1", "a2", "a3", "b1", "b2", "b3", "theta_c")
+  if (!is.null(seasonality)) {
+    if (!all(ss_names %in% names(seasonality))) {
+      stop("seasonality needs elements ", paste(ss_names, collapse = ", "))
+    }
+    seasonality <- unlist(seasonality[ss_names])
+    ssa0 <- seasonality[["a0"]]
+    ssa1 <- seasonality[["a1"]]
+    ssa2 <- seasonality[["a2"]]
+    ssa3 <- seasonality[["a3"]]
+    ssb1 <- seasonality[["b1"]]
+    ssb2 <- seasonality[["b2"]]
+    ssb3 <- seasonality[["b3"]]
+    theta_c <- seasonality[["theta_c"]]
   } else {
-    ssa0 <- ssa1 <- ssa2 <- ssa3 <- ssb1 <- ssb2 <- ssb3 <- theta_c <- 0
+    admin_matches <- admin_match(admin, country, quiet)
+    admins_seasonal <- magenta::admin_units_seasonal
+  
+    if(admin_matches!=0){
+      ssa0 <- admins_seasonal$a0[admin_matches]
+      ssa1 <- admins_seasonal$a1[admin_matches]
+      ssa2 <- admins_seasonal$a2[admin_matches]
+      ssa3 <- admins_seasonal$a3[admin_matches]
+      ssb1 <- admins_seasonal$b1[admin_matches]
+      ssb2 <- admins_seasonal$b2[admin_matches]
+      ssb3 <- admins_seasonal$b3[admin_matches]
+      theta_c <- admins_seasonal$theta_c[admin_matches]
+    } else {
+      ssa0 <- ssa1 <- ssa2 <- ssa3 <- ssb1 <- ssb2 <- ssb3 <- theta_c <- 0
+    }
   }
   
   # better het bounds for equilbirum initialisation in individual model

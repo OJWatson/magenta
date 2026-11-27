@@ -16,6 +16,9 @@
 #' @param admin Character for admin region. Some fuzzy logic will be
 #'   used to match. If not provided then no seasonality is introduced.
 #'   Default = NULL
+#' @param seasonality Optional named seasonal parameters (a0, a1, a2, a3, b1, b2,
+#'   b3, theta_c) used instead of the country and admin lookup, e.g. from
+#'   \code{\link{site_seasonality}}. Default = NULL
 #' @param itn_cov Vector for ITN coverages that change at update_length intervals.
 #'   Default = 0
 #' @param irs_cov Vector for IRS coverages that change at update_length intervals.
@@ -141,6 +144,7 @@ pipeline <- function(EIR = 120,
                      update_length = 365,
                      country = NULL,
                      admin = NULL,
+                     seasonality = NULL,
                      spatial_type = NULL,
                      # redis_host = "fi--dideclusthn.dide.ic.ac.uk",
                      # spatial_uuid = NULL,
@@ -233,6 +237,7 @@ pipeline <- function(EIR = 120,
       EIR = EIR,
       country = country,
       admin = admin,
+      seasonality = seasonality,
       model_param_list = mpl
     )
     
@@ -339,6 +344,7 @@ pipeline <- function(EIR = 120,
       EIR = EIR,
       country = country,
       admin = admin,
+      seasonality = seasonality,
       model_param_list = mpl
     )
     

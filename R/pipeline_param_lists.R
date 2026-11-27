@@ -171,6 +171,7 @@ drug_list_create <- function(resistance_flag = FALSE,
 #'   \code{drug_clearance_max_time} and the first element is the probability at 
 #'   time = 0 days. 
 #' @importFrom stats pgamma dexp optim
+#' @export
 drug_create <- function(prob_of_lpf = c(1.0, 0.97, 0.80, 0.55),
                         barcode_res_pos = c(0, 1),
                         prophylactic_pos = 1,
@@ -239,6 +240,7 @@ drug_create <- function(prob_of_lpf = c(1.0, 0.97, 0.80, 0.55),
 
 
 #' DHA-PPQ Drug Create
+#' @export
 drug_create_dhappq <- function() {
   
   drug_table <- magenta::drug_table
@@ -274,6 +276,7 @@ drug_create_dhappq <- function() {
 #' At the moment we will say that any loci associated with lumefantrine resistance
 #' yield the resistant curve but it may be better to have a distinct curve for each
 #' lumefantrine resistant genotype with the T0.5 aligned to the prob of lpf.
+#' @export
 drug_create_al <- function() {
 
   drug_table <- magenta::drug_table
@@ -307,6 +310,7 @@ drug_create_al <- function() {
 #' At the moment we will say that any loci associated with AQ resistance
 #' yield the resistant curve but it may be better to have a distinct curve for each
 #' AQ resistant genotype with the T0.5 aligned to the prob of lpf.
+#' @export
 drug_create_asaq <- function() {
   
   drug_table <- magenta::drug_table
@@ -334,6 +338,7 @@ drug_create_asaq <- function() {
 #' 
 #' @note
 #' Perfect Efficacy Drug. Used as default to match deterministic model easily
+#' @export
 drug_create_default_no_resistance <- function() {
   
   data.frame("lpf" = 1,
