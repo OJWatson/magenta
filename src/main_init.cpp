@@ -80,6 +80,65 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
   // Un pack core parameters
   // -------------------------------------------------
   parameters.g_phi0 = Rcpp::as<double>(core_parameter_list["phi0"]);
+
+  // the rest of the core parameters the individual model uses (kept at their defaults if not
+  // provided). Their defaults here and in model_param_list_create() are the same, so default runs
+  // are unchanged. Not read: cU, eta, the state durations and mosquito delays, whose defaults differ
+  // slightly or that set up other vectors when the parameters are made
+  auto read_core = [&core_parameter_list](const char* name, double &value) {
+    if (core_parameter_list.containsElementNamed(name)) {
+      value = Rcpp::as<double>(core_parameter_list[name]);
+    }
+  };
+  read_core("Q0", parameters.g_Q0);
+  read_core("mu0", parameters.g_mu0);
+  parameters.g_mean_mosquito_age = 1.0 / parameters.g_mu0;
+  read_core("rho", parameters.g_rho);
+  read_core("a0", parameters.g_a0);
+  if (core_parameter_list.containsElementNamed("sigma2")) {
+    double sigma2 = Rcpp::as<double>(core_parameter_list["sigma2"]);
+    parameters.g_zeta_meanlog = -sigma2 / 2.0;
+    parameters.g_zeta_sdlog = sqrt(sigma2);
+  }
+  read_core("b0", parameters.g_b0);
+  read_core("b1", parameters.g_b1);
+  read_core("dB", parameters.g_dB);
+  read_core("IB0", parameters.g_IB0);
+  read_core("kB", parameters.g_kB);
+  read_core("uB", parameters.g_uB);
+  read_core("phi1", parameters.g_phi1);
+  read_core("dCA", parameters.g_dCA);
+  read_core("IC0", parameters.g_IC0);
+  read_core("kC", parameters.g_kC);
+  read_core("uCA", parameters.g_uCA);
+  read_core("PM", parameters.g_PM);
+  read_core("dCM", parameters.g_dCM);
+  read_core("d1", parameters.g_d1);
+  read_core("dID", parameters.g_dID);
+  read_core("ID0", parameters.g_ID0);
+  read_core("kD", parameters.g_kD);
+  read_core("uD", parameters.g_uD);
+  read_core("aD", parameters.g_aD);
+  read_core("fD0", parameters.g_fD0);
+  read_core("gamma1", parameters.g_gamma1);
+  read_core("alphaU", parameters.g_alphaU);
+  read_core("cD", parameters.g_cD);
+  read_core("cT", parameters.g_cT);
+
+  // severe disease immunity parameters (kept at their defaults if not provided, e.g. older saved inputs)
+  if (core_parameter_list.containsElementNamed("theta0")) {
+    parameters.g_theta0 = Rcpp::as<double>(core_parameter_list["theta0"]);
+    parameters.g_theta1 = Rcpp::as<double>(core_parameter_list["theta1"]);
+    parameters.g_dVA = Rcpp::as<double>(core_parameter_list["dVA"]);
+    parameters.g_IV0 = Rcpp::as<double>(core_parameter_list["IV0"]);
+    parameters.g_kV = Rcpp::as<double>(core_parameter_list["kV"]);
+    parameters.g_uVA = Rcpp::as<double>(core_parameter_list["uVA"]);
+    parameters.g_fV0 = Rcpp::as<double>(core_parameter_list["fV0"]);
+    parameters.g_aV = Rcpp::as<double>(core_parameter_list["aV"]);
+    parameters.g_gammaV = Rcpp::as<double>(core_parameter_list["gammaV"]);
+    parameters.g_PVM = Rcpp::as<double>(core_parameter_list["PVM"]);
+    parameters.g_dVM = Rcpp::as<double>(core_parameter_list["dVM"]);
+  }
   
   
   // Un pack barcode parms
@@ -207,7 +266,19 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
   Rcpp::NumericMatrix IDmat(Rcpp::as<Rcpp::NumericMatrix>(eqSS["IDmat"]));
   vector<double> age_brackets = Rcpp::as<vector<double> >(eqSS["age_brackets"]);
   vector<double> het_brackets = Rcpp::as<vector<double> >(eqSS["het_brackets"]);
+  
+  // the heterogeneity groups are kept for newborns' maternal immunity
+  parameters.g_het_brackets = het_brackets;
+  parameters.clear_mothers_today();
   std::vector<double>  ICM_Init = Rcpp::as<std::vector<double> >(eqSS["ICM_Init"]);
+  
+  // severe disease immunity at equilibrium. Older equilibrium states do not have this so start with none
+  Rcpp::NumericMatrix IVAmat(ICAmat.nrow(), ICAmat.ncol());
+  std::vector<double> IVM_Init(ICM_Init.size(), 0.0);
+  if (eqSS.containsElementNamed("IVAmat")) {
+    IVAmat = Rcpp::as<Rcpp::NumericMatrix>(eqSS["IVAmat"]);
+    IVM_Init = Rcpp::as<std::vector<double> >(eqSS["IVM_Init"]);
+  }
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // START: HUMAN INITIALISATION FROM EQUILIBRIUM
@@ -220,7 +291,6 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
   infected_human_count.reserve(parameters.g_N);
   int id_counter = 0;
   int num_age_brackets = age_brackets.size();
-  int num_het_brackets = het_brackets.size();
   int age_bracket_in = 0;
   int het_bracket_in = 0;
   std::vector<double> infection_state_probability(6);
@@ -289,22 +359,7 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     }
     
     // second find out what heterogeneity bracket they are in
-    // are they in the last - do this first for those people with heterogeneities that happen to be above the max 
-    if(population[n].get_m_individual_biting_rate() >= het_brackets[num_het_brackets-2]) 
-    {
-      het_bracket_in = num_het_brackets-1;
-    }
-    if(population[n].get_m_individual_biting_rate() < het_brackets[0])
-    {
-      het_bracket_in = 0;
-    }
-    for(int het_i = 1 ; het_i < (num_het_brackets-1) ; het_i++)
-    {
-      if(population[n].get_m_individual_biting_rate() >= het_brackets[het_i-1] && population[n].get_m_individual_biting_rate() < het_brackets[het_i])
-      {
-        het_bracket_in = het_i;
-      }
-    }
+    het_bracket_in = parameters.het_group(population[n].get_m_individual_biting_rate());
     
     infection_state_probability[0] = Smat(age_bracket_in, het_bracket_in);
     infection_state_probability[1] = Dmat(age_bracket_in, het_bracket_in);
@@ -326,6 +381,9 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     {
       population[n].set_m_ICM(ICM_Init[het_bracket_in] * exp(-population[n].get_m_person_age() / parameters.g_dCM));
     }
+    population[n].set_m_IVA(IVAmat(age_bracket_in, het_bracket_in));
+    population[n].set_m_IVM_init(IVM_Init[het_bracket_in]);
+    population[n].set_m_IVM(IVM_Init[het_bracket_in] * exp(-population[n].get_m_person_age() / parameters.g_dVM));
     
     // Schedule change for those who are not susceptible
     if (population[n].get_m_infection_state() != Person::SUSCEPTIBLE)
@@ -337,7 +395,14 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     if (population[n].get_m_person_age() > 20 * 365 && population[n].get_m_person_age() < 21 * 365)
     {
       parameters.g_sum_maternal_immunity += population[n].get_m_ICA();
+      parameters.g_sum_maternal_severe_immunity += population[n].get_m_IVA();
       parameters.g_total_mums++;
+    }
+    
+    // Mothers whose immunity the first day's newborns draw from
+    if (Parameters::is_mother_age(population[n].get_m_person_age()))
+    {
+      parameters.add_mother(population[n].get_m_individual_biting_rate(), population[n].get_m_ICA(), population[n].get_m_IVA());
     }
     
     // If they are infected, i.e. not S or P, then assign their strains and next strain clearance date
@@ -345,7 +410,8 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     {
       // Initialise MOI given their individual biting rate
       population[n].set_m_number_of_strains(static_cast<int>(population[n].get_m_individual_biting_rate()) + 1);
-      population[n].set_m_number_of_realised_infections(population[n].get_m_number_of_strains());
+      // The realised infections counter indexes the pending infection vectors, which do not hold these initial strains
+      population[n].set_m_number_of_realised_infections(0);
       population[n].schedule_m_day_of_strain_clearance(parameters);
       
       // If they are treated the strains we allocate should have no state change
@@ -434,8 +500,9 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     
     std::vector<double> trans_prob = {0.0, 0.0, 0.0};
     
-    // Set infection time,state and barcode realisations if they are likely to be harbouring an infection 
-    if (population[n].get_m_infection_state() != Person::DISEASED && population[n].get_m_infection_state() != Person::PROPHYLAXIS) {
+    // Set infection time,state and barcode realisations if they are likely to be harbouring an infection.
+    // This is for everyone, as whether the infection starts is decided on the day it starts
+    {
       if (rbernoulli1(1.0-exp(-parameters.g_dur_E*FOImat(age_bracket_in, het_bracket_in)))){
         
         // N -> D
@@ -664,6 +731,8 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
   std::vector<double> ICA(parameters.g_N);
   std::vector<double> ICM(parameters.g_N);
   std::vector<double> ID(parameters.g_N);
+  std::vector<double> IVA(parameters.g_N);
+  std::vector<double> IVM(parameters.g_N);
   
   // status eq for logging and other logging variables 
   std::vector<double> status_eq = { 0,0,0,0,0,0 };
@@ -709,6 +778,8 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
     ICA[element] = population[element].get_m_ICA();
     ICM[element] = population[element].get_m_ICM();
     ID[element] = population[element].get_m_ID();
+    IVA[element] = population[element].get_m_IVA();
+    IVM[element] = population[element].get_m_IVM();
     
   }
   
@@ -726,6 +797,10 @@ Rcpp::List Simulation_Init_cpp(Rcpp::List param_list)
                                           Rcpp::Named("U")=status_eq[3],Rcpp::Named("T")=status_eq[4],Rcpp::Named("P")=status_eq[5],
                                                                                                                                 Rcpp::Named("InfectionStates")=Infection_States, Rcpp::Named("Ages")=Ages, 
                                                                                                                                 Rcpp::Named("IB")=IB,Rcpp::Named("ICA")=ICA,Rcpp::Named("ICM")=ICM,Rcpp::Named("ID")=ID);
+  
+  // Severe disease immunity appended so earlier positions are unchanged
+  Loggers.push_back(IVA, "IVA");
+  Loggers.push_back(IVM, "IVM");
   
   
   // Create universe ptr for memory-continuiation

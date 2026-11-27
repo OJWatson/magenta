@@ -123,6 +123,13 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   if (parameters_List.containsElementNamed("g_zeta_sdlog")) {
     parameters.g_zeta_sdlog = Rcpp::as<double>(parameters_List["g_zeta_sdlog"]);
   }
+  // biting heterogeneity groups for maternal immunity. Older saved states do not have these, so use the
+  // equilibrium's default 5 groups
+  if (parameters_List.containsElementNamed("g_het_brackets")) {
+    parameters.g_het_brackets = Rcpp::as<std::vector<double> >(parameters_List["g_het_brackets"]);
+  } else {
+    parameters.set_default_het_brackets();
+  }
   if (parameters_List.containsElementNamed("g_ft")) {
     parameters.g_ft = Rcpp::as<double>(parameters_List["g_ft"]);
   }
@@ -248,6 +255,46 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   }
   if (parameters_List.containsElementNamed("g_dCM")) {
     parameters.g_dCM = Rcpp::as<double>(parameters_List["g_dCM"]);
+  }
+  // severe disease immunity parameters (absent from states saved before 1.4.0, so keep the defaults)
+  if (parameters_List.containsElementNamed("g_theta0")) {
+    parameters.g_theta0 = Rcpp::as<double>(parameters_List["g_theta0"]);
+  }
+  if (parameters_List.containsElementNamed("g_theta1")) {
+    parameters.g_theta1 = Rcpp::as<double>(parameters_List["g_theta1"]);
+  }
+  if (parameters_List.containsElementNamed("g_dVA")) {
+    parameters.g_dVA = Rcpp::as<double>(parameters_List["g_dVA"]);
+  }
+  if (parameters_List.containsElementNamed("g_IV0")) {
+    parameters.g_IV0 = Rcpp::as<double>(parameters_List["g_IV0"]);
+  }
+  if (parameters_List.containsElementNamed("g_kV")) {
+    parameters.g_kV = Rcpp::as<double>(parameters_List["g_kV"]);
+  }
+  if (parameters_List.containsElementNamed("g_uVA")) {
+    parameters.g_uVA = Rcpp::as<double>(parameters_List["g_uVA"]);
+  }
+  if (parameters_List.containsElementNamed("g_fV0")) {
+    parameters.g_fV0 = Rcpp::as<double>(parameters_List["g_fV0"]);
+  }
+  if (parameters_List.containsElementNamed("g_aV")) {
+    parameters.g_aV = Rcpp::as<double>(parameters_List["g_aV"]);
+  }
+  if (parameters_List.containsElementNamed("g_gammaV")) {
+    parameters.g_gammaV = Rcpp::as<double>(parameters_List["g_gammaV"]);
+  }
+  if (parameters_List.containsElementNamed("g_PVM")) {
+    parameters.g_PVM = Rcpp::as<double>(parameters_List["g_PVM"]);
+  }
+  if (parameters_List.containsElementNamed("g_dVM")) {
+    parameters.g_dVM = Rcpp::as<double>(parameters_List["g_dVM"]);
+  }
+  if (parameters_List.containsElementNamed("g_mean_maternal_severe_immunity")) {
+    parameters.g_mean_maternal_severe_immunity = Rcpp::as<double>(parameters_List["g_mean_maternal_severe_immunity"]);
+  }
+  if (parameters_List.containsElementNamed("g_sum_maternal_severe_immunity")) {
+    parameters.g_sum_maternal_severe_immunity = Rcpp::as<double>(parameters_List["g_sum_maternal_severe_immunity"]);
   }
   if (parameters_List.containsElementNamed("g_gamma1")) {
     parameters.g_gamma1 = Rcpp::as<double>(parameters_List["g_gamma1"]);
@@ -524,6 +571,28 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   std::vector<int> I_C_D_CM_last_calculated_time = Rcpp::as<vector<int> >(population_List["I_C_D_CM_last_calculated_time"]);
   std::vector<double> Immunity_boost_float = Rcpp::as<vector<double> >(population_List["Immunity_boost_float"]);
   
+  // Severe disease immunity. States saved before 1.4.0 do not have these, so start with no severe immunity and
+  // take the IVA boost times from ICA, as is done for a new person
+  std::vector<double> IVA_v(parameters.g_N, 0.0);
+  std::vector<double> IVM_v(parameters.g_N, 0.0);
+  std::vector<double> IVM_init_v(parameters.g_N, 0.0);
+  std::vector<double> IVA_last_boost_time = ICA_last_boost_time;
+  // ICM_init is saved from 1.4.0; older states back-compute it from ICM and age (ICM = ICM_init * exp(-age/dCM))
+  std::vector<double> ICM_init_v(parameters.g_N, 0.0);
+  if (population_List.containsElementNamed("ICM_init")) {
+    ICM_init_v = Rcpp::as<vector<double> >(population_List["ICM_init"]);
+  } else {
+    for (int n = 0; n < parameters.g_N; n++) {
+      ICM_init_v[n] = ICM_v[n] * exp(Ages_v[n] / parameters.g_dCM);
+    }
+  }
+  if (population_List.containsElementNamed("IVA")) {
+    IVA_v = Rcpp::as<vector<double> >(population_List["IVA"]);
+    IVM_v = Rcpp::as<vector<double> >(population_List["IVM"]);
+    IVM_init_v = Rcpp::as<vector<double> >(population_List["IVM_init"]);
+    IVA_last_boost_time = Rcpp::as<vector<double> >(population_List["IVA_last_boost_time"]);
+  }
+  
   std::vector<int> Day_of_InfectionStatus_change = Rcpp::as<vector<int> >(populations_event_and_strains_List["Day_of_InfectionStatus_change"]);
   std::vector<int> Day_of_strain_clearance = Rcpp::as<vector<int> >(populations_event_and_strains_List["Day_of_strain_clearance"]);
   std::vector<int> Day_of_death = Rcpp::as<vector<int> >(populations_event_and_strains_List["Day_of_death"]);
@@ -540,6 +609,18 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   Rcpp::List Strain_day_of_infection_state_change_vectors = populations_event_and_strains_List["Strain_day_of_infection_state_change_vectors"];
   Rcpp::List Strain_day_of_acquisition_vectors = populations_event_and_strains_List["Strain_day_of_acquisition_vectors"];
   Rcpp::List Strain_barcode_vectors = populations_event_and_strains_List["Strain_barcode_vectors"];
+  
+  // Saved states before 1.4.0 have no infection state history or cleared strains
+  Rcpp::List State_history_days, State_history_states, Cleared_strain_days, Cleared_strain_infection_states,
+  Cleared_strain_day_of_acquisition_vectors, Cleared_strain_barcode_vectors;
+  if (populations_event_and_strains_List.containsElementNamed("State_history_days")) {
+    State_history_days = populations_event_and_strains_List["State_history_days"];
+    State_history_states = populations_event_and_strains_List["State_history_states"];
+    Cleared_strain_days = populations_event_and_strains_List["Cleared_strain_days"];
+    Cleared_strain_infection_states = populations_event_and_strains_List["Cleared_strain_infection_states"];
+    Cleared_strain_day_of_acquisition_vectors = populations_event_and_strains_List["Cleared_strain_day_of_acquisition_vectors"];
+    Cleared_strain_barcode_vectors = populations_event_and_strains_List["Cleared_strain_barcode_vectors"];
+  }
   
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -603,8 +684,12 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     population[n].set_m_IB(IB_v[n]);
     population[n].set_m_ICA(ICA_v[n]);
     population[n].set_m_ICM(ICM_v[n]);
+    population[n].set_m_ICM_init(ICM_init_v[n]);
     population[n].set_m_ID(ID_v[n]);
     population[n].set_m_cA(cA_v[n]);
+    population[n].set_m_IVA(IVA_v[n]);
+    population[n].set_m_IVM(IVM_v[n]);
+    population[n].set_m_IVM_init(IVM_init_v[n]);
 
     population[n].set_m_treatment_outcome(static_cast<Person::TreatmentOutcome>(Treatment_Outcomes[n]));
     population[n].set_m_recrudescence_outcome(static_cast<Person::RecrudescenceOutcome>(Recrudescence_Outcomes[n]));
@@ -615,6 +700,7 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     population[n].set_m_IB_last_boost_time(IB_last_boost_time[n]);
     population[n].set_m_ICA_last_boost_time(ICA_last_boost_time[n]);
     population[n].set_m_ID_last_boost_time(ID_last_boost_time[n]);
+    population[n].set_m_IVA_last_boost_time(IVA_last_boost_time[n]);
     
     // Set Calc times
     population[n].set_m_IB_last_calculated_time(IB_last_calculated_time[n]);
@@ -635,8 +721,13 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     // Strain Numbers
     population[n].set_m_number_of_strains(Number_of_Strains[n]);
     
-    // Strain Ralised Numbers
-    population[n].set_m_number_of_realised_infections(Number_of_Realised_Infections[n]);
+    // Strain Ralised Numbers. States saved before 1.4.0 could have more realised infections than pending
+    // infections (initially infected people), which stopped their next infections being realised, so reset these
+    if (Number_of_Realised_Infections[n] > Rcpp::as<Rcpp::IntegerVector>(Infection_time_realisation_vectors[n]).size()) {
+      population[n].set_m_number_of_realised_infections(0);
+    } else {
+      population[n].set_m_number_of_realised_infections(Number_of_Realised_Infections[n]);
+    }
     
     // Set vectors
     population[n].set_m_infection_time_realisation_vector_from_vector(Rcpp::as<std::vector<int> >(Infection_time_realisation_vectors[n]));
@@ -671,6 +762,29 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     population[n].allocate_strain_with_push(temp_strain);
     }
     
+    // Infection state history and recently cleared strains, for the gametocyte lag. States saved before
+    // these were kept have none, so infectivity uses the current state until the history builds up
+    if (populations_event_and_strains_List.containsElementNamed("State_history_days")) {
+      population[n].set_m_state_history(Rcpp::as<std::vector<int> >(State_history_days[n]),
+                                        Rcpp::as<std::vector<int> >(State_history_states[n]));
+      temp_strain_state_vector = Rcpp::as<std::vector<int> >(Cleared_strain_infection_states[n]);
+      temp_strain_day_of_acquisition = Rcpp::as<std::vector<int> >(Cleared_strain_day_of_acquisition_vectors[n]);
+      temp_strain_barcode_vector = Rcpp::as<std::vector<std::vector<bool> > >(Cleared_strain_barcode_vectors[n]);
+      std::vector<Strain> temp_cleared_strains;
+      for(unsigned int s = 0; s < temp_strain_state_vector.size(); s++)
+      {
+        temp_strain.set_m_strain_infection_status(static_cast<Strain::InfectionStatus>(temp_strain_state_vector[s]));
+        temp_strain.set_m_day_of_strain_acquisition(temp_strain_day_of_acquisition[s]);
+        for(temp_barcode_iterator = 0; temp_barcode_iterator < Parameters::g_barcode_length ; temp_barcode_iterator++ )
+        {
+          Strain::temp_barcode[temp_barcode_iterator] = temp_strain_barcode_vector[s][temp_barcode_iterator];
+        }
+        temp_strain.set_m_barcode(Strain::temp_barcode);
+        temp_cleared_strains.push_back(temp_strain);
+      }
+      population[n].set_m_cleared_strains(temp_cleared_strains, Rcpp::as<std::vector<int> >(Cleared_strain_days[n]));
+    }
+    
     // -----------------------------------------
     
     // Set the next strain change day and next event day
@@ -681,6 +795,16 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     population[n].set_m_individual_biting_rate(Zetas[n]);
     zeta_vector[n] = population[n].get_m_individual_biting_rate();
     
+  }
+  
+  // Rebuild today's mothers, which tomorrow's newborns draw their maternal immunity from
+  parameters.clear_mothers_today();
+  for (unsigned int n = 0; n < parameters.g_N; n++)
+  {
+    if (Parameters::is_mother_age(population[n].get_m_person_age()))
+    {
+      parameters.add_mother(population[n].get_m_individual_biting_rate(), population[n].get_m_ICA(), population[n].get_m_IVA());
+    }
   }
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -754,6 +878,8 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
   std::vector<double> ICA(parameters.g_N);
   std::vector<double> ICM(parameters.g_N);
   std::vector<double> ID(parameters.g_N);
+  std::vector<double> IVA(parameters.g_N);
+  std::vector<double> IVM(parameters.g_N);
   
   // status eq for logging and other logging variables
   std::vector<double> status_eq = { 0,0,0,0,0,0 };
@@ -801,6 +927,8 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     ICA[element] = population[element].get_m_ICA();
     ICM[element] = population[element].get_m_ICM();
     ID[element] = population[element].get_m_ID();
+    IVA[element] = population[element].get_m_IVA();
+    IVM[element] = population[element].get_m_IVM();
     
   }
   
@@ -826,7 +954,9 @@ Rcpp::List Simulation_Saved_Init_cpp(Rcpp::List param_list)
     Rcpp::Named("IB")=IB,
     Rcpp::Named("ICA")=ICA,
     Rcpp::Named("ICM")=ICM,
-    Rcpp::Named("ID")=ID
+    Rcpp::Named("ID")=ID,
+    Rcpp::Named("IVA")=IVA,
+    Rcpp::Named("IVM")=IVM
   );
   
   

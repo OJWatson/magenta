@@ -135,7 +135,15 @@ private:
   double m_ICM;               // maternally acquired immunty (ICM)
   double m_ICA;               // exposure acquired immunity (ICA)
   double m_ICA_last_boost_time = runif1(0.0, 1.0);        // time that ICA was last boosted
-  int m_I_C_D_CM_last_calculated_time = 0;    // time IC and ID was last calculated
+  int m_I_C_D_CM_last_calculated_time = 0;    // time IC, IV and ID was last calculated
+  
+  // Person's severe disease immunity (Griffin et al. 2015), decays alongside ICA and ICM
+  double m_IVM_init = 0;
+  double m_IVM = 0;               // maternally acquired severe immunity (IVM)
+  double m_IVA = 0;               // exposure acquired severe immunity (IVA)
+  double m_IVA_last_boost_time = m_ICA_last_boost_time;  // time that IVA was last boosted (copies ICA so no new random draw)
+  double m_expected_severe = 0;       // Expected severe cases from infections that started today, i.e. theta, reset daily
+  bool m_clinical_case_today = false; // Did an infection that started today give a clinical case, reset daily
   
   // Person's blood stage immunity (I.D), i.e. reducing probability of detectiona ond onwards contribution to infectiousness
   double m_ID;                // infection-blocking immunity 
@@ -169,7 +177,14 @@ private:
   int m_infection_realisation_empty_catch = 1;  // Variable that allows a check for empty vectors when dealing with more than one infection realisation on a day
   unsigned int m_number_of_realised_infections = 0;  // Count of realised infections
   int m_gametocytogenic_infections = 0;         // Count of any realised infections  occurred earlier than the current time - 12.5 days.
-  std::vector<int> m_gametocytogenic_strains{}; // Vector of which strains are gametocytogenic - strains may not be always be in order of being acquired as we swap and pop when clearing strains 
+  std::vector<Strain*> m_gametocytogenic_strains{}; // Strains that are gametocytogenic today, i.e. held delay_gam days ago, which includes recently cleared strains
+  
+  // Infectivity to mosquitoes lags the infection state by delay_gam days, so keep each person's recent infection
+  // states (the day each state started) and the strains cleared in the last delay_gam days (with the day cleared)
+  std::vector<int> m_state_history_day{};
+  std::vector<int> m_state_history_state{};
+  std::vector<Strain> m_cleared_strains{};
+  std::vector<int> m_cleared_strain_day{};
   
 public:
   
@@ -249,6 +264,21 @@ public:
   // Get person's ID
   double get_m_ID() { return (m_ID); }
   
+  // Get person's IVA
+  double get_m_IVA() { return (m_IVA); }
+  
+  // Get person's IVM
+  double get_m_IVM() { return (m_IVM); }
+  
+  // Get person's IVM_init
+  double get_m_IVM_init() { return (m_IVM_init); }
+  
+  // Get person's IVA_last_boost_time
+  double get_m_IVA_last_boost_time() { return (m_IVA_last_boost_time); }
+  
+  // Get person's expected severe cases today
+  double get_m_expected_severe() { return (m_expected_severe); }
+  
   // Get person's IB_last_boost_time
   double get_m_IB_last_boost_time() { return (m_IB_last_boost_time); }
   
@@ -296,6 +326,10 @@ public:
   
   // Get person's active strains vector
   std::vector<Strain> get_m_active_strains() { return (m_active_strains); }
+  std::vector<int> get_m_state_history_day() { return (m_state_history_day); }
+  std::vector<int> get_m_state_history_state() { return (m_state_history_state); }
+  std::vector<Strain> get_m_cleared_strains() { return (m_cleared_strains); }
+  std::vector<int> get_m_cleared_strain_day() { return (m_cleared_strain_day); }
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // SEMI-GETTERS
@@ -425,6 +459,18 @@ public:
   // Set person's ICM_init
   void set_m_ICM_init(double x) { m_ICM_init = x; }
   
+  // Set person's IVA
+  void set_m_IVA(double x) { m_IVA = x; }
+  
+  // Set person's IVM
+  void set_m_IVM(double x) { m_IVM = x; }
+  
+  // Set person's IVM_init
+  void set_m_IVM_init(double x) { m_IVM_init = x; }
+  
+  // Set person's IVA_last_boost_time
+  void set_m_IVA_last_boost_time(double x) { m_IVA_last_boost_time = x; }
+  
   // Set person's IB_last_boost_time
   void set_m_IB_last_boost_time(double x) { m_IB_last_boost_time = x; }
   
@@ -506,6 +552,8 @@ public:
   
   // Set person's active strains vector
   void set_m_active_strains(std::vector<Strain> x) { m_active_strains = x; }
+  void set_m_state_history(std::vector<int> day, std::vector<int> state) { m_state_history_day = day; m_state_history_state = state; }
+  void set_m_cleared_strains(std::vector<Strain> x, std::vector<int> day) { m_cleared_strains = x; m_cleared_strain_day = day; }
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // ALLOCATIONS
@@ -530,6 +578,9 @@ public:
   // Schedule person's infection state change
   void schedule_m_day_of_InfectionStatus_change(const Parameters &parameters);
   
+  // Keep A strains from outlasting the person's A -> U day
+  void align_patent_strains(const Parameters &parameters);
+  
   // Schedule person's death day
   void schedule_m_day_of_death(const Parameters &parameters);
   
@@ -544,11 +595,23 @@ public:
   // Clear one strain from an individual
   void individual_strain_clearance();
   
-  // Clear all strains from an individual
-  void all_strain_clearance();
+  // Clear all strains from an individual, keeping them for the gametocyte lag
+  void all_strain_clearance(const Parameters &parameters);
   
-  // Clear the last strain if it would have been cleared by prophylaxis
-  void clear_strain_if_prophylactic(const Parameters &parameters);
+  // Record today's infection state and drop history and cleared strains older than the gametocyte lag
+  void update_state_history(const Parameters &parameters);
+  
+  // Infection state on a given earlier day
+  InfectionStatus lagged_infection_state(int day);
+  
+  // Probability that a person in a given infection state infects a biting mosquito
+  double state_infectivity(InfectionStatus state, const Parameters &parameters);
+  
+  // Clear the pending infection at position i, which starts today, if it would be cleared by prophylaxis
+  bool clear_strain_if_prophylactic(const Parameters &parameters, unsigned int i);
+  
+  // Boost ICA, ID and IVA after an infection
+  void boost_infection_immunity(const Parameters &parameters);
   
   // Recover to being susceptible, i.e. clearing all infections and strains and associated timings
   void recover(const Parameters &parameters);
@@ -568,6 +631,9 @@ public:
   // Kill person, i.e. reset age to 0, infections to 0, state to susceptible, immunities reset etc
   void die(const Parameters &parameters);
   
+  // Set a newborn's maternal immunity from a random mother in its biting heterogeneity group
+  void set_maternal_immunity(const Parameters &parameters);
+  
   // Daily update function, i.e. increase ages, set maternal booleans, calculate biting proportions etc
   double update(Parameters &parameters);
   
@@ -578,12 +644,15 @@ public:
   // LOGGERS - functions that report summaries on an individual
   // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   
-  // Caluclate daily incidence for population and 0-5 years, i.e. would they cause an incident case today.
+  // Caluclate daily incidence for population and 0-5 years, i.e. did an infection that started today give a clinical case.
   // Returns 2 if 0-5 and incident, 1 if just incident, and 0 if neither
   int log_daily_incidence(const Parameters &parameters);
   
   // Update immunities so they are correct for today - helpful when logging to know actual immunities
   void update_immunities_to_today(const Parameters &parameters);
+  
+  // Probability that an infection leads to severe disease (theta) given age and severe immunity (Griffin et al. 2015)
+  static double severe_probability(double age, double IVA, double IVM, const Parameters &parameters);
   
 };
 

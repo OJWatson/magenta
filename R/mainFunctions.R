@@ -31,13 +31,15 @@ param_list_simulation_init_create <- function(N = 1e+04, eqSS, barcode_list,
   ##---------------------------------------------
   if(class(eqSS)!="list") stop("eqSS is not of class list")
   
-  if(!identical(names(eqSS),
-                c("age_brackets","het_brackets","Smat",
+  eqSS_names <- c("age_brackets","het_brackets","Smat",
                   "Dmat","Amat","Umat","Tmat","Pmat",
                   "IBmat","ICAmat","ICMmat","IDmat",
                   "FOI", "phi",
                   "Sv","Ev","Iv","ICM_Init",
-                  "theta"))) {
+                  "theta")
+  # severe immunity was added in 1.4.0, so accept equilibrium states with or without it
+  if(!identical(names(eqSS), eqSS_names) &&
+     !identical(names(eqSS), c(eqSS_names, "IVAmat", "IVM_Init"))) {
     stop("Incorrect variable names within equilibrium.steady.state")
   }
   

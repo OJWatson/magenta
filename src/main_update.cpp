@@ -154,8 +154,7 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
   unsigned int scourge_size = u_ptr->scourge.size();
   unsigned int temp_deficit = 0;
   int intervention_counter = 0;
-  std::vector<int> temp_biting_frequency_vector(u_ptr->parameters.g_max_mosquito_biting_counter);
-  int temp_biting_frequency_vector_iterator = 0;
+  double biting_log_q = 0;
   
   // status eq for logging and other logging variables
   unsigned int not_treated = 0;
@@ -167,6 +166,8 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
   double total_incidence = 0;
   double total_incidence_05 = 0;
   int daily_incidence_return = 0;
+  double total_severe = 0;
+  double total_severe_05 = 0;
   int daily_bite_counters = 0;
   int daily_infectious_bite_counters = 0;
   std::vector<unsigned int> daily_mutations_per_loci(u_ptr->parameters.g_num_loci,0);
@@ -211,10 +212,15 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
     
     // Calculate yesterday's mean maternal immunity
     u_ptr->parameters.g_mean_maternal_immunity = u_ptr->parameters.g_sum_maternal_immunity / u_ptr->parameters.g_total_mums;
+    u_ptr->parameters.g_mean_maternal_severe_immunity = u_ptr->parameters.g_sum_maternal_severe_immunity / u_ptr->parameters.g_total_mums;
     
     // Reset maternal immunity sums
     u_ptr->parameters.g_sum_maternal_immunity = 0;
+    u_ptr->parameters.g_sum_maternal_severe_immunity = 0;
     u_ptr->parameters.g_total_mums = 0;
+    
+    // Today's newborns draw their maternal immunity from yesterday's mothers
+    u_ptr->parameters.start_mothers_day();
     
     // Second reset counters
     // --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -263,20 +269,24 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
     // mortality changes due to interventions so we set it each day
     u_ptr->parameters.g_mean_mosquito_age = 1.0/mosquito_death_rates[intervention_counter];
     
-    // frequency of biting also changes due to repel effects of interventions so generate next biting times
-    temp_biting_frequency_vector_iterator = 1;
-    std::generate(temp_biting_frequency_vector.begin(),
-                  temp_biting_frequency_vector.end(),
-                  [&temp_biting_frequency_vector_iterator] { return temp_biting_frequency_vector_iterator++;}
-    );
+    // frequency of biting also changes due to repel effects of interventions so generate next biting times.
+    // These are geometric draws (days until next feed, at least 1) with mean 1/fv, i.e. each day a mosquito
+    // feeds with probability fv, which is the daily step equivalent of the deterministic model's biting rate.
+    // A fixed interval (e.g. always 3 days) meant the first bite after the 10 day EIP was always on day 12,
+    // which gave fewer infectious bites per mosquito infection than the deterministic model
+    biting_log_q = std::log(1.0 - std::min(mosquito_biting_rates[intervention_counter], 0.999999));
+    for (auto &next_bite : u_ptr->parameters.g_mosquito_next_biting_day_vector) {
+      next_bite = 1 + static_cast<int>(std::log(unif_rand()) / biting_log_q);
+    }
     
-    // transform the vector of 
-    std::transform(temp_biting_frequency_vector.begin(), temp_biting_frequency_vector.end(), temp_biting_frequency_vector.begin(),
-                   std::bind(std::multiplies<double>(), (1.0/mosquito_biting_rates[intervention_counter]), std::placeholders::_1));
-    
-    std::adjacent_difference(temp_biting_frequency_vector.begin(),
-                             temp_biting_frequency_vector.end(),
-                             u_ptr->parameters.g_mosquito_next_biting_day_vector.begin());
+    // EIP for mosquitoes infected today, drawn per bite as floor or ceiling of delay_mos + 0.5. On daily steps
+    // a bite on the day of oocyst rupture is infectious, so an EIP of delay_mos would count a bite the
+    // deterministic model only counts half of. Using delay_mos and delay_mos + 1 equally often gives the
+    // deterministic model's expected number of infectious bites per mosquito infection
+    for (auto &eip : u_ptr->parameters.g_mosquito_eip_vector) {
+      eip = static_cast<int>(std::floor(u_ptr->parameters.g_delay_mos + 0.5));
+      if (unif_rand() < (u_ptr->parameters.g_delay_mos + 0.5 - eip)) eip++;
+    }
     
     
     // Loop through each person and mosquito and update
@@ -465,6 +475,13 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
           total_incidence++;
         }
         
+        // log expected severe cases from today's infections
+        total_severe += element.get_m_expected_severe();
+        if (element.get_m_person_age() <= (5 * 365))
+        {
+          total_severe_05 += element.get_m_expected_severe();
+        }
+        
         // log treatment outcomes
         if(element.get_m_treatment_outcome() == Person::SUCCESFULLY_TREATED){
           succesful_treatments_by_drug[element.get_m_drug_choice()]++;
@@ -538,6 +555,8 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
   std::vector<double> ICA(u_ptr->parameters.g_N);
   std::vector<double> ICM(u_ptr->parameters.g_N);
   std::vector<double> ID(u_ptr->parameters.g_N);
+  std::vector<double> IVA(u_ptr->parameters.g_N);
+  std::vector<double> IVM(u_ptr->parameters.g_N);
   
   // loop through population and grabages and immunities for error checking
   for (unsigned int element = 0; element < u_ptr->parameters.g_N ; element++) 
@@ -554,39 +573,48 @@ Rcpp::List Simulation_Update_cpp(Rcpp::List param_list)
     ICA[element] = u_ptr->population[element].get_m_ICA();
     ICM[element] = u_ptr->population[element].get_m_ICM();
     ID[element] = u_ptr->population[element].get_m_ID();
+    IVA[element] = u_ptr->population[element].get_m_IVA();
+    IVM[element] = u_ptr->population[element].get_m_IVM();
     
   }
   
   rcpp_out(u_ptr->parameters.g_h_quiet_print, "\n Ages and Immunity Done \n");
   
-  // Create Rcpp loggers list
-  Rcpp::List Loggers = Rcpp::List::create(Rcpp::Named("Log_Counter")=log_counter,                                                                                      
-                                          Rcpp::Named("Incidence")=total_incidence/log_counter,
-                                          Rcpp::Named("Incidence_05")=total_incidence_05/log_counter, 
-                                          Rcpp::Named("Treatments")=Rcpp::List::create(
-                                            Rcpp::Named("Successful_Treatments")=succesful_treatments_by_drug,
-                                            Rcpp::Named("Unsuccesful_Treatments_LPF")=unsuccesful_treatments_by_drug,
-                                            Rcpp::Named("Not_Treated")=not_treated,
-                                            Rcpp::Named("daily_bite_counters")=daily_bite_counters,
-                                            Rcpp::Named("daily_infectious_bite_counters")=daily_infectious_bite_counters
-                                          ),
-                                          Rcpp::Named("daily_mutations_per_loci")=daily_mutations_per_loci,
-                                          Rcpp::Named("InfectionStates")=Infection_States, 
-                                          Rcpp::Named("Ages")=Ages, 
-                                          Rcpp::Named("IB")=IB, 
-                                          Rcpp::Named("ICA")=ICA, 
-                                          Rcpp::Named("ICM")=ICM, 
-                                          Rcpp::Named("ID")=ID,
-                                          Rcpp::Named("Mosquitoes")=Rcpp::List::create(
-                                            Rcpp::Named("Mos_S")=mosq_status_eq[0]/log_counter, 
-                                            Rcpp::Named("Mos_E")=mosq_status_eq[1]/log_counter, 
-                                            Rcpp::Named("Mos_I")=mosq_status_eq[2]/log_counter
-                                          ),
-                                          Rcpp::Named("Time")=u_ptr->parameters.g_current_time,
-                                          Rcpp::Named("S")=status_eq[0],Rcpp::Named("D")=status_eq[1],Rcpp::Named("A")=status_eq[2],
-                                                                                                                                Rcpp::Named("U")=status_eq[3],Rcpp::Named("T")=status_eq[4],Rcpp::Named("P")=status_eq[5]
-  );
-  
+  // Create Rcpp loggers list. Built with push_back as Rcpp::List::create takes at most 20 elements
+  Rcpp::List Loggers;
+  Loggers.push_back(log_counter, "Log_Counter");
+  Loggers.push_back(total_incidence/log_counter, "Incidence");
+  Loggers.push_back(total_incidence_05/log_counter, "Incidence_05");
+  Loggers.push_back(total_severe/log_counter, "Severe");
+  Loggers.push_back(total_severe_05/log_counter, "Severe_05");
+  Loggers.push_back(Rcpp::List::create(
+    Rcpp::Named("Successful_Treatments")=succesful_treatments_by_drug,
+    Rcpp::Named("Unsuccesful_Treatments_LPF")=unsuccesful_treatments_by_drug,
+    Rcpp::Named("Not_Treated")=not_treated,
+    Rcpp::Named("daily_bite_counters")=daily_bite_counters,
+    Rcpp::Named("daily_infectious_bite_counters")=daily_infectious_bite_counters
+  ), "Treatments");
+  Loggers.push_back(daily_mutations_per_loci, "daily_mutations_per_loci");
+  Loggers.push_back(Infection_States, "InfectionStates");
+  Loggers.push_back(Ages, "Ages");
+  Loggers.push_back(IB, "IB");
+  Loggers.push_back(ICA, "ICA");
+  Loggers.push_back(ICM, "ICM");
+  Loggers.push_back(ID, "ID");
+  Loggers.push_back(IVA, "IVA");
+  Loggers.push_back(IVM, "IVM");
+  Loggers.push_back(Rcpp::List::create(
+    Rcpp::Named("Mos_S")=mosq_status_eq[0]/log_counter,
+    Rcpp::Named("Mos_E")=mosq_status_eq[1]/log_counter,
+    Rcpp::Named("Mos_I")=mosq_status_eq[2]/log_counter
+  ), "Mosquitoes");
+  Loggers.push_back(u_ptr->parameters.g_current_time, "Time");
+  Loggers.push_back(status_eq[0], "S");
+  Loggers.push_back(status_eq[1], "D");
+  Loggers.push_back(status_eq[2], "A");
+  Loggers.push_back(status_eq[3], "U");
+  Loggers.push_back(status_eq[4], "T");
+  Loggers.push_back(status_eq[5], "P");
   
   rcpp_out(u_ptr->parameters.g_h_quiet_print, "\n Loggers Done \n");
   

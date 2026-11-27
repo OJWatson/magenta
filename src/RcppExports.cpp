@@ -65,6 +65,49 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_maternal_immunity
+Rcpp::List test_maternal_immunity(std::vector<double> mother_zeta, std::vector<double> mother_ICA, std::vector<double> mother_IVA, double zeta, int n);
+RcppExport SEXP _magenta_test_maternal_immunity(SEXP mother_zetaSEXP, SEXP mother_ICASEXP, SEXP mother_IVASEXP, SEXP zetaSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<double> >::type mother_zeta(mother_zetaSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type mother_ICA(mother_ICASEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type mother_IVA(mother_IVASEXP);
+    Rcpp::traits::input_parameter< double >::type zeta(zetaSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_maternal_immunity(mother_zeta, mother_ICA, mother_IVA, zeta, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test_severe_probability
+double test_severe_probability(double age, double IVA, double IVM);
+RcppExport SEXP _magenta_test_severe_probability(SEXP ageSEXP, SEXP IVASEXP, SEXP IVMSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type age(ageSEXP);
+    Rcpp::traits::input_parameter< double >::type IVA(IVASEXP);
+    Rcpp::traits::input_parameter< double >::type IVM(IVMSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_severe_probability(age, IVA, IVM));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test_pending_infection
+Rcpp::List test_pending_infection(int state, int day_of_change, int bite_day, bool treated, int days);
+RcppExport SEXP _magenta_test_pending_infection(SEXP stateSEXP, SEXP day_of_changeSEXP, SEXP bite_daySEXP, SEXP treatedSEXP, SEXP daysSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type state(stateSEXP);
+    Rcpp::traits::input_parameter< int >::type day_of_change(day_of_changeSEXP);
+    Rcpp::traits::input_parameter< int >::type bite_day(bite_daySEXP);
+    Rcpp::traits::input_parameter< bool >::type treated(treatedSEXP);
+    Rcpp::traits::input_parameter< int >::type days(daysSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_pending_infection(state, day_of_change, bite_day, treated, days));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test_barcode_from_PLAF
 SEXP test_barcode_from_PLAF(Rcpp::NumericVector plaf, unsigned int n);
 RcppExport SEXP _magenta_test_barcode_from_PLAF(SEXP plafSEXP, SEXP nSEXP) {

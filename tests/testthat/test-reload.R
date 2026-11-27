@@ -75,4 +75,19 @@ test_that("saved state can be reloaded for continuation or inspection", {
     final_state$populations_event_and_strains_List
   )
   expect_equal(setup_only$saved_inputs$barcode_list, final_state$saved_inputs$barcode_list)
+  
+  # the biting heterogeneity groups for maternal immunity are saved, and older saved states without them
+  # fall back to the equilibrium's 5 Gauss-Hermite groups
+  brackets <- final_state$parameters_List$g_het_brackets
+  expect_length(brackets, 5)
+  expect_equal(setup_only$parameters_List$g_het_brackets, brackets)
+  old_state <- final_state
+  old_state$parameters_List$g_het_brackets <- NULL
+  saveRDS(old_state, tf)
+  old_setup <- run_saved_state_simulation(saved_state_path = tf, set_up_only = TRUE)
+  w <- c(0.0112574113277207, 0.222075922005613, 0.533333333333333, 0.222075922005613, 0.0112574113277207)
+  sigma2 <- 1.67
+  expect_equal(old_setup$parameters_List$g_het_brackets[1:4],
+               qlnorm(cumsum(w)[1:4], -sigma2 / 2, sqrt(sigma2)))
+  expect_equal(old_setup$parameters_List$g_het_brackets[1:4], brackets[1:4], tolerance = 1e-6)
 })

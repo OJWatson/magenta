@@ -44,6 +44,28 @@
 #' @param uCA Duration in which immunity is not boosted. Default = 6.06349
 #' @param PM New-born immunity relative to mother. Default = 0.774368
 #' @param dCM Inverse of decay rate of maternal immunity. Default = 67.6952
+#' @param theta0 Maximum probability that an infection is severe, i.e. with
+#'   no severe immunity. Default = 0.0749886
+#' @param theta1 Maximum relative reduction in the probability of severe
+#'   disease due to immunity. Default = 0.0001191
+#' @param dVA Inverse of decay rate of acquired severe immunity (30 years).
+#'   Default = 10950
+#' @param IV0 Severe immunity scale parameter. Default = 1.09629
+#' @param kV Severe immunity shape parameter. Default = 2.00048
+#' @param uVA Duration in which severe immunity is not boosted. Default = 11.4321
+#' @param fV0 Severe immunity age modifier at birth. Default = 0.141195
+#' @param aV Severe immunity age modifier scale. Default = 2493.41
+#' @param gammaV Severe immunity age modifier shape. Default = 2.91282
+#' @param PVM New-born severe immunity relative to mother. Default = 0.195768
+#' @param dVM Inverse of decay rate of maternal severe immunity. Default = 76.8365
+#'
+#' @details The severe disease parameters follow Griffin JT, Hollingsworth TD,
+#'   Reyburn H, Drakeley CJ, Riley EM, Ghani AC. Gradual acquisition of
+#'   immunity to severe malaria with increasing exposure. Proc R Soc B
+#'   2015;282:20142657 (Table S3). The defaults are the values used in
+#'   malariasimulation, which differ slightly from the published medians
+#'   (IV0 1.05, kV 1.99, uVA 11.3). fV0, aV and gammaV are not tabulated in
+#'   the 2015 paper; they are the fitted values as used in malariasimulation.
 #' @param delayMos Extrinsic incubation period. Default = 10
 #' @param tau1 Duration of host seeking, assumed to be constant between species. Default = 0.69
 #' @param tau2 Duration of mosquito resting after feed. Default = 2.31
@@ -75,7 +97,16 @@
 #' @param irs_half_life IRS half life. Default =   0.5 * DY
 #' @param itn_half_life ITN half life. Default =   2.64 * DY
 #' @param IRS_interval How long before IRS is repeated, i.e. when IRS decay = 1. Default =   1 * DY
-#' @param ITN_interval How long before ITN is repeated, i.e. when IRS decay = 1.  Default =   3 * DY
+#' @param ITN_interval How long before ITN is repeated, i.e. when ITN decay = 1.  Default =   3 * DY
+#' @param itn_decay_clock How ITN efficacy decays over time in the mosquito model:
+#'   "breakpoint" (default, the original behaviour) treats nets as new at each
+#'   intervention breakpoint (each year in [pipeline()]), so nets are never more
+#'   than a year old; "campaign" ages nets from `itn_campaign_t0` and re-issues
+#'   them every `ITN_interval`; "constant" holds efficacy at its mean over a net
+#'   life of `ITN_interval`, i.e. the steady state of continuous top-ups. IRS
+#'   always resets at each breakpoint.
+#' @param itn_campaign_t0 Day (simulation time) of a net campaign, used to anchor the
+#'   "campaign" clock. Default = 0
 #' 
 #' 
 #' @export
@@ -129,6 +160,19 @@ model_param_list_create <- function(
   uCA = 6.06349,
   PM = 0.774368,
   dCM = 67.6952,
+  # Immunity reducing probability of severe disease (Griffin et al. 2015 Proc R Soc B,
+  # values as in malariasimulation)
+  theta0 = 0.0749886,
+  theta1 = 0.0001191,
+  dVA = 10950,
+  IV0 = 1.09629,
+  kV = 2.00048,
+  uVA = 11.4321,
+  fV0 = 0.141195,
+  aV = 2493.41,
+  gammaV = 2.91282,
+  PVM = 0.195768,
+  dVM = 76.8365,
   # entomological parameters
   delayMos = 10,
   tau1 = 0.69,
@@ -163,7 +207,9 @@ model_param_list_create <- function(
   irs_half_life =   0.5 * DY,
   itn_half_life =   2.64 * DY,
   IRS_interval =   1 * DY,
-  ITN_interval =   3 * DY
+  ITN_interval =   3 * DY,
+  itn_decay_clock = c("breakpoint", "campaign", "constant"),
+  itn_campaign_t0 = 0
 
 ){
   
@@ -229,6 +275,19 @@ model_param_list_create <- function(
   mp.list$PM <- PM
   mp.list$dCM <- dCM
   
+  # severe disease immunity
+  mp.list$theta0 <- theta0
+  mp.list$theta1 <- theta1
+  mp.list$dVA <- dVA
+  mp.list$IV0 <- IV0
+  mp.list$kV <- kV
+  mp.list$uVA <- uVA
+  mp.list$fV0 <- fV0
+  mp.list$aV <- aV
+  mp.list$gammaV <- gammaV
+  mp.list$PVM <- PVM
+  mp.list$dVM <- dVM
+  
   # entomological parameters
   mp.list$delayMos <- delayMos
   mp.list$tau1 <- tau1
@@ -278,8 +337,9 @@ model_param_list_create <- function(
   mp.list$itn_half_life <- itn_half_life 
   mp.list$IRS_interval <- IRS_interval
   mp.list$ITN_interval <- ITN_interval
-  mp.list$irs_half_life <- 0.5 * mp.list$DY
-  mp.list$itn_half_life <- 2.64 * mp.list$DY
+  itn_decay_clock <- match.arg(itn_decay_clock)
+  mp.list$itn_clock_mode <- match(itn_decay_clock, c("breakpoint", "campaign", "constant")) - 1
+  mp.list$itn_campaign_t0 <- itn_campaign_t0
   mp.list$irs_loss <- log(2)/mp.list$irs_half_life
   mp.list$itn_loss <- log(2)/mp.list$itn_half_life
 

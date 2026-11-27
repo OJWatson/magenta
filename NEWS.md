@@ -1,3 +1,31 @@
+## magenta 1.5.0
+
+* Severe malaria: acquired and maternal severe immunity (`IVA`, `IVM`) as in
+  Griffin et al. 2015, `Severe` and `Severe_05` loggers, and `severe_rates()`
+  and `severe_outcomes()`.
+* Infection, immunity boosting, maternal immunity and mosquito biting brought
+  in line with malariasimulation (see the Equivalence vignette). This changes
+  model outputs.
+* Run from Imperial's malariasimulation site files with `site_to_pipeline()`,
+  `site_ft()` and `site_seasonality()` (see the "Running from a site file"
+  vignette). Only treatment, bed nets and IRS are used.
+* `pipeline()` and `equilibrium_init_create()` take `seasonality` directly.
+* New `itn_decay_clock` in `model_param_list_create()`: "breakpoint" (the
+  default, as before), "campaign" or "constant".
+* `drug_create()` and the `drug_create_*()` functions are exported.
+
+Behaviour changes and bug fixes:
+
+* `itn_half_life` and `irs_half_life` now take effect (defaults unchanged).
+* Non-malarial fevers in uninfected people only give drugs to those who seek
+  treatment (`ft`).
+* `ft = 0` no longer runs as `ft = Inf`.
+* `Q0`, `mu0` and the infection and immunity parameters are now read by the
+  individual model on a fresh start, not only from saved states.
+* A `seasonality` argument now reaches the individual model.
+* Initially infected people can realise new infections, and `ICM_init` is
+  kept in saved states.
+
 ## magenta 1.3.8
 
 * New vignettes: `Loggers`, `DrugStrategies` and `NewDrugs`. `Resistance` and

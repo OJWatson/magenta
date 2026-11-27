@@ -16,6 +16,9 @@
 #' @param admin Character for admin region. Some fuzzy logic will be
 #'   used to match. If not provided then no seasonality is introduced.
 #'   Default = NULL
+#' @param seasonality Optional named seasonal parameters (a0, a1, a2, a3, b1, b2,
+#'   b3, theta_c) used instead of the country and admin lookup, e.g. from
+#'   \code{\link{site_seasonality}}. Default = NULL
 #' @param itn_cov Vector for ITN coverages that change at update_length intervals.
 #'   Default = 0
 #' @param irs_cov Vector for IRS coverages that change at update_length intervals.
@@ -141,6 +144,7 @@ pipeline <- function(EIR = 120,
                      update_length = 365,
                      country = NULL,
                      admin = NULL,
+                     seasonality = NULL,
                      spatial_type = NULL,
                      # redis_host = "fi--dideclusthn.dide.ic.ac.uk",
                      # spatial_uuid = NULL,
@@ -217,8 +221,9 @@ pipeline <- function(EIR = 120,
     # Create parameter list, changine any key parameters
     mpl <- model_param_list_create(...)
     
-    # Create geometric age brackets
-    age_vector <- age_brackets(100, 40, TRUE)
+    # Fine age groups, so the starting equilibrium (and its mosquito density) matches
+    # the deterministic model rather than a coarse approximation of it
+    age_vector <- c(seq(0, 10, 0.1), seq(10.5, 100, 0.5))
     
     # check to change the ft for the initial and odin to reflect 28 day failure rates
     lpfs <- unlist(lapply(drug_list$drugs, function(x) {x$lpf[1]}))
@@ -232,6 +237,7 @@ pipeline <- function(EIR = 120,
       EIR = EIR,
       country = country,
       admin = admin,
+      seasonality = seasonality,
       model_param_list = mpl
     )
     
@@ -322,8 +328,9 @@ pipeline <- function(EIR = 120,
     nmf_list <- saved_inputs$nmf_list
     mpl <- saved_inputs$core_parameter_list
     
-    # Create geometric age brackets
-    age_vector <- age_brackets(100, 40, TRUE)
+    # Fine age groups, so the starting equilibrium (and its mosquito density) matches
+    # the deterministic model rather than a coarse approximation of it
+    age_vector <- c(seq(0, 10, 0.1), seq(10.5, 100, 0.5))
     
     # check to change the ft for the initial and odin to reflect 28 day failure rates
     lpfs <- unlist(lapply(drug_list$drugs, function(x) {x$lpf[1]}))
@@ -337,6 +344,7 @@ pipeline <- function(EIR = 120,
       EIR = EIR,
       country = country,
       admin = admin,
+      seasonality = seasonality,
       model_param_list = mpl
     )
     
@@ -744,7 +752,7 @@ pipeline <- function(EIR = 120,
     
     # Set up update for years long
     pl2 <- param_list_simulation_update_create(
-      years = years, ft = min(ft[ft > 0]),
+      years = years, ft = if (any(ft > 0)) min(ft[ft > 0]) else 0,
       mu_vec = out$mu,
       fv_vec = out$fv,
       spatial_list = spatial_list,

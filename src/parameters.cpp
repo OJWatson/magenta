@@ -1,4 +1,5 @@
 #include "parameters.h"
+#include <Rcpp.h>
 
 Parameters::Parameters() {
   
@@ -69,6 +70,9 @@ Parameters::Parameters() {
   g_mosquito_biting_counter = 0;
   // delays and durations
   g_delay_mos = 10;
+  g_mosquito_eip_vector = std::vector<int>(g_max_mosquito_biting_counter, static_cast<int>(g_delay_mos));
+  g_mosquito_eip_counter = 0;
+  g_mosquito_current_eip = static_cast<int>(g_delay_mos);
   g_delay_gam = 12.5;
   g_dur_E = 12;
   g_dur_T = 5;
@@ -106,6 +110,22 @@ Parameters::Parameters() {
   g_mean_maternal_immunity = 0;
   g_sum_maternal_immunity = 0;
   g_total_mums = 0;
+  // Severe disease immunity parameters (Griffin et al. 2015 Proc R Soc B 282:20142657, Table S3), using the
+  // malariasimulation values. g_fV0, g_aV and g_gammaV are not tabulated there and are the malariasimulation fits
+  g_theta0 = 0.0749886;
+  g_theta1 = 0.0001191;
+  g_dVA = 10950;
+  g_IV0 = 1.09629;
+  g_kV = 2.00048;
+  g_uVA = 11.4321;
+  g_fV0 = 0.141195;
+  g_aV = 2493.41;
+  g_gammaV = 2.91282;
+  g_PVM = 0.195768;
+  g_dVM = 76.8365;
+  g_mean_maternal_severe_immunity = 0;
+  g_sum_maternal_severe_immunity = 0;
+  set_default_het_brackets();
   // contributions to infectious reservoir by state and age
   g_gamma1 = 1.82425;
   g_cD = 0.0676909;
@@ -163,3 +183,84 @@ unsigned int Parameters::g_barcode_length = static_cast<unsigned int>(g_ibd_leng
 std::vector<double> Parameters::g_plaf = std::vector<double> (24,0.5);
 std::vector<double> Parameters::g_prob_crossover = std::vector<double> (24,0.5);
 Parameters::g_barcode_type_enum Parameters::g_barcode_type = ORDINARY;
+
+// ------------------------------------------------
+// Maternal immunity
+
+// Biting heterogeneity group of a relative biting rate zeta, using the same rule as the equilibrium
+// initialisation: the first group whose upper bound is above zeta, and the last group otherwise
+int Parameters::het_group(double zeta) const
+{
+  int n = static_cast<int>(g_het_brackets.size());
+  for (int i = 0; i < (n - 1); i++) {
+    if (zeta < g_het_brackets[i]) return(i);
+  }
+  return(n > 0 ? n - 1 : 0);
+}
+
+// Default groups for saved states made before the groups were stored: the 5-node Gauss-Hermite brackets
+// of the lognormal biting rate used by the equilibrium
+void Parameters::set_default_het_brackets()
+{
+  const double w[5] = {0.0112574113277207, 0.222075922005613, 0.533333333333333, 0.222075922005613, 0.0112574113277207};
+  g_het_brackets.assign(5, 0.0);
+  double cw = 0.0;
+  for (int i = 0; i < 4; i++) {
+    cw += w[i];
+    g_het_brackets[i] = R::qlnorm(cw, g_zeta_meanlog, g_zeta_sdlog, 1, 0);
+  }
+  g_het_brackets[4] = R_PosInf;
+}
+
+// Empty today's mothers, with one list per group
+void Parameters::clear_mothers_today()
+{
+  g_mother_ICA_today.assign(g_het_brackets.size() > 0 ? g_het_brackets.size() : 1, std::vector<double>());
+  g_mother_IVA_today.assign(g_het_brackets.size() > 0 ? g_het_brackets.size() : 1, std::vector<double>());
+}
+
+void Parameters::add_mother(double zeta, double ICA, double IVA)
+{
+  if (g_mother_ICA_today.size() == 0) clear_mothers_today();
+  int g = het_group(zeta);
+  g_mother_ICA_today[g].push_back(ICA);
+  g_mother_IVA_today[g].push_back(IVA);
+}
+
+// At the start of a day today's mothers become yesterday's, which newborns draw from
+void Parameters::start_mothers_day()
+{
+  if (g_mother_ICA_today.size() == 0) clear_mothers_today();
+  g_mother_ICA.swap(g_mother_ICA_today);
+  g_mother_IVA.swap(g_mother_IVA_today);
+  clear_mothers_today();
+}
+
+// Draw a mother for a newborn with biting rate zeta: uniformly from yesterday's mothers in its group, or
+// from all of yesterday's mothers if its group has none. Returns false if there were no mothers
+bool Parameters::draw_maternal_immunity(double zeta, double &ICA, double &IVA) const
+{
+  if (g_mother_ICA.size() == 0) return(false);
+  unsigned int g = static_cast<unsigned int>(het_group(zeta));
+  if (g < g_mother_ICA.size() && g_mother_ICA[g].size() > 0) {
+    int i = static_cast<int>(R::unif_rand() * g_mother_ICA[g].size());
+    if (i >= static_cast<int>(g_mother_ICA[g].size())) i = g_mother_ICA[g].size() - 1;
+    ICA = g_mother_ICA[g][i];
+    IVA = g_mother_IVA[g][i];
+    return(true);
+  }
+  size_t total = 0;
+  for (const auto &m : g_mother_ICA) total += m.size();
+  if (total == 0) return(false);
+  size_t i = static_cast<size_t>(R::unif_rand() * total);
+  if (i >= total) i = total - 1;
+  for (unsigned int k = 0; k < g_mother_ICA.size(); k++) {
+    if (i < g_mother_ICA[k].size()) {
+      ICA = g_mother_ICA[k][i];
+      IVA = g_mother_IVA[k][i];
+      return(true);
+    }
+    i -= g_mother_ICA[k].size();
+  }
+  return(false);
+}

@@ -99,6 +99,9 @@ public:
   std::vector<int> g_mosquito_next_biting_day_vector;
   int g_mosquito_biting_counter;
   int g_max_mosquito_biting_counter;
+  std::vector<int> g_mosquito_eip_vector;
+  int g_mosquito_eip_counter;
+  int g_mosquito_current_eip;
   // delays and durations;
   double g_delay_mos;
   double g_delay_gam;
@@ -138,6 +141,28 @@ public:
   double g_mean_maternal_immunity;
   double g_sum_maternal_immunity;
   int g_total_mums;
+  // Severe disease immunity parameters;
+  double g_theta0;
+  double g_theta1;
+  double g_dVA;
+  double g_IV0;
+  double g_kV;
+  double g_uVA;
+  double g_fV0;
+  double g_aV;
+  double g_gammaV;
+  double g_PVM;
+  double g_dVM;
+  double g_mean_maternal_severe_immunity;
+  double g_sum_maternal_severe_immunity;
+  // Newborns take maternal immunity from a random mother (aged 20 to <21 years) in their biting heterogeneity
+  // group. g_het_brackets are the upper bounds of the groups (the equilibrium's het brackets). Mothers'
+  // ICA and IVA are collected by group each day, and newborns draw from yesterday's mothers
+  std::vector<double> g_het_brackets;
+  std::vector<std::vector<double> > g_mother_ICA_today;
+  std::vector<std::vector<double> > g_mother_IVA_today;
+  std::vector<std::vector<double> > g_mother_ICA;
+  std::vector<std::vector<double> > g_mother_IVA;
   // contributions to infectious reservoir by state and age;
   double g_gamma1;
   double g_cD;
@@ -202,6 +227,15 @@ public:
   
   // Default Constructor
   Parameters();
+  
+  // Maternal immunity helpers
+  static bool is_mother_age(int age) { return(age >= 20 * 365 && age < 21 * 365); }
+  int het_group(double zeta) const;
+  void set_default_het_brackets();
+  void clear_mothers_today();
+  void add_mother(double zeta, double ICA, double IVA);
+  void start_mothers_day();
+  bool draw_maternal_immunity(double zeta, double &ICA, double &IVA) const;
   
 };
 

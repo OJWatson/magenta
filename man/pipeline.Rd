@@ -18,6 +18,7 @@ pipeline(
   update_length = 365,
   country = NULL,
   admin = NULL,
+  seasonality = NULL,
   spatial_type = NULL,
   spatial_incidence_matrix = NULL,
   spatial_mosquitoFOI_matrix = NULL,
@@ -93,6 +94,10 @@ Default = NULL}
 \item{admin}{Character for admin region. Some fuzzy logic will be
 used to match. If not provided then no seasonality is introduced.
 Default = NULL}
+
+\item{seasonality}{Optional named seasonal parameters (a0, a1, a2, a3, b1, b2,
+b3, theta_c) used instead of the country and admin lookup, e.g. from
+\code{\link{site_seasonality}}. Default = NULL}
 
 \item{spatial_type}{Default = NULL. If spatial is wanted then provide
 a character describing the type of spatial simulation, which must be 

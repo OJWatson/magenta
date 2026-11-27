@@ -169,7 +169,7 @@ currently internal, so they are called with `magenta:::`:
 
 
 ``` r
-dhappq <- magenta:::drug_create_dhappq()
+dhappq <- drug_create_dhappq()
 str(dhappq)
 ## List of 9
 ##  $ lpf                   : num [1:64] 0.972 0.972 0.972 0.972 0.972 ...
@@ -237,7 +237,7 @@ protection <- function(drug, days = seq(0, 60, 0.2)) {
 }
 
 p_dhappq <- protection(dhappq)
-p_al <- protection(magenta:::drug_create_al())
+p_al <- protection(drug_create_al())
 
 plot(p_dhappq$days, p_dhappq$sensitive, type = "l", lwd = 2, col = "steelblue",
      ylim = c(0, 1), xlab = "Days since treatment",
@@ -274,7 +274,7 @@ dl <- drug_list_create(
   number_of_resistance_loci = 6,
   artemisinin_loci = 4,
   cost_of_resistance = rep(1, 6),
-  drugs = list(magenta:::drug_create_dhappq()),
+  drugs = list(drug_create_dhappq()),
   number_of_drugs = 1,
   partner_drug_ratios = 1
 )
@@ -393,7 +393,7 @@ dl_staged <- drug_list_create(
   number_of_resistance_loci = 6,
   artemisinin_loci = 4,
   cost_of_resistance = rep(1, 6),
-  drugs = list(magenta:::drug_create_dhappq()),
+  drugs = list(drug_create_dhappq()),
   number_of_drugs = 1,
   partner_drug_ratios = 1
 )
@@ -526,7 +526,7 @@ dl_cost <- drug_list_create(
   number_of_resistance_loci = 6,
   artemisinin_loci = 4,
   cost_of_resistance = rep(0.95, 6),
-  drugs = list(magenta:::drug_create_dhappq()),
+  drugs = list(drug_create_dhappq()),
   number_of_drugs = 1,
   partner_drug_ratios = 1
 )
@@ -559,7 +559,7 @@ dl_absolute <- drug_list_create(
   artemisinin_loci = 4,
   cost_of_resistance = rep(0.95, 6),
   absolute_fitness_cost_flag = TRUE,
-  drugs = list(magenta:::drug_create_dhappq()),
+  drugs = list(drug_create_dhappq()),
   number_of_drugs = 1,
   partner_drug_ratios = 1
 )

@@ -31,10 +31,24 @@ equilibrium_ss_create <- function(eqInit) {
     "Ev" = eqInit$init_Ev * eqInit$mv0,
     "Iv" = eqInit$init_Iv * eqInit$mv0,
     "ICM_Init" = eqInit$ICM_init_eq,
-    "theta" = seasonal_profile(eqInit$admin, eqInit$country)
+    "theta" = equilibrium_theta(eqInit),
+    "IVAmat" = eqInit$init_IVA[, , 1],
+    "IVM_Init" = eqInit$IVM_init_eq
   )
   
   return(equilibrium_state)
+}
+
+# Daily seasonality for the individual model, from the seasonal parameters the
+# equilibrium used (so a seasonality argument is used too). Equilibria made
+# before these were stored fall back to the admin lookup.
+equilibrium_theta <- function(eqInit) {
+  ss <- c(a0 = "ssa0", a1 = "ssa1", a2 = "ssa2", a3 = "ssa3",
+          b1 = "ssb1", b2 = "ssb2", b3 = "ssb3", theta_c = "theta_c")
+  if (!all(ss %in% names(eqInit))) {
+    return(seasonal_profile(eqInit$admin, eqInit$country))
+  }
+  seasonal_theta(stats::setNames(eqInit[ss], names(ss)))
 }
 
 

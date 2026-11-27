@@ -101,6 +101,11 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
   std::vector<int> IB_last_calculated_time(universe_ptr->parameters.g_N);
   std::vector<int> I_C_D_CM_last_calculated_time(universe_ptr->parameters.g_N);
   std::vector<double> Immunity_boost_float(universe_ptr->parameters.g_N);
+  std::vector<double> IVA(universe_ptr->parameters.g_N);
+  std::vector<double> IVM(universe_ptr->parameters.g_N);
+  std::vector<double> IVM_init(universe_ptr->parameters.g_N);
+  std::vector<double> ICM_init(universe_ptr->parameters.g_N);
+  std::vector<double> IVA_last_boost_time(universe_ptr->parameters.g_N);
   std::vector<int>  Day_of_InfectionStatus_change(universe_ptr->parameters.g_N);	
   std::vector<int>  Day_of_strain_clearance(universe_ptr->parameters.g_N);		
   std::vector<int>  Day_of_death(universe_ptr->parameters.g_N);					
@@ -166,6 +171,13 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     IB_last_boost_time[element] = universe_ptr->population[element].get_m_IB_last_boost_time();
     ICA_last_boost_time[element] = universe_ptr->population[element].get_m_ICA_last_boost_time();
     ID_last_boost_time[element] = universe_ptr->population[element].get_m_ID_last_boost_time();
+    
+    // Severe disease immunity
+    IVA[element] = universe_ptr->population[element].get_m_IVA();
+    IVM[element] = universe_ptr->population[element].get_m_IVM();
+    IVM_init[element] = universe_ptr->population[element].get_m_IVM_init();
+    ICM_init[element] = universe_ptr->population[element].get_m_ICM_init();
+    IVA_last_boost_time[element] = universe_ptr->population[element].get_m_IVA_last_boost_time();
     
     // Calc times
     IB_last_calculated_time[element] = universe_ptr->population[element].get_m_IB_last_calculated_time();
@@ -380,10 +392,38 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     Rcpp::Named("ID_last_boost_time")=ID_last_boost_time,
     Rcpp::Named("IB_last_calculated_time")=IB_last_calculated_time,
     Rcpp::Named("I_C_D_CM_last_calculated_time")=I_C_D_CM_last_calculated_time,
-    Rcpp::Named("Immunity_boost_float")=Immunity_boost_float
+    Rcpp::Named("Immunity_boost_float")=Immunity_boost_float,
+    Rcpp::Named("IVA")=IVA,
+    Rcpp::Named("IVM")=IVM,
+    Rcpp::Named("IVM_init")=IVM_init,
+    Rcpp::Named("ICM_init")=ICM_init,
+    Rcpp::Named("IVA_last_boost_time")=IVA_last_boost_time
   );
   
   // Create Rcpp population event_and_strain list
+  // Infection state history and recently cleared strains, for the gametocyte lag
+  std::vector<std::vector<int> > State_history_days(universe_ptr->parameters.g_N);
+  std::vector<std::vector<int> > State_history_states(universe_ptr->parameters.g_N);
+  std::vector<std::vector<int> > Cleared_strain_days(universe_ptr->parameters.g_N);
+  std::vector<std::vector<int> > Cleared_strain_infection_states(universe_ptr->parameters.g_N);
+  std::vector<std::vector<int> > Cleared_strain_day_of_acquisition_vectors(universe_ptr->parameters.g_N);
+  std::vector<std::vector<std::vector<bool> > > Cleared_strain_barcode_vectors(universe_ptr->parameters.g_N);
+  for (unsigned int element = 0; element < universe_ptr->parameters.g_N ; element++) {
+    State_history_days[element] = universe_ptr->population[element].get_m_state_history_day();
+    State_history_states[element] = universe_ptr->population[element].get_m_state_history_state();
+    Cleared_strain_days[element] = universe_ptr->population[element].get_m_cleared_strain_day();
+    for (auto &strain : universe_ptr->population[element].get_m_cleared_strains()) {
+      Cleared_strain_infection_states[element].push_back(strain.get_m_strain_infection_status());
+      Cleared_strain_day_of_acquisition_vectors[element].push_back(strain.get_m_day_of_strain_acquisition());
+      temp_barcode = strain.get_m_barcode();
+      for(temp_barcode_iterator = 0; temp_barcode_iterator < universe_ptr->parameters.g_barcode_length ; temp_barcode_iterator++ )
+      {
+        temp_barcode_bool_vector[temp_barcode_iterator] = temp_barcode[temp_barcode_iterator];
+      }
+      Cleared_strain_barcode_vectors[element].push_back(temp_barcode_bool_vector);
+    }
+  }
+  
   Rcpp::List populations_event_and_strains_List = Rcpp::List::create(
     Rcpp::Named("Day_of_InfectionStatus_change")=Day_of_InfectionStatus_change,
     Rcpp::Named("Day_of_strain_clearance")=Day_of_strain_clearance,
@@ -404,6 +444,13 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     Rcpp::Named("Strain_cotransmission")=Strain_cotransmission,
     Rcpp::Named("Recent_identity_vectors")=recent_barcode_integers
   );
+  // List::create takes at most 20 elements
+  populations_event_and_strains_List.push_back(State_history_days, "State_history_days");
+  populations_event_and_strains_List.push_back(State_history_states, "State_history_states");
+  populations_event_and_strains_List.push_back(Cleared_strain_days, "Cleared_strain_days");
+  populations_event_and_strains_List.push_back(Cleared_strain_infection_states, "Cleared_strain_infection_states");
+  populations_event_and_strains_List.push_back(Cleared_strain_day_of_acquisition_vectors, "Cleared_strain_day_of_acquisition_vectors");
+  populations_event_and_strains_List.push_back(Cleared_strain_barcode_vectors, "Cleared_strain_barcode_vectors");
   
   // Create Mosquito population list
   Rcpp::List scourge_List = Rcpp::List::create(
@@ -519,6 +566,20 @@ Rcpp::List Simulation_Get_cpp(Rcpp::List param_list)
     Rcpp::Named("g_uCA")=universe_ptr->parameters.g_uCA,
     Rcpp::Named("g_PM")=universe_ptr->parameters.g_PM,
     Rcpp::Named("g_dCM")=universe_ptr->parameters.g_dCM,
+    Rcpp::Named("g_theta0")=universe_ptr->parameters.g_theta0,
+    Rcpp::Named("g_theta1")=universe_ptr->parameters.g_theta1,
+    Rcpp::Named("g_dVA")=universe_ptr->parameters.g_dVA,
+    Rcpp::Named("g_IV0")=universe_ptr->parameters.g_IV0,
+    Rcpp::Named("g_kV")=universe_ptr->parameters.g_kV,
+    Rcpp::Named("g_uVA")=universe_ptr->parameters.g_uVA,
+    Rcpp::Named("g_fV0")=universe_ptr->parameters.g_fV0,
+    Rcpp::Named("g_aV")=universe_ptr->parameters.g_aV,
+    Rcpp::Named("g_gammaV")=universe_ptr->parameters.g_gammaV,
+    Rcpp::Named("g_PVM")=universe_ptr->parameters.g_PVM,
+    Rcpp::Named("g_dVM")=universe_ptr->parameters.g_dVM,
+    Rcpp::Named("g_mean_maternal_severe_immunity")=universe_ptr->parameters.g_mean_maternal_severe_immunity,
+    Rcpp::Named("g_sum_maternal_severe_immunity")=universe_ptr->parameters.g_sum_maternal_severe_immunity,
+    Rcpp::Named("g_het_brackets")=universe_ptr->parameters.g_het_brackets,
     Rcpp::Named("g_gamma1")=universe_ptr->parameters.g_gamma1,
     Rcpp::Named("g_cD")=universe_ptr->parameters.g_cD,
     Rcpp::Named("g_cT")=universe_ptr->parameters.g_cT,

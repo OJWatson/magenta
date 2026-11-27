@@ -48,9 +48,9 @@ in the list.
 
 ``` r
 drugs <- list(
-  magenta:::drug_create_al(),
-  magenta:::drug_create_asaq(),
-  magenta:::drug_create_dhappq()
+  drug_create_al(),
+  drug_create_asaq(),
+  drug_create_dhappq()
 )
 drug_names <- c("AL", "ASAQ", "DHA-PPQ")
 ```
