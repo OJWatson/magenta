@@ -90,8 +90,8 @@ of the retention half-life, with a half-life of `gamman * log(2)`.
 
 ## Comparison with malariasimulation
 
-Two Kenya units were run in both models, from the Kenya site file in the
-foresite calibration packet: Busia urban, the highest transmission unit in
+Two Kenya units were run in both models, from the Kenya site file (version
+malariaverse_06_2026, from foresite's calibration): Busia urban, the highest transmission unit in
 Kenya (EIR 24.4), and Nyandarua rural, one of the lowest. Each
 was run with 3 seeds, 50,000 people, a 20 year burn-in and then 2000 to 2024:
 
@@ -110,18 +110,23 @@ In 2000 the site has no ACT use, so malariasimulation treats with the site's
 against about 25 days for AL in `magenta`. This lowers clinical incidence in
 malariasimulation a little in the early years.
 
-The runs are too large for building the package, so were run on a cluster. The
-scripts are in `vignettes_src/site/` in the package repository: `prepare.R`
-cuts the two units out of the site file, `funs.R` has the two runs and their
-yearly summaries, `setup.R` and `run.R` provision and submit the cluster tasks,
-and `analyse.R` writes `vignettes_src/site_summary.rds`, which makes the
-figures below.
+> **Where the results come from.** The runs take up to an hour each, so they
+> were run once on a cluster rather than when this vignette is built, and the
+> code below only reads their saved output. Everything used is in
+> [`vignettes_src/site/`](https://github.com/OJWatson/magenta/tree/master/vignettes_src/site)
+> in the package repository:
+>
+> * `run_site_comparison.R` sets up the cluster, runs all the tasks and writes
+>   the yearly summaries to `site_summary.rds`, which is read below;
+> * `funs.R` has the `magenta` and malariasimulation runs and their yearly
+>   summaries;
+> * `kenya_units.rds` holds the two units, cut from the Kenya site file.
 
 
 ``` r
 library(ggplot2)
 
-res <- readRDS("site_summary.rds")
+res <- readRDS("site/site_summary.rds")
 runs <- res$runs
 site <- res$site
 unique(runs[c("model", "version")])
@@ -284,12 +289,8 @@ minutes (50,000 people, 45 years).
 
 ## Rerunning the comparison
 
-From a copy of `vignettes_src/site/` on the cluster share:
-
-1. set the `magenta` commit in `pkgdepends.txt` and run `setup.R`,
-2. run `prepare.R` (locally, with the share mounted) to cut the units out of the
-   site file,
-3. submit the runs with `run.R` (18 tasks, each under an hour),
-4. run `analyse.R` to write `site_summary.rds`, copy it to `vignettes_src/`,
-   and rebuild this vignette with
-   `Rscript vignettes_src/build_vignettes.R SiteFiles`.
+Copy `vignettes_src/site/` to a folder the cluster can see, and run
+`run_site_comparison.R` from there (18 tasks, each under an hour). Copy the
+`site_summary.rds` it writes back to `vignettes_src/site/`, and rebuild this
+vignette with `Rscript vignettes_src/build_vignettes.R SiteFiles`. The runs
+install `magenta` from GitHub, so they use its current version.

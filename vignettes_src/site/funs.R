@@ -1,14 +1,13 @@
 ## magenta and malariasimulation runs of one site file unit, reduced to yearly
 ## PfPR2-10 (microscopy) and clinical incidence (all ages and under 5)
 
-units <- list(
-  list(name = "Busia urban", name_1 = "Busia", urban_rural = "urban"),
-  list(name = "Nyandarua rural", name_1 = "Nyandarua", urban_rural = "rural")
-)
+## The two Kenya units, cut from the site file (see run_site_comparison.R)
+units <- c("Busia urban", "Nyandarua rural")
+unit_sites <- "kenya_units.rds"
 years <- 2000:2024
 burnin <- 20
 
-unit_file <- function(unit) file.path("data", paste0(gsub(" ", "_", unit), ".rds"))
+read_unit <- function(unit) readRDS(unit_sites)[[unit]]
 
 ## magenta ----
 
@@ -35,7 +34,7 @@ magenta_save <- function(res, i, sim.out, mpl, num_loci) {
 ## AL with no resistance, non-malarial fevers off, saves every 73 days
 run_magenta <- function(unit, seed, N) {
   t0 <- Sys.time()
-  site <- readRDS(unit_file(unit))
+  site <- read_unit(unit)
   dl <- magenta::drug_list_create(drugs = list(magenta::drug_create_al()))
   a <- magenta::site_to_pipeline(site, years = years, burnin = burnin, drug_list = dl,
                                  update_length = 73)
@@ -69,7 +68,7 @@ run_malsim <- function(unit, seed, N, demography = c("site", "exponential")) {
   demography <- match.arg(demography)
   t0 <- Sys.time()
   set.seed(seed)
-  site <- readRDS(unit_file(unit))
+  site <- read_unit(unit)
   itn <- site$interventions$itn
   site$interventions$itn$implementation$itn_input_dist <- site::site_usage_to_model_distribution(
     usage = itn$use$itn_use,
@@ -115,4 +114,15 @@ run_malsim <- function(unit, seed, N, demography = c("site", "exponential")) {
              clinical_05 = as.numeric(tapply(s$n_inc_clinical_0_1824, s$year, sum) /
                                         py(s$n_age_0_1824)),
              minutes = as.numeric(difftime(Sys.time(), t0, units = "mins")))
+}
+
+## The three runs: magenta, malariasimulation with the site's life table, and
+## malariasimulation with magenta's exponential ages
+models <- c("magenta", "malariasimulation", "malariasimulation_exp")
+
+run_model <- function(model, unit, seed, N) {
+  switch(model,
+         magenta = run_magenta(unit, seed, N),
+         malariasimulation = run_malsim(unit, seed, N),
+         malariasimulation_exp = run_malsim(unit, seed, N, "exponential"))
 }
