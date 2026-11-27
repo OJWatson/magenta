@@ -10,7 +10,8 @@
   source management): the aim is the right transmission setting for scenario
   modelling of drug resistance.
 * New vignette, "Running from a site file", which compares `magenta` with
-  malariasimulation over 2000-2024 for two Kenya units.
+  malariasimulation over 2000-2024 for two Kenya units. `site_to_pipeline()`
+  no longer sets `eta`, which the individual model does not use.
 * `drug_create()`, `drug_create_al()`, `drug_create_asaq()`,
   `drug_create_dhappq()` and `drug_create_default_no_resistance()` are now
   exported.
@@ -22,6 +23,16 @@
   than a year old. "campaign" ages nets from `itn_campaign_t0` and re-issues
   them every `ITN_interval`, and "constant" holds net efficacy at its mean over
   a net life of `ITN_interval`. IRS still resets every year.
+* Bug fix: on a fresh start the individual model read only `phi0` (and the
+  severe immunity parameters) from the parameter list, so other values, such
+  as `Q0`, were used by the equilibrium and mosquito density but not by the
+  individual model. It now also reads `Q0`, `mu0`, `rho`, `a0`, `sigma2` and
+  the infection and immunity parameters. `cU`, `eta`, the durations of each
+  state and the mosquito delays are still not read. Default outputs are
+  unchanged.
+* Bug fix: a `seasonality` argument was not passed to the individual model,
+  which ran without seasonality. Its seasonality now comes from the same
+  parameters as the equilibrium.
 * Bug fix: `itn_half_life` and `irs_half_life` were overwritten with their
   defaults, so other values had no effect. The defaults are unchanged, so
   default outputs are the same.

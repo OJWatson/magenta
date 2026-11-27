@@ -61,8 +61,12 @@ run_magenta <- function(unit, seed, N) {
 }
 
 ## malariasimulation, as foresite runs it ----
+## demography "site" uses the site's life table, as foresite does, and
+## "exponential" magenta's exponential population (mean age 21 years), so that
+## all-ages incidence can be compared like for like
 
-run_malsim <- function(unit, seed, N) {
+run_malsim <- function(unit, seed, N, demography = c("site", "exponential")) {
+  demography <- match.arg(demography)
   t0 <- Sys.time()
   set.seed(seed)
   site <- readRDS(unit_file(unit))
@@ -90,6 +94,11 @@ run_malsim <- function(unit, seed, N) {
     eir = site$eir$eir[site$eir$sp == "pf"],
     prevalence = c(2, 10) * 365
   )
+  if (demography == "exponential") {
+    p$custom_demography <- FALSE
+    p$average_age <- 21 * 365
+    p <- malariasimulation::set_equilibrium(p, init_EIR = site$eir$eir[site$eir$sp == "pf"])
+  }
   s <- malariasimulation::run_simulation(timesteps = p$timesteps, parameters = p)
   s$year <- years[1] - burnin + floor((s$timestep - 1) / 365)
   s <- s[s$year %in% years, ]
@@ -97,7 +106,8 @@ run_malsim <- function(unit, seed, N) {
   inc <- grep("^n_inc_clinical_", names(s), value = TRUE)
   age <- sub("n_inc_clinical_", "n_age_", inc)
   py <- function(n) tapply(n, s$year, sum) / 365
-  data.frame(model = "malariasimulation", unit = unit, seed = seed, year = years,
+  data.frame(model = if (demography == "site") "malariasimulation" else
+               "malariasimulation (exponential ages)", unit = unit, seed = seed, year = years,
              version = as.character(utils::packageVersion("malariasimulation")),
              pfpr_2_10 = as.numeric(tapply(s$n_detect_lm_730_3649 / s$n_age_730_3649,
                                            s$year, mean)),

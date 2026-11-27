@@ -1,4 +1,5 @@
-## Submit the comparison: 2 units x 3 seeds x 2 models, N 50k, 20 y burn-in,
+## Submit the comparison: 2 units x 3 seeds x 3 models (malariasimulation with
+## the site's demography and with exponential ages), N 50k, 20 y burn-in,
 ## 2000-2024 (each task about an hour). Check first with a tiny task per model.
 library(hipercow)
 source("funs.R")
@@ -11,10 +12,14 @@ stopifnot(hipercow_bundle_wait(test))
 print(do.call(rbind, hipercow_bundle_result(test))[c(1:2, 26:27), ])
 
 grid <- expand.grid(unit = vapply(units, `[[`, "", "name"), seed = 1:3,
-                    model = c("magenta", "malariasimulation"), stringsAsFactors = FALSE)
+                    model = c("magenta", "malariasimulation", "malariasimulation_exp"),
+                    stringsAsFactors = FALSE)
 grid$N <- 50000L
 b <- task_create_bulk_expr(
-  if (model == "magenta") run_magenta(unit, seed, N) else run_malsim(unit, seed, N),
+  switch(model,
+         magenta = run_magenta(unit, seed, N),
+         malariasimulation = run_malsim(unit, seed, N),
+         malariasimulation_exp = run_malsim(unit, seed, N, "exponential")),
   grid, environment = "site", bundle_name = "magenta_site_vignette",
   resources = hipercow_resources(cores = 1, max_runtime = "1d", memory_per_node = "8G"))
 print(table(hipercow_bundle_status(b)))

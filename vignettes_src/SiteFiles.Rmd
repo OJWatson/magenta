@@ -98,7 +98,18 @@ was run with 3 seeds, 50,000 people, a 20 year burn-in and then 2000 to 2024:
 
 * `magenta` from `site_to_pipeline()`, treating with AL with no resistance and
   non-malarial fevers off;
-* malariasimulation as foresite runs it, from `site::site_parameters()`.
+* malariasimulation as foresite runs it, from `site::site_parameters()`, which
+  uses the site's life table;
+* malariasimulation as above but with `magenta`'s exponential population (mean
+  age 21 years), so that incidence over all ages compares like for like.
+  Age-specific rates, such as under 5 incidence, do not depend much on the
+  demography, but the all ages rate does, as the life table has fewer young
+  children.
+
+In 2000 the site has no ACT use, so malariasimulation treats with the site's
+"SP full efficacy" drug, whose prophylaxis lasts about 41 days on average,
+against about 25 days for AL in `magenta`. This lowers clinical incidence in
+malariasimulation a little in the early years.
 
 The runs are too large for building the package, so were run on a cluster. The
 scripts are in `vignettes_src/site/` in the package repository: `prepare.R`
@@ -115,7 +126,8 @@ runs <- res$runs
 site <- res$site
 unique(runs[c("model", "version")])
 
-model_colours <- c(magenta = "#c51b7d", malariasimulation = "#2166ac")
+model_colours <- c(magenta = "#c51b7d", malariasimulation = "#2166ac",
+                   "malariasimulation (exponential ages)" = "#7fbf7b")
 
 # mean and range over seeds
 summarise_runs <- function(var) {
@@ -190,37 +202,49 @@ stats::aggregate(cbind(mean_abs_diff = abs(diff), mean_diff = diff) ~ unit,
                  data = w, FUN = mean)
 ```
 
-Over 2000 to 2024 `magenta` follows malariasimulation's trends in both units:
-prevalence falls as treatment and bed net use rise, and both models show the
-rise in 2018 when Busia's net use dropped. The two are closest at low
-transmission: in Nyandarua rural prevalence differs by about one percentage
-point. In Busia urban the models are close at the start (PfPR2-10 0.52 against
-0.49 in 2000), but `magenta` falls more slowly as interventions scale up, so by
-2024 it is about 5 percentage points higher (0.24 against 0.19).
+The year 2000, the first year of the comparison:
 
-Clinical incidence differs more. At similar prevalence, `magenta` has about 20%
-more clinical cases in 2000. In the later years, after mass net campaigns, the
-gap grows: in Busia urban in 2024 `magenta` has 0.42 cases per person per year
-against malariasimulation's 0.17, and 0.78 against 0.33 in children under 5.
-Some of this is likely from the bed nets. malariasimulation gives everyone
-fresh nets at each mass campaign, and their efficacy then decays. `magenta`
-holds efficacy at its mean over a net life, so it misses the drop in
-transmission after each campaign. The rest has not been worked out, and is
-worth looking at before using clinical incidence from `magenta` runs set up
-this way.
+```{r year-2000}
+y <- stats::aggregate(cbind(pfpr_2_10, clinical, clinical_05) ~ unit + model,
+                      data = runs[runs$year == 2000, ], FUN = mean)
+y[order(y$unit, y$model), ]
+```
+
+In 2000, the first year, `magenta` and malariasimulation agree closely. In
+Busia urban PfPR2-10 is 0.49 in all three runs. Clinical incidence in `magenta`
+is about 5% above malariasimulation with the same exponential ages, both for
+all ages (0.66 against 0.63) and in children under 5 (1.54 against 1.47). In
+Nyandarua rural, `magenta` is a little below malariasimulation (PfPR2-10 0.069
+against 0.074 to 0.077, and clinical incidence within about 5%). The site's life
+table has fewer young children than an exponential population, so it lowers
+all ages incidence in malariasimulation (0.55 in Busia urban), but it changes
+under 5 incidence and prevalence little.
+
+Over 2000 to 2024 `magenta` follows malariasimulation's trends in both units:
+prevalence falls as treatment and bed net use rise, and both show the rise in
+2018 when net use dropped, though it is smaller in `magenta`. Prevalence stays
+within a few percentage points of malariasimulation throughout.
+
+The main difference is in clinical incidence after the large net campaigns in
+Busia urban. From 2021, prevalence in the two models is about the same, but
+`magenta` has about twice as many clinical cases (0.36 against 0.22 per person
+per year in 2021, with exponential ages in both). This is likely from how the
+bed nets are modelled. malariasimulation gives people fresh nets at each mass
+campaign, and their efficacy then decays. `magenta` holds net efficacy at its
+mean over a net life, so it misses the drop in transmission after each
+campaign. It has not been checked further, so clinical incidence from `magenta`
+runs set up this way should be used with care in years of high net use.
 
 Both models are well below the site file's PfPR2-10 in Busia urban in 2000 to
-2004 (about 0.5 against 0.54 to 0.98), and from 2005 on both are close to it.
-malariasimulation is below it too, so this
-comes from how the site was calibrated, or from how these runs differ from
-foresite's (for example the burn-in), rather than from `magenta`.
+2004 (about 0.5 against 0.54 to 0.98), and are close to it from 2005 on. As
+malariasimulation is below it too, this comes from the site's calibration, or
+from how these runs differ from foresite's, rather than from `magenta`.
 
-Overall, `site_to_pipeline()` puts `magenta` in the right transmission setting.
-Prevalence is in the ballpark of malariasimulation, which is what is needed as
-the starting point for scenario modelling of drug resistance. Clinical
-incidence after net campaigns should be treated with care.
+Overall, `site_to_pipeline()` puts `magenta` in the same transmission setting
+as malariasimulation, which is what is needed as the starting point for
+scenario modelling of drug resistance.
 
-A `magenta` run took about 70 minutes and a malariasimulation run about 35
+A `magenta` run took about 35 minutes, and a malariasimulation run about 19
 minutes (50,000 people, 45 years).
 
 ## Rerunning the comparison
@@ -230,7 +254,7 @@ From a copy of `vignettes_src/site/` on the cluster share:
 1. set the `magenta` commit in `pkgdepends.txt` and run `setup.R`,
 2. run `prepare.R` (locally, with the share mounted) to cut the units out of the
    site file,
-3. submit the runs with `run.R` (12 tasks, each about an hour),
+3. submit the runs with `run.R` (18 tasks, each under an hour),
 4. run `analyse.R` to write `site_summary.rds`, copy it to `vignettes_src/`,
    and rebuild this vignette with
    `Rscript vignettes_src/build_vignettes.R SiteFiles`.
