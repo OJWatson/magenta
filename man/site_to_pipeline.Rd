@@ -12,7 +12,6 @@ site_to_pipeline(
   drug_list = drug_list_create(),
   irs_scale = 0.75,
   net_type = "pyrethroid_only",
-  eta = 1/(22 * 365),
   update_length = 365
 )
 }
@@ -32,8 +31,6 @@ with treatment coverage in the site file}
 
 \item{net_type}{Net type in \code{site::net_efficacy}. Default =
 "pyrethroid_only"}
-
-\item{eta}{Human death rate per day. Default = 1 / (22 * 365)}
 
 \item{update_length}{Days between updates in \code{pipeline}, which must
 divide 365. Default = 365}
@@ -77,8 +74,9 @@ calibrated EIR without its own fitting.
   \item Vectors: \code{Q0}, \code{bites_Bed}, \code{bites_Indoors} and
     \code{mu0} are the species means (weighted by \code{prop}) of \code{Q0},
     \code{phi_bednets}, \code{phi_indoors} and \code{mum}.
-  \item \code{eta}: given (default 1 / (22 years)); magenta's population is
-    exponential so the site's demography is not used.
+  \item Demography is not set: magenta's population is exponential with a
+    mean age of 21 years in the individual model, whatever \code{eta}, so
+    the site's demography is not used.
 }
 
 Drugs, resistance, non-malarial fevers, barcodes and the other

@@ -90,8 +90,9 @@ site_ft <- function(tx_cov, drug_list = drug_list_create()) {
 #'   \item Vectors: \code{Q0}, \code{bites_Bed}, \code{bites_Indoors} and
 #'     \code{mu0} are the species means (weighted by \code{prop}) of \code{Q0},
 #'     \code{phi_bednets}, \code{phi_indoors} and \code{mum}.
-#'   \item \code{eta}: given (default 1 / (22 years)); magenta's population is
-#'     exponential so the site's demography is not used.
+#'   \item Demography is not set: magenta's population is exponential with a
+#'     mean age of 21 years in the individual model, whatever \code{eta}, so
+#'     the site's demography is not used.
 #' }
 #'
 #' Drugs, resistance, non-malarial fevers, barcodes and the other
@@ -113,7 +114,6 @@ site_ft <- function(tx_cov, drug_list = drug_list_create()) {
 #' @param irs_scale Multiplier on the site's IRS coverage. Default = 0.75
 #' @param net_type Net type in \code{site::net_efficacy}. Default =
 #'   "pyrethroid_only"
-#' @param eta Human death rate per day. Default = 1 / (22 * 365)
 #' @param update_length Days between updates in \code{pipeline}, which must
 #'   divide 365. Default = 365
 #'
@@ -136,7 +136,6 @@ site_to_pipeline <- function(site,
                              drug_list = drug_list_create(),
                              irs_scale = 0.75,
                              net_type = "pyrethroid_only",
-                             eta = 1 / (22 * 365),
                              update_length = 365) {
 
   if (!requireNamespace("site", quietly = TRUE)) {
@@ -205,8 +204,7 @@ site_to_pipeline <- function(site,
     Q0 = wsum("Q0"),
     bites_Bed = wsum("phi_bednets"),
     bites_Indoors = wsum("phi_indoors"),
-    mu0 = wsum("mum"),
-    eta = eta
+    mu0 = wsum("mum")
   )
   attr(args, "year") <- c(years[1] - rev(seq_len(burnin)), years)
   attr(args, "tx_cov") <- tx_cov

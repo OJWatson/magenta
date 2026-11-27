@@ -131,10 +131,39 @@ test_that("site_to_pipeline", {
   expect_equal(a$bites_Bed, sum(v$prop * v$phi_bednets))
   expect_equal(a$bites_Indoors, sum(v$prop * v$phi_indoors))
   expect_equal(a$mu0, sum(v$prop * v$mum))
-  expect_equal(a$eta, 1 / (22 * 365))
 
   # and the parameters are accepted
   mpl <- do.call(model_param_list_create, a[names(a) %in% names(formals(model_param_list_create))])
   expect_equal(mpl$itn_clock_mode, 2)
   expect_equal(mpl$Q0, a$Q0)
+})
+
+test_that("core parameters and seasonality reach the individual model on a fresh start", {
+  hk <- housekeeping_list_create(quiet = TRUE, cluster = TRUE)
+  site <- readRDS(test_path("fixtures", "site_busia_urban.rds"))
+  s <- site_seasonality(site)
+
+  # defaults are the individual model's own
+  def <- pipeline(EIR = 5, N = 200, years = 0.05, full_save = TRUE, seed = 1L,
+                  housekeeping_list = hk)$parameters_List
+  expect_equal(def$g_Q0, 0.92)
+  expect_equal(def$g_theta, rep(1, 365))
+
+  fs <- pipeline(EIR = 5, N = 200, years = 0.05, full_save = TRUE, seed = 1L,
+                 housekeeping_list = hk, seasonality = s,
+                 Q0 = 0.85, mu0 = 0.12, b0 = 0.55, sigma2 = 1.5, PM = 0.7)$parameters_List
+  expect_equal(fs$g_Q0, 0.85)
+  expect_equal(fs$g_mu0, 0.12)
+  expect_equal(fs$g_b0, 0.55)
+  expect_equal(fs$g_PM, 0.7)
+  expect_equal(fs$g_zeta_sdlog, sqrt(1.5))
+  expect_equal(fs$g_zeta_meanlog, -0.75)
+  expect_equal(fs$g_theta, seasonal_theta(s))
+  expect_equal(mean(fs$g_theta), 1)
+
+  # the admin lookup is unchanged
+  eq <- equilibrium_init_create(age_vector = c(0, 1, 5, 10, 20, 40, 60), het_brackets = 3,
+                                ft = 0, EIR = 10, model_param_list = model_param_list_create(),
+                                country = "Kenya", admin = "Kisumu", quiet = TRUE)
+  expect_equal(equilibrium_ss_create(eq)$theta, seasonal_profile("Kisumu", "Kenya"))
 })
