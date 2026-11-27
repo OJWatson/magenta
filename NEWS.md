@@ -1,88 +1,30 @@
 ## magenta 1.5.0
 
-* Run from Imperial's malariasimulation site files: `site_to_pipeline()` turns
-  one unit of a site file (from `site::subset_site()`) into `pipeline()`
-  arguments (EIR, seasonality, burn-in, yearly ITN use, IRS and treatment, net
-  efficacy and vector bionomics). `site_ft()` turns the site's effective
-  treatment coverage into `ft` for the drugs used, and `site_seasonality()`
-  gives the seasonal parameters. `site` is a suggested package. Only
-  treatment, bed nets and IRS are used (not SMC, PMC, vaccines or larval
-  source management): the aim is the right transmission setting for scenario
-  modelling of drug resistance.
-* New vignette, "Running from a site file", which compares `magenta` with
-  malariasimulation over 2000-2024 for two Kenya units. `site_to_pipeline()`
-  no longer sets `eta`, which the individual model does not use.
-* `drug_create()`, `drug_create_al()`, `drug_create_asaq()`,
-  `drug_create_dhappq()` and `drug_create_default_no_resistance()` are now
-  exported.
-* `pipeline()` and `equilibrium_init_create()` take `seasonality`, seasonal
-  parameters given directly rather than looked up by country and admin.
-* New `itn_decay_clock` in `model_param_list_create()`. The default,
-  "breakpoint", keeps the old behaviour, in which nets are new at every
-  intervention breakpoint (every year in `pipeline()`), so they are never more
-  than a year old. "campaign" ages nets from `itn_campaign_t0` and re-issues
-  them every `ITN_interval`, and "constant" holds net efficacy at its mean over
-  a net life of `ITN_interval`. IRS still resets every year.
-* Bug fix: on a fresh start the individual model read only `phi0` (and the
-  severe immunity parameters) from the parameter list, so other values, such
-  as `Q0`, were used by the equilibrium and mosquito density but not by the
-  individual model. It now also reads `Q0`, `mu0`, `rho`, `a0`, `sigma2` and
-  the infection and immunity parameters. `cU`, `eta`, the durations of each
-  state and the mosquito delays are still not read. Default outputs are
-  unchanged.
-* Bug fix: a `seasonality` argument was not passed to the individual model,
-  which ran without seasonality. Its seasonality now comes from the same
-  parameters as the equilibrium.
-* Bug fix: `itn_half_life` and `irs_half_life` were overwritten with their
-  defaults, so other values had no effect. The defaults are unchanged, so
-  default outputs are the same.
-
-## magenta 1.4.0
-
 * Severe malaria: acquired and maternal severe immunity (`IVA`, `IVM`) as in
-  Griffin et al. 2015, new `Severe` and `Severe_05` loggers, and new functions
-  `severe_rates()` and `severe_outcomes()`.
-* Infection, immunity boosting and mosquito biting brought in line with
-  malariasimulation, which changes model outputs:
-  * Bug fix to initialisation, which stopped initially infected people from
-    realising new infections and lowered incidence for the first 2-3 years.
-  * Bites no longer fail to infect because `IB` was boosted recently.
-  * Infection, clinical and severe disease use `IB`, `ICA` and `IVA` before
-    the day's boost, plus 0.5 if non-zero.
-  * `ICA`, `ID` and `IVA` are only boosted, and severe cases only counted, by
-    infections that are not cleared by prophylaxis.
-  * Mosquito feeding intervals are geometric with mean 1/fv rather than a fixed
-    3 days, and the EIP is 10 or 11 days.
-  * Infectivity to mosquitoes lags the infection state by 12.5 days
-    (`delay_gam`), as in the Griffin et al. model, so people stay infectious
-    for 12.5 days after recovery or treatment. Saved states now keep each
-    person's recent infection states and cleared strains.
-  * Reinfection in A no longer lengthens the time spent in A. The new
-    infection sets when the person moves to U, rather than the later of the
-    new and current times, as A -> U is memoryless in the Griffin et al. model.
-    Strains in A are kept from outlasting the person's move to U.
-  * Whether an infectious bite infects is decided when the infection starts,
-    after the latent period, as in the Griffin et al. model, rather than on
-    the day of the bite. Pending infections are kept through recovery and
-    treatment, and `ICA`, `ID` and `IVA` boosts, severe cases and clinical
-    incidence are counted on the day the infection starts. This raises
-    transmission by about 3-6%.
-  * `pipeline()` starts from an equilibrium with fine age groups (0.1 years
-    to age 10, then 0.5 years), which raises the mosquito density by about
-    3% to match the deterministic model.
-  * Newborns take maternal immunity from a random 20-year-old in the same
-    biting heterogeneity group, as in malariasimulation and the Griffin et al.
-    model, rather than the mean immunity of 15-25 year olds scaled by their
-    own biting rate. This raises infant maternal immunity by 4-6% and lowers
-    severe incidence by about 2% at EIR 32 and 5% at EIR 64.
-* Bug fix: maternal immunity at birth (`ICM_init`) is now kept in saved states.
-* Bug fix: a new treated strain no longer sets the day of the next strain
-  state change, as treated strains have no scheduled change.
-* Bug fix: non-malarial fevers in uninfected people only give drugs (and so
-  prophylaxis) to people who seek treatment (`ft`) and are not tested, rather
-  than to everyone.
-* Bug fix: `pipeline()` with `ft = 0` ran the simulation with `ft = Inf`, so
-  every clinical case and non-malarial fever was treated.
+  Griffin et al. 2015, `Severe` and `Severe_05` loggers, and `severe_rates()`
+  and `severe_outcomes()`.
+* Infection, immunity boosting, maternal immunity and mosquito biting brought
+  in line with malariasimulation (see the Equivalence vignette). This changes
+  model outputs.
+* Run from Imperial's malariasimulation site files with `site_to_pipeline()`,
+  `site_ft()` and `site_seasonality()` (see the "Running from a site file"
+  vignette). Only treatment, bed nets and IRS are used.
+* `pipeline()` and `equilibrium_init_create()` take `seasonality` directly.
+* New `itn_decay_clock` in `model_param_list_create()`: "breakpoint" (the
+  default, as before), "campaign" or "constant".
+* `drug_create()` and the `drug_create_*()` functions are exported.
+
+Behaviour changes and bug fixes:
+
+* `itn_half_life` and `irs_half_life` now take effect (defaults unchanged).
+* Non-malarial fevers in uninfected people only give drugs to those who seek
+  treatment (`ft`).
+* `ft = 0` no longer runs as `ft = Inf`.
+* `Q0`, `mu0` and the infection and immunity parameters are now read by the
+  individual model on a fresh start, not only from saved states.
+* A `seasonality` argument now reaches the individual model.
+* Initially infected people can realise new infections, and `ICM_init` is
+  kept in saved states.
 
 ## magenta 1.3.8
 
