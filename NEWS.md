@@ -1,3 +1,9 @@
+## magenta 1.5.1
+
+* Mutation under treatment no longer reads past the end of a drug's resistance loci, and
+  the loci are sorted before use, so the treated mutation rate only ever applies at the
+  drug's own loci.
+
 ## magenta 1.5.0
 
 * Severe malaria: acquired and maternal severe immunity (`IVA`, `IVM`) as in

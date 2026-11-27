@@ -1,4 +1,5 @@
 #include "person.h"
+#include <algorithm>
 
 // Only Constructor
 Person::Person(const Parameters &parameters) :
@@ -629,11 +630,12 @@ void Person::allocate_infection(Parameters &parameters, Mosquito &mosquito)
             
             // what positions in the barcode relate the drug being used. 
               std::vector<unsigned int> drug_pos = parameters.g_drugs[m_drug_choice].get_m_barcode_positions();
+              std::sort(drug_pos.begin(), drug_pos.end());
               unsigned int drug_pos_iter = 0;
               
               for(unsigned int l = 0; l < parameters.g_num_loci; l++) {
                 
-                if(drug_pos[drug_pos_iter] == l) {
+                if(drug_pos_iter < drug_pos.size() && drug_pos[drug_pos_iter] == l) {
                   
                   // Increase the iterator first
                   drug_pos_iter++;
