@@ -107,8 +107,7 @@ was run with 3 seeds, 50,000 people, a 20 year burn-in and then 2000 to 2024:
 
 In 2000 the site has no ACT use, so malariasimulation treats with the site's
 "SP full efficacy" drug, whose prophylaxis lasts about 41 days on average,
-against about 25 days for AL in `magenta`. This lowers clinical incidence in
-malariasimulation a little in the early years.
+against about 25 days for AL in `magenta`.
 
 > **Where the results come from.** The runs take up to an hour each, so they
 > were run once on a cluster rather than when this vignette is built, and the
@@ -137,31 +136,6 @@ unique(runs[c("model", "version")])
 
 model_colours <- c(magenta = "#c51b7d", malariasimulation = "#2166ac",
                    "malariasimulation (exponential ages)" = "#7fbf7b")
-
-# mean and range over seeds
-summarise_runs <- function(var) {
-  d <- stats::aggregate(runs[[var]], runs[c("model", "unit", "year")],
-                        function(x) c(mean = mean(x), lo = min(x), hi = max(x)))
-  cbind(d[c("model", "unit", "year")], as.data.frame(d$x))
-}
-
-plot_runs <- function(var, ylab, site_var = NULL) {
-  d <- summarise_runs(var)
-  p <- ggplot(d, aes(year, mean, colour = model, fill = model)) +
-    geom_ribbon(aes(ymin = lo, ymax = hi), alpha = 0.2, colour = NA) +
-    geom_line() +
-    facet_wrap(~unit, scales = "free_y") +
-    scale_colour_manual(values = model_colours) +
-    scale_fill_manual(values = model_colours) +
-    labs(x = NULL, y = ylab, colour = NULL, fill = NULL) +
-    theme_bw() +
-    theme(legend.position = "top")
-  if (!is.null(site_var)) {
-    p <- p + geom_point(aes(year, .data[[site_var]]), data = site,
-                        inherit.aes = FALSE, size = 0.8)
-  }
-  p
-}
 ```
 
 ### Interventions
@@ -183,57 +157,48 @@ ggplot(iv, aes(year, value, colour = input)) +
 
 ![](SiteFiles_files/figure-html/interventions-1.png)<!-- -->
 
-### Prevalence
+### Year 2000
 
-The points are the site file's PfPR2-10 (the Malaria Atlas Project estimates
-the EIR was calibrated to). Lines are the mean over seeds and the band is their
-range.
+The first year of the comparison, before any intervention has had time to
+change the models apart. Points are the mean over seeds and whiskers their
+range. The site file's PfPR2-10 (the Malaria Atlas Project estimate the EIR was
+calibrated to) is shown too, as a single value.
 
 
 ``` r
-plot_runs("pfpr_2_10", "PfPR2-10 (microscopy)", "site_pfpr")
+y <- runs[runs$year == 2000, ]
+outputs <- c(pfpr_2_10 = "PfPR2-10 (microscopy)",
+             clinical = "Clinical cases per person per year",
+             clinical_05 = "Clinical cases per child under 5 per year")
+d <- do.call(rbind, lapply(names(outputs), function(v) {
+  a <- stats::aggregate(y[[v]], y[c("model", "unit")],
+                        function(x) c(mean = mean(x), lo = min(x), hi = max(x)))
+  cbind(a[c("model", "unit")], as.data.frame(a$x), output = outputs[[v]])
+}))
+s <- site[site$year == 2000, ]
+d <- rbind(d, data.frame(model = "site file", unit = s$unit, mean = s$site_pfpr,
+                         lo = s$site_pfpr, hi = s$site_pfpr, output = outputs[["pfpr_2_10"]]))
+d$output <- factor(d$output, outputs)
+model_colours <- c(model_colours, "site file" = "black")
+d$model <- factor(d$model, names(model_colours))
+
+ggplot(d, aes(model, mean, colour = model)) +
+  geom_pointrange(aes(ymin = lo, ymax = hi)) +
+  facet_grid(output ~ unit, scales = "free_y", labeller = label_wrap_gen(16)) +
+  scale_colour_manual(values = model_colours) +
+  labs(x = NULL, y = NULL, colour = NULL) +
+  theme_bw() +
+  theme(legend.position = "top", axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
 ```
 
-![](SiteFiles_files/figure-html/prevalence-1.png)<!-- -->
-
-### Clinical incidence
+![](SiteFiles_files/figure-html/year-2000-1.png)<!-- -->
 
 
 ``` r
-plot_runs("clinical", "Clinical cases per person per year")
-```
-
-![](SiteFiles_files/figure-html/incidence-1.png)<!-- -->
-
-
-``` r
-plot_runs("clinical_05", "Clinical cases per child under 5 per year")
-```
-
-![](SiteFiles_files/figure-html/incidence-05-1.png)<!-- -->
-
-### Differences
-
-
-``` r
-d <- summarise_runs("pfpr_2_10")
-w <- reshape(d[c("model", "unit", "year", "mean")], idvar = c("unit", "year"),
-             timevar = "model", direction = "wide")
-w$diff <- w$mean.magenta - w$mean.malariasimulation
-stats::aggregate(cbind(mean_abs_diff = abs(diff), mean_diff = diff) ~ unit,
-                 data = w, FUN = mean)
-##              unit mean_abs_diff    mean_diff
-## 1     Busia urban   0.026152586  0.010422662
-## 2 Nyandarua rural   0.003233607 -0.002157588
-```
-
-The year 2000, the first year of the comparison:
-
-
-``` r
-y <- stats::aggregate(cbind(pfpr_2_10, clinical, clinical_05) ~ unit + model,
-                      data = runs[runs$year == 2000, ], FUN = mean)
-y[order(y$unit, y$model), ]
+tab <- stats::aggregate(cbind(pfpr_2_10, clinical, clinical_05) ~ unit + model,
+                        data = y, FUN = mean)
+tab[order(tab$unit, tab$model), ]
 ##              unit                                model  pfpr_2_10  clinical
 ## 1     Busia urban                              magenta 0.49026145 0.6589800
 ## 3     Busia urban                    malariasimulation 0.48831023 0.5516122
@@ -250,39 +215,43 @@ y[order(y$unit, y$model), ]
 ## 6  0.10741549
 ```
 
-In 2000, the first year, `magenta` and malariasimulation agree closely. In
-Busia urban PfPR2-10 is 0.49 in all three runs. Clinical incidence in `magenta`
-is about 5% above malariasimulation with the same exponential ages, both for
-all ages (0.66 against 0.63) and in children under 5 (1.54 against 1.47). In
-Nyandarua rural, `magenta` is a little below malariasimulation (PfPR2-10 0.069
-against 0.074 to 0.077, and clinical incidence within about 5%). The site's life
-table has fewer young children than an exponential population, so it lowers
-all ages incidence in malariasimulation (0.55 in Busia urban), but it changes
-under 5 incidence and prevalence little.
+In 2000 `magenta` and malariasimulation agree closely: PfPR2-10 is within about
+0.01 of each other in both units (0.49 in Busia urban, 0.07 in Nyandarua rural),
+and clinical incidence is within about 5% when malariasimulation uses the same
+exponential ages as `magenta`. The site's life table has fewer young children
+than an exponential population, so it lowers all ages incidence in
+malariasimulation (0.55 against 0.66 in Busia urban) but changes under 5
+incidence and prevalence little. Both models are well below the site file's
+PfPR2-10 in Busia urban (0.73), which comes from the site's calibration or how
+these runs differ from foresite's, not from `magenta`.
 
-Over 2000 to 2024 `magenta` follows malariasimulation's trends in both units:
-prevalence falls as treatment and bed net use rise, and both show the rise in
-2018 when net use dropped, though it is smaller in `magenta`. Prevalence stays
-within a few percentage points of malariasimulation throughout.
+The models then drift apart over time, as interventions come in and the places
+where they are encoded differently start to matter:
 
-The main difference is in clinical incidence after the large net campaigns in
-Busia urban. From 2021, prevalence in the two models is about the same, but
-`magenta` has about twice as many clinical cases (0.36 against 0.22 per person
-per year in 2021, with exponential ages in both). This is likely from how the
-bed nets are modelled. malariasimulation gives people fresh nets at each mass
-campaign, and their efficacy then decays. `magenta` holds net efficacy at its
-mean over a net life, so it misses the drop in transmission after each
-campaign. It has not been checked further, so clinical incidence from `magenta`
-runs set up this way should be used with care in years of high net use.
+* bed nets: malariasimulation (and the site file) gives people fresh nets at
+  each campaign, from net distributions converted from use with `netz` net loss
+  and the site's retention half-life, and the efficacy of each net then decays
+  from its own distribution; `magenta` holds efficacy at its mean over a net
+  life (the `"constant"` clock) and takes the site's net use directly as
+  coverage;
+* biting heterogeneity: both draw individual biting rates from the same
+  lognormal, but `magenta` starts people from 5 equilibrium heterogeneity
+  groups, so who is bitten most is set up differently;
+* demography: malariasimulation uses the site's life table and `magenta` an
+  exponential age distribution, which changes all ages rates;
+* treatment: malariasimulation treats `tx_cov` with its own fully effective
+  drug (for example SP in 2000), while `magenta` uses AL with `ft` set to give
+  the same effective coverage, and has its own prophylaxis (about 25 days
+  against about 41 for the SP drug);
+* vectors and IRS: malariasimulation models each vector species and its own
+  IRS and net effects, while `magenta` uses one mosquito population with
+  species-weighted `Q0` and bites indoors and in bed, and a default IRS
+  efficacy.
 
-Both models are well below the site file's PfPR2-10 in Busia urban in 2000 to
-2004 (about 0.5 against 0.54 to 0.98), and are close to it from 2005 on. As
-malariasimulation is below it too, this comes from the site's calibration, or
-from how these runs differ from foresite's, rather than from `magenta`.
-
-Overall, `site_to_pipeline()` puts `magenta` in the same transmission setting
-as malariasimulation, which is what is needed as the starting point for
-scenario modelling of drug resistance.
+Because of these, clinical incidence from `magenta` runs set up this way should
+be used with care in years of high net use, and the comparison is for getting
+`magenta` into the right transmission setting rather than for matching
+malariasimulation year by year.
 
 A `magenta` run took about 35 minutes, and a malariasimulation run about 19
 minutes (50,000 people, 45 years).
