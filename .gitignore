@@ -21,4 +21,5 @@ src-x64
 Link to MAGENTA.Rproj
 /*.R
 todo.txt
-inst/odindocs
+inst/odin
+docs
