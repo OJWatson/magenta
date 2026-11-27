@@ -56,6 +56,12 @@ reference:
     contents:
       - severe_rates
       - severe_outcomes
+  - title: "Site Files"
+    desc: "Functions to run magenta from malariasimulation site files"
+    contents:
+      - site_to_pipeline
+      - site_seasonality
+      - site_ft
   - title: "Barcode Misc"
     desc: "Functions for converting and manipulating barcodes"
     contents:
@@ -76,6 +82,7 @@ articles:
     contents:
       - Introduction
       - Loggers
+      - SiteFiles
   - title: "Antimalarial resistance"
     navbar: "Resistance"
     contents:
@@ -103,6 +110,8 @@ navbar:
         href: articles/Introduction.html
       - text: Model output, loggers and saved state
         href: articles/Loggers.html
+      - text: Running from a site file
+        href: articles/SiteFiles.html
       - text: -------
       - text: "Antimalarial resistance"
       - text: Simulating antimalarial resistance
