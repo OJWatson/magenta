@@ -18,7 +18,7 @@ used within later model runs"><!-- mathjax --><script src="https://cdnjs.cloudfl
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">magenta</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.5.0</span>
       </span>
     </div>
 
@@ -47,6 +47,9 @@ used within later model runs"><!-- mathjax --><script src="https://cdnjs.cloudfl
     </li>
     <li>
       <a href="../articles/Loggers.html">Model output, loggers and saved state</a>
+    </li>
+    <li>
+      <a href="../articles/SiteFiles.html">Running from a site file</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Antimalarial resistance</li>
@@ -97,7 +100,8 @@ used within later model runs</p>
 <span>  <span class="va">model_param_list</span>,</span>
 <span>  country <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  admin <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  seasonality <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -142,6 +146,13 @@ and admin are NULL then no seasonality is assumed. Default = NULL.</p></dd>
 <dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
 <dd><p>Whether function should be quiet. If FALSE (default) the
 returned country and admin are printed.</p></dd>
+
+
+<dt id="arg-seasonality">seasonality<a class="anchor" aria-label="anchor" href="#arg-seasonality"></a></dt>
+<dd><p>Optional named numeric vector (or list) of seasonal
+parameters, <code>a0, a1, a2, a3, b1, b2, b3, theta_c</code>, used instead of
+looking them up by country and admin (see <code><a href="site_seasonality.html">site_seasonality</a></code>).
+Default = NULL</p></dd>
 
 </dl></div>
 

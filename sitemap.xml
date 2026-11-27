@@ -3,10 +3,12 @@
 <url><loc>https://ojwatson.github.io/magenta/CONDUCT.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/LICENSE-text.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/articles/DrugStrategies.html</loc></url>
+<url><loc>https://ojwatson.github.io/magenta/articles/Equivalence.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/articles/Introduction.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/articles/Loggers.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/articles/NewDrugs.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/articles/Resistance.html</loc></url>
+<url><loc>https://ojwatson.github.io/magenta/articles/SiteFiles.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/articles/index.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/authors.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/index.html</loc></url>
@@ -61,7 +63,13 @@
 <url><loc>https://ojwatson.github.io/magenta/reference/population_get_genetics_ibd_df_n.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/reference/sample_coi.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/reference/seasonal_profile.html</loc></url>
+<url><loc>https://ojwatson.github.io/magenta/reference/seasonal_theta.html</loc></url>
+<url><loc>https://ojwatson.github.io/magenta/reference/severe_outcomes.html</loc></url>
+<url><loc>https://ojwatson.github.io/magenta/reference/severe_rates.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/reference/simulation_R.html</loc></url>
+<url><loc>https://ojwatson.github.io/magenta/reference/site_ft.html</loc></url>
+<url><loc>https://ojwatson.github.io/magenta/reference/site_seasonality.html</loc></url>
+<url><loc>https://ojwatson.github.io/magenta/reference/site_to_pipeline.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/reference/spl_create.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/reference/spl_grab.html</loc></url>
 <url><loc>https://ojwatson.github.io/magenta/reference/spl_matrix_check.html</loc></url>

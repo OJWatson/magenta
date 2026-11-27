@@ -18,7 +18,7 @@ within equilibrium_init_create"><!-- mathjax --><script src="https://cdnjs.cloud
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">magenta</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.5.0</span>
       </span>
     </div>
 
@@ -47,6 +47,9 @@ within equilibrium_init_create"><!-- mathjax --><script src="https://cdnjs.cloud
     </li>
     <li>
       <a href="../articles/Loggers.html">Model output, loggers and saved state</a>
+    </li>
+    <li>
+      <a href="../articles/SiteFiles.html">Running from a site file</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Antimalarial resistance</li>
@@ -130,6 +133,17 @@ within <code>equilibrium_init_create</code></p>
 <span>  uCA <span class="op">=</span> <span class="fl">6.06349</span>,</span>
 <span>  PM <span class="op">=</span> <span class="fl">0.774368</span>,</span>
 <span>  dCM <span class="op">=</span> <span class="fl">67.6952</span>,</span>
+<span>  theta0 <span class="op">=</span> <span class="fl">0.0749886</span>,</span>
+<span>  theta1 <span class="op">=</span> <span class="fl">0.0001191</span>,</span>
+<span>  dVA <span class="op">=</span> <span class="fl">10950</span>,</span>
+<span>  IV0 <span class="op">=</span> <span class="fl">1.09629</span>,</span>
+<span>  kV <span class="op">=</span> <span class="fl">2.00048</span>,</span>
+<span>  uVA <span class="op">=</span> <span class="fl">11.4321</span>,</span>
+<span>  fV0 <span class="op">=</span> <span class="fl">0.141195</span>,</span>
+<span>  aV <span class="op">=</span> <span class="fl">2493.41</span>,</span>
+<span>  gammaV <span class="op">=</span> <span class="fl">2.91282</span>,</span>
+<span>  PVM <span class="op">=</span> <span class="fl">0.195768</span>,</span>
+<span>  dVM <span class="op">=</span> <span class="fl">76.8365</span>,</span>
 <span>  delayMos <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  tau1 <span class="op">=</span> <span class="fl">0.69</span>,</span>
 <span>  tau2 <span class="op">=</span> <span class="fl">2.31</span>,</span>
@@ -161,7 +175,9 @@ within <code>equilibrium_init_create</code></p>
 <span>  irs_half_life <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">DY</span>,</span>
 <span>  itn_half_life <span class="op">=</span> <span class="fl">2.64</span> <span class="op">*</span> <span class="va">DY</span>,</span>
 <span>  IRS_interval <span class="op">=</span> <span class="fl">1</span> <span class="op">*</span> <span class="va">DY</span>,</span>
-<span>  ITN_interval <span class="op">=</span> <span class="fl">3</span> <span class="op">*</span> <span class="va">DY</span></span>
+<span>  ITN_interval <span class="op">=</span> <span class="fl">3</span> <span class="op">*</span> <span class="va">DY</span>,</span>
+<span>  itn_decay_clock <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"breakpoint"</span>, <span class="st">"campaign"</span>, <span class="st">"constant"</span><span class="op">)</span>,</span>
+<span>  itn_campaign_t0 <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -329,6 +345,53 @@ within <code>equilibrium_init_create</code></p>
 <dd><p>Inverse of decay rate of maternal immunity. Default = 67.6952</p></dd>
 
 
+<dt id="arg-theta-">theta0<a class="anchor" aria-label="anchor" href="#arg-theta-"></a></dt>
+<dd><p>Maximum probability that an infection is severe, i.e. with
+no severe immunity. Default = 0.0749886</p></dd>
+
+
+<dt id="arg-theta-">theta1<a class="anchor" aria-label="anchor" href="#arg-theta-"></a></dt>
+<dd><p>Maximum relative reduction in the probability of severe
+disease due to immunity. Default = 0.0001191</p></dd>
+
+
+<dt id="arg-dva">dVA<a class="anchor" aria-label="anchor" href="#arg-dva"></a></dt>
+<dd><p>Inverse of decay rate of acquired severe immunity (30 years).
+Default = 10950</p></dd>
+
+
+<dt id="arg-iv-">IV0<a class="anchor" aria-label="anchor" href="#arg-iv-"></a></dt>
+<dd><p>Severe immunity scale parameter. Default = 1.09629</p></dd>
+
+
+<dt id="arg-kv">kV<a class="anchor" aria-label="anchor" href="#arg-kv"></a></dt>
+<dd><p>Severe immunity shape parameter. Default = 2.00048</p></dd>
+
+
+<dt id="arg-uva">uVA<a class="anchor" aria-label="anchor" href="#arg-uva"></a></dt>
+<dd><p>Duration in which severe immunity is not boosted. Default = 11.4321</p></dd>
+
+
+<dt id="arg-fv-">fV0<a class="anchor" aria-label="anchor" href="#arg-fv-"></a></dt>
+<dd><p>Severe immunity age modifier at birth. Default = 0.141195</p></dd>
+
+
+<dt id="arg-av">aV<a class="anchor" aria-label="anchor" href="#arg-av"></a></dt>
+<dd><p>Severe immunity age modifier scale. Default = 2493.41</p></dd>
+
+
+<dt id="arg-gammav">gammaV<a class="anchor" aria-label="anchor" href="#arg-gammav"></a></dt>
+<dd><p>Severe immunity age modifier shape. Default = 2.91282</p></dd>
+
+
+<dt id="arg-pvm">PVM<a class="anchor" aria-label="anchor" href="#arg-pvm"></a></dt>
+<dd><p>New-born severe immunity relative to mother. Default = 0.195768</p></dd>
+
+
+<dt id="arg-dvm">dVM<a class="anchor" aria-label="anchor" href="#arg-dvm"></a></dt>
+<dd><p>Inverse of decay rate of maternal severe immunity. Default = 76.8365</p></dd>
+
+
 <dt id="arg-delaymos">delayMos<a class="anchor" aria-label="anchor" href="#arg-delaymos"></a></dt>
 <dd><p>Extrinsic incubation period. Default = 10</p></dd>
 
@@ -454,9 +517,34 @@ within <code>equilibrium_init_create</code></p>
 
 
 <dt id="arg-itn-interval">ITN_interval<a class="anchor" aria-label="anchor" href="#arg-itn-interval"></a></dt>
-<dd><p>How long before ITN is repeated, i.e. when IRS decay = 1.  Default =   3 * DY</p></dd>
+<dd><p>How long before ITN is repeated, i.e. when ITN decay = 1.  Default =   3 * DY</p></dd>
+
+
+<dt id="arg-itn-decay-clock">itn_decay_clock<a class="anchor" aria-label="anchor" href="#arg-itn-decay-clock"></a></dt>
+<dd><p>How ITN efficacy decays over time in the mosquito model:
+"breakpoint" (default, the original behaviour) treats nets as new at each
+intervention breakpoint (each year in [pipeline()]), so nets are never more
+than a year old; "campaign" ages nets from `itn_campaign_t0` and re-issues
+them every `ITN_interval`; "constant" holds efficacy at its mean over a net
+life of `ITN_interval`, i.e. the steady state of continuous top-ups. IRS
+always resets at each breakpoint.</p></dd>
+
+
+<dt id="arg-itn-campaign-t-">itn_campaign_t0<a class="anchor" aria-label="anchor" href="#arg-itn-campaign-t-"></a></dt>
+<dd><p>Day (simulation time) of a net campaign, used to anchor the
+"campaign" clock. Default = 0</p></dd>
 
 </dl></div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>The severe disease parameters follow Griffin JT, Hollingsworth TD,
+  Reyburn H, Drakeley CJ, Riley EM, Ghani AC. Gradual acquisition of
+  immunity to severe malaria with increasing exposure. Proc R Soc B
+  2015;282:20142657 (Table S3). The defaults are the values used in
+  malariasimulation, which differ slightly from the published medians
+  (IV0 1.05, kV 1.99, uVA 11.3). fV0, aV and gammaV are not tabulated in
+  the 2015 paper; they are the fitted values as used in malariasimulation.</p>
+    </div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

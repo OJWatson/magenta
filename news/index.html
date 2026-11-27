@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">magenta</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.5.0</span>
       </span>
     </div>
 
@@ -46,6 +46,9 @@
     </li>
     <li>
       <a href="../articles/Loggers.html">Model output, loggers and saved state</a>
+    </li>
+    <li>
+      <a href="../articles/SiteFiles.html">Running from a site file</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Antimalarial resistance</li>
@@ -81,6 +84,27 @@
       <small>Source: <a href="https://github.com/OJWatson/magenta/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.5.0" id="magenta-150">magenta 1.5.0<a class="anchor" aria-label="anchor" href="#magenta-150"></a></h2>
+<ul><li>Severe malaria: acquired and maternal severe immunity (<code>IVA</code>, <code>IVM</code>) as in Griffin et al. 2015, <code>Severe</code> and <code>Severe_05</code> loggers, and <code><a href="../reference/severe_rates.html">severe_rates()</a></code> and <code><a href="../reference/severe_outcomes.html">severe_outcomes()</a></code>.</li>
+<li>Infection, immunity boosting, maternal immunity and mosquito biting brought in line with malariasimulation (see the Equivalence vignette). This changes model outputs.</li>
+<li>Run from Imperial’s malariasimulation site files with <code><a href="../reference/site_to_pipeline.html">site_to_pipeline()</a></code>, <code><a href="../reference/site_ft.html">site_ft()</a></code> and <code><a href="../reference/site_seasonality.html">site_seasonality()</a></code> (see the “Running from a site file” vignette). Only treatment, bed nets and IRS are used.</li>
+<li>
+<code><a href="../reference/pipeline.html">pipeline()</a></code> and <code><a href="../reference/equilibrium_init_create.html">equilibrium_init_create()</a></code> take <code>seasonality</code> directly.</li>
+<li>New <code>itn_decay_clock</code> in <code><a href="../reference/model_param_list_create.html">model_param_list_create()</a></code>: “breakpoint” (the default, as before), “campaign” or “constant”.</li>
+<li>
+<code><a href="../reference/drug_create.html">drug_create()</a></code> and the <code>drug_create_*()</code> functions are exported.</li>
+</ul><p>Behaviour changes and bug fixes:</p>
+<ul><li>
+<code>itn_half_life</code> and <code>irs_half_life</code> now take effect (defaults unchanged).</li>
+<li>Non-malarial fevers in uninfected people only give drugs to those who seek treatment (<code>ft</code>).</li>
+<li>
+<code>ft = 0</code> no longer runs as <code>ft = Inf</code>.</li>
+<li>
+<code>Q0</code>, <code>mu0</code> and the infection and immunity parameters are now read by the individual model on a fresh start, not only from saved states.</li>
+<li>A <code>seasonality</code> argument now reaches the individual model.</li>
+<li>Initially infected people can realise new infections, and <code>ICM_init</code> is kept in saved states.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.3.8" id="magenta-138">magenta 1.3.8<a class="anchor" aria-label="anchor" href="#magenta-138"></a></h2>
 <ul><li>New vignettes: <code>Loggers</code>, <code>DrugStrategies</code> and <code>NewDrugs</code>. <code>Resistance</code> and <code>Introduction</code> rewritten, and vignette sources moved to <code>vignettes_src/</code>.</li>
