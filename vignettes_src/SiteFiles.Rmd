@@ -132,6 +132,31 @@ unique(runs[c("model", "version")])
 
 model_colours <- c(magenta = "#c51b7d", malariasimulation = "#2166ac",
                    "malariasimulation (exponential ages)" = "#7fbf7b")
+
+# mean and range over seeds
+summarise_runs <- function(var) {
+  d <- stats::aggregate(runs[[var]], runs[c("model", "unit", "year")],
+                        function(x) c(mean = mean(x), lo = min(x), hi = max(x)))
+  cbind(d[c("model", "unit", "year")], as.data.frame(d$x))
+}
+
+plot_runs <- function(var, ylab, site_var = NULL) {
+  d <- summarise_runs(var)
+  p <- ggplot(d, aes(year, mean, colour = model, fill = model)) +
+    geom_ribbon(aes(ymin = lo, ymax = hi), alpha = 0.2, colour = NA) +
+    geom_line() +
+    facet_wrap(~unit, scales = "free_y") +
+    scale_colour_manual(values = model_colours) +
+    scale_fill_manual(values = model_colours) +
+    labs(x = NULL, y = ylab, colour = NULL, fill = NULL) +
+    theme_bw() +
+    theme(legend.position = "top")
+  if (!is.null(site_var)) {
+    p <- p + geom_point(aes(year, .data[[site_var]]), data = site,
+                        inherit.aes = FALSE, size = 0.8)
+  }
+  p
+}
 ```
 
 ### Interventions
@@ -228,6 +253,24 @@ Because of these, clinical incidence from `magenta` runs set up this way should
 be used with care in years of high net use, and the comparison is for getting
 `magenta` into the right transmission setting rather than for matching
 malariasimulation year by year.
+
+### Over time
+
+Lines are the mean over seeds and the band is their range. The points are the
+site file's PfPR2-10 (the Malaria Atlas Project estimates the EIR was
+calibrated to).
+
+```{r prevalence}
+plot_runs("pfpr_2_10", "PfPR2-10 (microscopy)", "site_pfpr")
+```
+
+```{r incidence}
+plot_runs("clinical", "Clinical cases per person per year")
+```
+
+```{r incidence-05}
+plot_runs("clinical_05", "Clinical cases per child under 5 per year")
+```
 
 A `magenta` run took about 35 minutes, and a malariasimulation run about 19
 minutes (50,000 people, 45 years).
