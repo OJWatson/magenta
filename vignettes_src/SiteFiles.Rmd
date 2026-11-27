@@ -176,7 +176,8 @@ d$model <- factor(d$model, names(model_colours))
 
 ggplot(d, aes(model, mean, colour = model)) +
   geom_pointrange(aes(ymin = lo, ymax = hi)) +
-  facet_grid(output ~ unit, scales = "free_y", labeller = label_wrap_gen(16)) +
+  facet_wrap(unit ~ output, scales = "free_y", ncol = 3, labeller = label_wrap_gen(24)) +
+  expand_limits(y = 0) +
   scale_colour_manual(values = model_colours) +
   labs(x = NULL, y = NULL, colour = NULL) +
   theme_bw() +
